@@ -70,7 +70,8 @@
     "better-sqlite3-multiple-ciphers": false,
     "electron": false,
     "electron-winstaller": false,
-    "esbuild": false
+    "esbuild": false,
+    "fsevents": false
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

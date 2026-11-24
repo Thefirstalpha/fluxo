@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { z } from 'zod'
-import { isMissingFileError, writeFileAtomic } from '../fs/atomic-write'
+import { isMissingFileError, writeFileAtomic, writeFileAtomicSync } from '../fs/atomic-write'
 
 /** Taille par défaut et minimale de la fenêtre principale (pixels indépendants de la densité). */
 export const DEFAULT_WINDOW_SIZE = { width: 1320, height: 860 } as const
@@ -43,6 +43,10 @@ export async function loadWindowState(filePath: string): Promise<WindowState | u
 
 export async function saveWindowState(filePath: string, state: WindowState): Promise<void> {
   await writeFileAtomic(filePath, `${JSON.stringify(state)}\n`)
+}
+
+export function saveWindowStateSync(filePath: string, state: WindowState): void {
+  writeFileAtomicSync(filePath, `${JSON.stringify(state)}\n`)
 }
 
 function intersection(a: Rectangle, b: Rectangle): { width: number; height: number } {

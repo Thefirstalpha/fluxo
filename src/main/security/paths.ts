@@ -14,9 +14,10 @@ export function resolveInsideRoot(root: string, urlPath: string): string | null 
   } catch {
     return null
   }
-  if (decoded.includes('\0')) return null
+  if (decoded.includes('\0') || decoded.includes('\\')) return null
 
-  const relativePath = decoded.replace(/^[/\\]+/, '') || 'index.html'
+  const relativePath = decoded.replace(/^\/+/, '') || 'index.html'
+  if (/^[a-zA-Z]:/.test(relativePath)) return null
   const absoluteRoot = resolve(root)
   const target = resolve(absoluteRoot, relativePath)
   const fromRoot = relative(absoluteRoot, target)

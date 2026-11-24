@@ -90,7 +90,7 @@ Poser un socle **sûr, léger et testable** que les jalons suivants pourront enr
 - [x] [`SECURITY.md`](../../SECURITY.md) : versions prises en charge, signalement privé (GitHub Private Vulnerability Reporting), délais de réponse (accusé sous 7 jours, évaluation sous 14 jours), périmètre. `Socle`
 - [x] [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md) (Contributor Covenant 2.1, signalement par la fonction « Report content » de GitHub), [`CHANGELOG.md`](../../CHANGELOG.md) (Keep a Changelog, en français). `Socle`
 - [x] Formulaires d'issues en français (bug, fonctionnalité, nouveau format bancaire, nouveau modèle de bulletin — case obligatoire « aucune donnée personnelle réelle ») et modèle de pull request en anglais (cases sécurité, accessibilité, i18n, montants, tests, docs). `Socle`
-- [ ] Réglages du dépôt GitHub — **actions manuelles** une fois le dépôt créé : protection de `main` (revue obligatoire, CI verte, historique linéaire), signalement privé des vulnérabilités activé, signalement de contenu (Settings → Moderation) activé pour le code de conduite, étiquettes `fonctionnalité`, `format bancaire` et `modèle de bulletin` créées (utilisées par les formulaires d'issues). `Socle`
+- [x] Réglages du dépôt GitHub — **actions manuelles** une fois le dépôt créé : protection de `main` (revue obligatoire, CI verte, historique linéaire), signalement privé des vulnérabilités activé, étiquettes `fonctionnalité`, `format bancaire` et `modèle de bulletin` créées (utilisées par les formulaires d'issues). _(Note : « Reported content » sous Moderation est réservé aux organisations GitHub, indisponible sur un compte personnel.)_ `Socle`
 
 ### Lot B — Intégration continue (GitHub Actions)
 

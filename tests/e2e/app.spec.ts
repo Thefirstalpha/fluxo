@@ -100,7 +100,8 @@ test('le thème choisi est appliqué immédiatement et conservé au redémarrage
 test('la taille de la fenêtre est mémorisée entre deux lancements', async ({ launch }) => {
   const first = await launch()
   await first.app.evaluate(({ BrowserWindow }) => {
-    BrowserWindow.getAllWindows()[0]?.setBounds({ width: 1111, height: 777 })
+    // Taille >= MIN_WINDOW_SIZE (980×640) et <= écran CI Windows (1024×720).
+    BrowserWindow.getAllWindows()[0]?.setBounds({ width: 995, height: 665 })
   })
   await first.app.close()
 
@@ -109,7 +110,7 @@ test('la taille de la fenêtre est mémorisée entre deux lancements', async ({ 
     const bounds = BrowserWindow.getAllWindows()[0]?.getNormalBounds()
     return { width: bounds?.width, height: bounds?.height }
   })
-  expect(size).toEqual({ width: 1111, height: 777 })
+  expect(size).toEqual({ width: 995, height: 665 })
 })
 
 test('une erreur de l’interface est consignée, expurgée, dans le journal local', async ({

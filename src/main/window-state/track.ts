@@ -4,6 +4,7 @@ import {
   fitWindowState,
   loadWindowState,
   saveWindowState,
+  saveWindowStateSync,
   type InitialBounds,
   type WindowState,
 } from './window-state'
@@ -46,6 +47,10 @@ export function trackWindowState(window: BrowserWindow, filePath: string): void 
   window.on('unmaximize', schedule)
   window.on('close', () => {
     clearTimeout(timer)
-    save(snapshot())
+    try {
+      saveWindowStateSync(filePath, snapshot())
+    } catch (error) {
+      logger.warn('Mémorisation de la fenêtre impossible', error)
+    }
   })
 }
