@@ -81,15 +81,16 @@ Poser un socle **sûr, léger et testable** que les jalons suivants pourront enr
 
 ### Lot A — Dépôt public
 
-- [ ] Initialiser Git (`main`), premier commit, créer le dépôt GitHub. `Socle`
+- [x] Initialiser Git (`main`) et premier commit. `Socle`
+- [ ] Créer le dépôt GitHub `Thefirstalpha/fluxo` et y pousser `main` — **action manuelle**. `Socle`
 - [x] Licence tranchée : MIT ([ADR-015](../architecture/decisions.md#adr-015--licence-mit)), fichier [`LICENSE`](../../LICENSE) ajouté.
-- [ ] `THIRD_PARTY_NOTICES` (polices SIL OFL, ECharts Apache-2.0, etc.). `Socle`
-- [ ] Remplacer les valeurs provisoires : `OWNER` (`package.json`, `src/shared/app-meta.ts`, `README.md`), `appId`, contact `maintainer` Linux. `Socle`
-- [ ] `CONTRIBUTING.md`, **en anglais** (public international de contributeurs) : prérequis, scripts, conventions (Conventional Commits), architecture, pièges Windows, règle « aucune donnée réelle dans les fixtures ». `Socle`
-- [ ] `SECURITY.md` : versions prises en charge, signalement privé (GitHub Private Vulnerability Reporting), délais de réponse. `Socle`
-- [ ] `CODE_OF_CONDUCT.md` (Contributor Covenant), `CHANGELOG.md` (Keep a Changelog). `Socle`
-- [ ] Modèles d'issues (bug, fonctionnalité, nouveau format bancaire, nouveau modèle de bulletin) et de pull request (cases sécurité, accessibilité, i18n, tests). `Socle`
-- [ ] Protection de la branche `main` : revue obligatoire, CI verte, historique linéaire. `Socle`
+- [x] [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md), établi à partir des cartes de sources de la build (seul ce qui est réellement embarqué) ; copié avec la licence dans `resources/` de l'application packagée. `Socle`
+- [x] Valeurs provisoires remplacées : propriétaire `Thefirstalpha`, `appId` `app.fluxo.desktop` confirmé ([ADR-021](../architecture/decisions.md#adr-021--nom-fluxo-confirmé-malgré-une-homonymie-btp)), contact `maintainer` Linux renvoyant aux tickets GitHub (aucune adresse e-mail publiée). `Socle`
+- [x] [`CONTRIBUTING.md`](../../CONTRIBUTING.md), **en anglais** (public international de contributeurs) : prérequis, scripts, conventions (Conventional Commits), architecture, pièges Windows, règle « aucune donnée réelle dans les fixtures ». `Socle`
+- [x] [`SECURITY.md`](../../SECURITY.md) : versions prises en charge, signalement privé (GitHub Private Vulnerability Reporting), délais de réponse (accusé sous 7 jours, évaluation sous 14 jours), périmètre. `Socle`
+- [x] [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md) (Contributor Covenant 2.1, signalement par la fonction « Report content » de GitHub), [`CHANGELOG.md`](../../CHANGELOG.md) (Keep a Changelog, en français). `Socle`
+- [x] Formulaires d'issues en français (bug, fonctionnalité, nouveau format bancaire, nouveau modèle de bulletin — case obligatoire « aucune donnée personnelle réelle ») et modèle de pull request en anglais (cases sécurité, accessibilité, i18n, montants, tests, docs). `Socle`
+- [ ] Réglages du dépôt GitHub — **actions manuelles** une fois le dépôt créé : protection de `main` (revue obligatoire, CI verte, historique linéaire), signalement privé des vulnérabilités activé, signalement de contenu (Settings → Moderation) activé pour le code de conduite, étiquettes `fonctionnalité`, `format bancaire` et `modèle de bulletin` créées (utilisées par les formulaires d'issues). `Socle`
 
 ### Lot B — Intégration continue (GitHub Actions)
 

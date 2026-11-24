@@ -1,0 +1,70 @@
+name: Nouveau modèle de bulletin de paie
+description: Demander la prise en charge d'un modèle de bulletin de salaire.
+title: '[Bulletin] '
+labels: ['modèle de bulletin']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Un bulletin de paie contient des données parmi les plus sensibles (salaire, numéro de sécurité sociale, adresse, employeur).
+
+        ⚠️ **Ne joignez jamais un vrai bulletin**, même flouté ou partiellement masqué. Décrivez sa structure : la liste des rubriques et leur disposition suffit, avec des valeurs **inventées**.
+  - type: input
+    id: employeur
+    attributes:
+      label: Type d'employeur
+      description: Secteur d'activité, taille, public ou privé — inutile de nommer votre employeur.
+      placeholder: Entreprise privée d'environ 200 salariés, secteur informatique
+    validations:
+      required: true
+  - type: input
+    id: convention
+    attributes:
+      label: Convention collective
+      placeholder: Syntec (IDCC 1486)
+  - type: input
+    id: logiciel
+    attributes:
+      label: Logiciel de paie (si connu)
+      description: Souvent indiqué en bas du bulletin.
+  - type: dropdown
+    id: format
+    attributes:
+      label: Format du document
+      options:
+        - PDF texte (le texte peut être sélectionné)
+        - PDF scanné ou image
+        - Papier
+        - Autre
+    validations:
+      required: true
+  - type: textarea
+    id: rubriques
+    attributes:
+      label: Liste des rubriques (anonymisée)
+      description: |
+        Rubriques dans l'ordre où elles apparaissent, avec leurs colonnes (base, taux, part salariale, part patronale…) et des valeurs **fictives**. Indiquez où figurent le brut, le net à payer avant impôt, le net imposable, le prélèvement à la source (taux et montant), le net payé et les cumuls annuels.
+      placeholder: |
+        Salaire de base — base 151,67 h — taux 20,00 — montant 3 033,40
+        Prime d'astreinte — montant 150,00
+        Sécurité sociale plafonnée — base … — taux salarial … — part salariale …
+        …
+        Net à payer avant impôt sur le revenu : 2 400,00
+        Impôt sur le revenu prélevé à la source — taux 7,5 % — montant 180,00
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: particularites
+    attributes:
+      label: Particularités
+      description: Plusieurs pages, rubriques regroupées, 13ᵉ mois, congés, régularisations, plusieurs employeurs…
+  - type: checkboxes
+    id: confidentialite
+    attributes:
+      label: Confidentialité
+      options:
+        - label: Les valeurs indiquées sont inventées ; aucun nom, numéro de sécurité sociale, adresse ou montant réel n'est fourni.
+          required: true
+        - label: Je confirme ne joindre aucune donnée personnelle réelle.
+          required: true

@@ -1,0 +1,60 @@
+name: Proposer une fonctionnalité
+description: Une idée d'amélioration ou un besoin non couvert par Fluxo.
+title: '[Idée] '
+labels: ['fonctionnalité']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Avant de proposer une idée, consultez le [catalogue des fonctionnalités](https://github.com/Thefirstalpha/fluxo/blob/main/docs/projet/fonctionnalites.md) et la [feuille de route](https://github.com/Thefirstalpha/fluxo/blob/main/docs/planning/README.md) : elle y figure peut-être déjà.
+
+        **N'incluez aucune donnée personnelle réelle** dans vos exemples ou captures.
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Besoin
+      description: Quel problème cherchez-vous à résoudre ? Dans quelle situation ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposition
+    attributes:
+      label: Solution envisagée
+      description: Comment imaginez-vous la fonctionnalité ?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives envisagées
+      description: Contournements actuels, autres logiciels, autres approches.
+  - type: dropdown
+    id: domaine
+    attributes:
+      label: Domaine concerné
+      options:
+        - Comptes et transactions
+        - Import de relevés
+        - Catégorisation
+        - Salaires et bulletins
+        - Analyses et graphiques
+        - Budgets et prévisions
+        - Crédits, épargne et patrimoine
+        - Analyse de documents et IA
+        - Interface, accessibilité, langues
+        - Sécurité et confidentialité
+        - Autre
+    validations:
+      required: true
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Informations complémentaires
+      description: Maquettes, exemples inventés, liens.
+  - type: checkboxes
+    id: confidentialite
+    attributes:
+      label: Confidentialité
+      options:
+        - label: Je confirme ne joindre aucune donnée personnelle réelle.
+          required: true

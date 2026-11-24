@@ -1,0 +1,72 @@
+name: Signaler un bug
+description: Un comportement incorrect, un plantage ou un affichage erroné dans Fluxo.
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler un problème.
+
+        **N'incluez aucune donnée personnelle réelle** : pas de relevé, de bulletin, d'IBAN, de numéro de sécurité sociale, de nom, d'adresse ni de capture d'écran de vos vrais comptes. Reproduisez le problème avec le mode démo ou un fichier inventé, ou activez le masquage des montants dans les paramètres avant une capture.
+
+        Une faille de sécurité ? N'ouvrez pas de ticket : utilisez le [signalement privé](https://github.com/Thefirstalpha/fluxo/security/advisories/new).
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du problème
+      description: Ce qui se passe, en quelques phrases.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Étapes pour reproduire
+      placeholder: |
+        1. Ouvrir…
+        2. Cliquer sur…
+        3. Constater…
+    validations:
+      required: true
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Comportement attendu
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version de Fluxo
+      description: Visible dans les paramètres (informations de version), ou le commit si vous partez des sources.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: systeme
+    attributes:
+      label: Système d'exploitation
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: systeme-version
+    attributes:
+      label: Version du système
+      placeholder: Windows 11 24H2, macOS 15, Ubuntu 24.04…
+  - type: textarea
+    id: journal
+    attributes:
+      label: Extrait du journal (facultatif)
+      description: Le journal local masque les IBAN, numéros de sécurité sociale, e-mails et numéros de carte, mais relisez-le avant de le coller et retirez toute information personnelle.
+      render: text
+  - type: checkboxes
+    id: confidentialite
+    attributes:
+      label: Confidentialité
+      options:
+        - label: Je confirme ne joindre aucune donnée personnelle réelle.
+          required: true

@@ -2,7 +2,9 @@
 # Les secrets de signature ne sont jamais dans ce fichier : ils sont fournis par
 # l'environnement de CI (voir .github/workflows/release.yml et docs/planning/M9-distribution.md).
 
-appId: app.fluxo.desktop # À personnaliser AVANT la première release publique (ne plus changer ensuite).
+# Identifiant confirmé par l'ADR-021 (docs/architecture/decisions.md) : il ne doit plus JAMAIS changer
+# après la première release publique (mises à jour, données et raccourcis en dépendent).
+appId: app.fluxo.desktop
 productName: Fluxo
 copyright: Copyright © 2026 Les contributeurs Fluxo
 
@@ -15,6 +17,14 @@ files:
   - out/**/*
   - package.json
   - '!**/*.map'
+
+# Licences livrées avec l'application (dossier resources/) : celle de Fluxo et celles des
+# composants tiers embarqués. Electron conserve de son côté LICENSE.electron.txt et LICENSES.chromium.html.
+extraResources:
+  - from: LICENSE
+    to: LICENSE.txt
+  - from: THIRD_PARTY_NOTICES.md
+    to: THIRD_PARTY_NOTICES.md
 
 asar: true
 npmRebuild: false # Aucune dépendance native pour l'instant (passera à true au jalon M1 : SQLCipher).
@@ -69,7 +79,8 @@ dmg:
 linux:
   category: Office
   synopsis: Finances personnelles, en local et chiffrées.
-  maintainer: Les contributeurs Fluxo <maintainers@fluxo.invalid> # À remplacer par un contact réel.
+  # Contact public : les tickets GitHub (aucune adresse e-mail publiée).
+  maintainer: Fluxo contributors <https://github.com/Thefirstalpha/fluxo/issues>
   target:
     - AppImage
     - deb

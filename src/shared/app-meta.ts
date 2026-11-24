@@ -1,7 +1,7 @@
 export const APP_NAME = 'Fluxo'
 
-/** Dépôt public — à adapter lors de la création du dépôt GitHub. */
-export const REPOSITORY_URL = 'https://github.com/OWNER/fluxo'
+/** Dépôt public du projet (GitHub). */
+export const REPOSITORY_URL = 'https://github.com/Thefirstalpha/fluxo'
 
 /**
  * Hôtes vers lesquels l'application accepte d'ouvrir un lien dans le navigateur système

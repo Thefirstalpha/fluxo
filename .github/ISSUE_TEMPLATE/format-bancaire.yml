@@ -1,0 +1,75 @@
+name: Nouveau format de relevé bancaire
+description: Demander la prise en charge du relevé (fichier d'export) d'une banque.
+title: '[Format bancaire] '
+labels: ['format bancaire']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pour prendre en charge un format, il faut connaître sa **structure**, pas vos opérations.
+
+        ⚠️ **Ne joignez jamais un vrai relevé**, même partiellement masqué. Fournissez un exemple **inventé** ou **entièrement anonymisé** : remplacez libellés, montants, dates, IBAN, numéros de compte et de carte et noms par des valeurs fictives, en conservant exactement la structure (en-têtes, séparateurs, encodage, format des dates et des montants).
+  - type: input
+    id: banque
+    attributes:
+      label: Banque ou établissement
+      placeholder: Nom de la banque
+    validations:
+      required: true
+  - type: input
+    id: pays
+    attributes:
+      label: Pays
+      placeholder: France
+    validations:
+      required: true
+  - type: dropdown
+    id: format
+    attributes:
+      label: Format du fichier
+      options:
+        - CSV
+        - OFX / QFX
+        - QIF
+        - CAMT.053 (XML)
+        - PDF
+        - Autre
+    validations:
+      required: true
+  - type: input
+    id: export
+    attributes:
+      label: Où obtenir l'export
+      description: Chemin dans l'espace en ligne ou l'application de la banque, options choisies.
+      placeholder: Mes comptes → Télécharger les opérations → CSV
+  - type: textarea
+    id: colonnes
+    attributes:
+      label: Description des colonnes ou des champs
+      description: |
+        Pour chaque colonne (CSV) ou balise (OFX, CAMT…) : nom exact, signification et exemple de valeur **fictive**. Précisez le séparateur, l'encodage s'il est connu, le format des dates (ex. JJ/MM/AAAA) et des montants (virgule décimale, signe, colonnes débit/crédit séparées), et les éventuelles lignes d'en-tête ou de pied.
+      placeholder: |
+        Séparateur : ;  — Encodage : Windows-1252
+        Date opération : 05/01/2026
+        Libellé : PAIEMENT CB COMMERCE FICTIF
+        Débit : -12,50
+        Crédit : (vide)
+    validations:
+      required: true
+  - type: textarea
+    id: exemple
+    attributes:
+      label: Exemple anonymisé
+      description: Quelques lignes **fictives** reproduisant fidèlement la structure, en-têtes compris. Pour un PDF, décrivez la mise en page ou joignez une reconstitution entièrement fictive.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: confidentialite
+    attributes:
+      label: Confidentialité
+      options:
+        - label: L'exemple ci-dessus est inventé ou entièrement anonymisé (aucun libellé, montant, numéro de compte ou nom réel).
+          required: true
+        - label: Je confirme ne joindre aucune donnée personnelle réelle.
+          required: true

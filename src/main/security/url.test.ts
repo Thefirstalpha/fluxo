@@ -28,7 +28,7 @@ describe('matchesOrigin', () => {
 describe('isAllowedExternalUrl', () => {
   const hosts = ['github.com']
 
-  it.each(['https://github.com/OWNER/fluxo', 'https://docs.github.com/fr'])(
+  it.each(['https://github.com/Thefirstalpha/fluxo', 'https://docs.github.com/fr'])(
     'autorise %s',
     (url) => {
       expect(isAllowedExternalUrl(url, hosts)).toBe(true)
@@ -36,7 +36,7 @@ describe('isAllowedExternalUrl', () => {
   )
 
   it.each([
-    'http://github.com/OWNER/fluxo',
+    'http://github.com/Thefirstalpha/fluxo',
     'https://github.com.evil.com/',
     'https://evilgithub.com/',
     'https://user:pass@github.com/',

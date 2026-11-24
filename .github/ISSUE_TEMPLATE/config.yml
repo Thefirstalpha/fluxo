@@ -1,0 +1,6 @@
+# Les tickets passent obligatoirement par un des formulaires (aucun ticket vierge).
+blank_issues_enabled: false
+contact_links:
+  - name: Signaler une vulnérabilité (privé)
+    url: https://github.com/Thefirstalpha/fluxo/security/advisories/new
+    about: Ne publiez jamais une faille de sécurité dans un ticket public. Utilisez le signalement privé de GitHub (voir SECURITY.md).

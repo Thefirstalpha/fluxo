@@ -15,13 +15,13 @@
   "author": {
     "name": "Les contributeurs Fluxo"
   },
-  "homepage": "https://github.com/OWNER/fluxo#readme",
+  "homepage": "https://github.com/Thefirstalpha/fluxo#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/fluxo.git"
+    "url": "git+https://github.com/Thefirstalpha/fluxo.git"
   },
   "bugs": {
-    "url": "https://github.com/OWNER/fluxo/issues"
+    "url": "https://github.com/Thefirstalpha/fluxo/issues"
   },
   "main": "./out/main/index.js",
   "scripts": {

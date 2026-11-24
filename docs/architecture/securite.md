@@ -84,4 +84,4 @@ Point connu : `npm audit` signale 6 alertes de sévérité modérée dans `minim
 
 ## Signaler une vulnérabilité
 
-Merci de **ne pas ouvrir de ticket public**. Utilisez le signalement privé de GitHub (« Report a vulnerability » dans l'onglet _Security_ du dépôt). La politique complète figurera dans `SECURITY.md` (M0).
+Merci de **ne pas ouvrir de ticket public**. Utilisez le signalement privé de GitHub (« Report a vulnerability » dans l'onglet _Security_ du dépôt). La politique complète (versions prises en charge, délais de réponse, périmètre) est dans [`SECURITY.md`](../../SECURITY.md).
