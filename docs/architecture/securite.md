@@ -38,6 +38,7 @@ Hors périmètre : un logiciel malveillant disposant déjà des droits de l'util
 | Préférences             | Lecture tolérante, écriture atomique, fichier illisible mis de côté                                                                                               | `src/main/settings/`                                                  |
 | Journaux                | Locaux, rotation, masquage IBAN / NIR / e-mail / n° de carte / dossier personnel                                                                                  | `src/main/logger/`                                                    |
 | Erreurs de l'interface  | Remontées au journal local par un canal dédié : schéma strict, champs bornés, 20 rapports/minute au plus, contenu expurgé ; jamais envoyées en ligne              | `src/main/ipc/register.ts`, `src/renderer/src/lib/error-reporting.ts` |
+| Service de données      | Base ouverte dans un `utilityProcess` dédié ; requêtes du main validées par schéma, erreurs réduites à un code, journal relayé et expurgé par le main             | `src/data/`, `src/main/data/`                                         |
 | Application packagée    | Pas d'outils de développement, pas de menu de rechargement, instance unique                                                                                       | `src/main/window.ts`, `src/main/menu.ts`                              |
 | Fuses Electron          | `runAsNode`, `NODE_OPTIONS` et `--inspect` désactivés ; intégrité ASAR ; chargement depuis l'ASAR uniquement ; cookies chiffrés                                   | `electron-builder.yml`                                                |
 | macOS                   | Hardened Runtime, seul entitlement : JIT de V8                                                                                                                    | `build/entitlements.mac.plist`                                        |
@@ -63,7 +64,8 @@ La politique est définie dans `.npmrc` et `package.json` (npm ≥ 12 requis via
 - **Scripts d'installation bloqués** pour toutes les dépendances ; toute dépendance avec un script non revu fait échouer l'installation (`strict-allow-scripts`). Refus explicites (`allowScripts`) :
   - `electron` : le binaire est installé par le script du projet (`install-electron`), visible et maîtrisé ;
   - `electron-winstaller` : sert uniquement à la cible Squirrel.Windows, non utilisée (NSIS) ;
-  - `esbuild` : ses binaires arrivent par dépendances optionnelles de plateforme, le script est superflu.
+  - `esbuild` : ses binaires arrivent par dépendances optionnelles de plateforme, le script est superflu ;
+  - `better-sqlite3-multiple-ciphers` : npm lui prête un script `node-gyp rebuild` (présence de `binding.gyp`) ; les binaires N-API précompilés sont dans le paquet, la compilation est inutile ([ADR-027](decisions.md#adr-027--moteur-du-coffre--sqlite3-multiple-ciphers-format-sqlcipher-sql-typé-service-isolé)).
 - **Délai de publication** : seules les versions publiées depuis **plus de 7 jours** sont installées (`min-release-age=7`), le temps que l'écosystème détecte un paquet compromis.
 - **Pas de dépendances Git ni d'archives distantes** (`allow-git=none`, `allow-remote=none`).
 - **Versions exactes** et `package-lock.json` versionné ; `npm ci` en intégration continue.

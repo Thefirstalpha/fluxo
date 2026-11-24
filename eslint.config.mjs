@@ -60,12 +60,33 @@ export default defineConfig(
   {
     files: [
       'src/main/**/*.ts',
+      'src/data/**/*.ts',
       'src/preload/**/*.ts',
       '*.config.ts',
       '*.config.mts',
       'tests/e2e/**/*.ts',
     ],
     languageOptions: { globals: globals.node },
+  },
+  // Service de données (utilityProcess) : Node.js, sans Electron ni interface.
+  {
+    files: ['src/data/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'electron',
+              message: 'Le service de données ne dépend pas d’Electron (testable sous Node).',
+            },
+            'react',
+            'react-dom',
+          ],
+          patterns: [{ group: ['**/main/**', '**/preload/**', '**/renderer/**'] }],
+        },
+      ],
+    },
   },
   // Code partagé : TypeScript pur, aucune dépendance à un process.
   {

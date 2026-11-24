@@ -2,22 +2,24 @@
 
 ## Stack
 
-| Domaine               | Choix                                                       | Version (nov. 2026) |
-| --------------------- | ----------------------------------------------------------- | ------------------- |
-| Application de bureau | Electron                                                    | 45                  |
-| Build                 | electron-vite (Vite 8 / Rolldown)                           | 6                   |
-| Packaging             | electron-builder                                            | 26                  |
-| Interface             | React + TypeScript strict                                   | 19 / 6.0            |
-| Styles                | Tailwind CSS + design tokens CSS                            | 4                   |
-| Graphiques            | Apache ECharts, importé « à la carte »                      | 6                   |
-| État d'interface      | Zustand                                                     | 5                   |
-| Routage               | wouter (routage par fragment `#/…`)                         | 3                   |
-| Validation            | zod (process main)                                          | 4                   |
-| Icônes                | lucide-react                                                | 1                   |
-| Tests                 | Vitest + Testing Library (happy-dom), Playwright (Electron) | 5 / 1.65            |
-| Qualité               | ESLint (typescript-eslint, règles typées) + Prettier        | 10 / 3              |
+| Domaine               | Choix                                                                                                    | Version (nov. 2026) |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | ------------------- |
+| Application de bureau | Electron                                                                                                 | 45                  |
+| Build                 | electron-vite (Vite 8 / Rolldown)                                                                        | 6                   |
+| Packaging             | electron-builder                                                                                         | 26                  |
+| Interface             | React + TypeScript strict                                                                                | 19 / 6.0            |
+| Styles                | Tailwind CSS + design tokens CSS                                                                         | 4                   |
+| Graphiques            | Apache ECharts, importé « à la carte »                                                                   | 6                   |
+| État d'interface      | Zustand                                                                                                  | 5                   |
+| Routage               | wouter (routage par fragment `#/…`)                                                                      | 3                   |
+| Validation            | zod (process main, service de données)                                                                   | 4                   |
+| Base de données       | SQLite 3.54 chiffré (SQLite3 Multiple Ciphers, format SQLCipher 4) via `better-sqlite3-multiple-ciphers` | 13.2                |
+| Dérivation de clé     | Argon2id (hash-wasm, WebAssembly)                                                                        | 4.13                |
+| Icônes                | lucide-react                                                                                             | 1                   |
+| Tests                 | Vitest + Testing Library (happy-dom), Playwright (Electron)                                              | 5 / 1.65            |
+| Qualité               | ESLint (typescript-eslint, règles typées) + Prettier                                                     | 10 / 3              |
 
-Prévu : SQLCipher + couche de requêtes typée (M1), TanStack Table/Virtual/Query (M2), pdf.js et tesseract.js (M7), SDK Anthropic et fournisseur local (M7), electron-updater (M9). Chaque dépendance est ajoutée **au jalon qui en a besoin**, pas avant.
+Prévu : TanStack Table/Virtual/Query (M2), pdf.js et tesseract.js (M7), SDK Anthropic et fournisseur local (M7), electron-updater (M9). Chaque dépendance est ajoutée **au jalon qui en a besoin**, pas avant.
 
 ## Processus et frontières de confiance
 
@@ -34,15 +36,19 @@ flowchart LR
     SEC["Sécurité : app://, CSP, navigation, permissions"]
     SET["Préférences (JSON atomique)"]
     LOG["Journal local expurgé"]
+    CLI["Client du service de données"]
+  end
+  subgraph D["Service de données — utilityProcess"]
+    DATA[("Coffre SQLCipher : base, clés")]
   end
   subgraph F["Prévu"]
-    DATA[("Service de données SQLCipher — M1")]
     PARSE["Analyse de fichiers isolée — M3/M7"]
     AI["Fournisseurs IA — M7"]
   end
   UI --> API --> IPC
   IPC --> SET
-  IPC -.-> DATA
+  IPC --> CLI
+  CLI -- "MessagePort, requêtes validées" --> DATA
   IPC -.-> PARSE
   PARSE -.-> AI
 ```
@@ -50,7 +56,8 @@ flowchart LR
 - **Renderer** : tout ce qui s'affiche. Considéré comme compromettable (contenu importé, dépendances front) : il n'a ni Node.js, ni accès disque, ni réseau.
 - **Preload** : expose `window.fluxo`, une fonction par besoin métier, sans accès générique à `ipcRenderer`.
 - **Process main** : seul détenteur des privilèges ; valide **toute** entrée venant du renderer.
-- **Processus utilitaires** (à venir) : base de données et analyse de fichiers hors du process main, pour la réactivité et l'isolation.
+- **Service de données** (`src/data/`, `utilityProcess`) : seul à ouvrir la base chiffrée et à détenir sa clé en clair, le temps où le coffre est déverrouillé. Il dialogue avec le main par un `MessagePort` : requêtes validées par schéma, traitées une par une, erreurs réduites à un code ([ADR-027](decisions.md#adr-027--moteur-du-coffre--sqlite3-multiple-ciphers-format-sqlcipher-sql-typé-service-isolé)). Son code n'importe pas Electron : il est testé sous Node.
+- **Processus utilitaires** (à venir) : analyse de fichiers hors du process main (M3/M7), pour la réactivité et l'isolation.
 
 ## Démarrage
 
@@ -71,6 +78,7 @@ fluxo/
 │  │  ├─ logger/       Journal local + masquage des données personnelles
 │  │  ├─ window-state/ Taille et position de la fenêtre (adaptées aux écrans branchés)
 │  │  └─ fs/           Écriture atomique de petits fichiers
+│  ├─ data/            Service de données (utilityProcess) : RPC, base SQLCipher, coffre
 │  ├─ preload/         Pont contextBridge (window.fluxo) et ses types
 │  ├─ renderer/        Interface React
 │  │  └─ src/
@@ -102,7 +110,8 @@ Règles de sécurité outillées : pas d'`innerHTML`/`outerHTML`/`insertAdjacent
 ## Bundling & dépendances
 
 - Tout ce qui peut être bundlé est en `devDependencies` : rien n'est copié dans `app.asar/node_modules`, l'application reste légère.
-- Seules les dépendances **natives** du process main (SQLCipher au M1) iront en `dependencies` et seront externalisées.
+- Seules les dépendances **natives** sont en `dependencies` et externalisées du bundle : `better-sqlite3-multiple-ciphers` (binaires N-API précompilés ; seul celui de la plateforme cible est embarqué, dans `app.asar.unpacked`).
+- Le process main a deux points d'entrée : `out/main/index.js` et `out/main/data-service.js` (service de données).
 - Le renderer est minifié ; le main ne l'est pas (traces d'erreur lisibles dans le journal).
 
 ## Conventions

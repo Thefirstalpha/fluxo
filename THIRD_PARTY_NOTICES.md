@@ -8,24 +8,28 @@ Fluxo itself is distributed under the [MIT License](LICENSE). The packaged appli
 
 ## Summary
 
-| Component                                                       | Version | License           | Shipped in          |
-| --------------------------------------------------------------- | ------- | ----------------- | ------------------- |
-| [Electron](https://github.com/electron/electron) (and Chromium) | 45.3.3  | MIT (+ see below) | Application runtime |
-| [Apache ECharts](https://echarts.apache.org) (`echarts`)        | 6.1.0   | Apache-2.0        | Renderer            |
-| [ZRender](https://github.com/ecomfe/zrender) (`zrender`)        | 6.1.0   | BSD-3-Clause      | Renderer            |
-| [tslib](https://github.com/Microsoft/tslib)                     | 2.3.0   | 0BSD              | Renderer            |
-| [React](https://react.dev) (`react`)                            | 19.3.1  | MIT               | Renderer            |
-| `react-dom`                                                     | 19.3.1  | MIT               | Renderer            |
-| `scheduler`                                                     | 0.28.0  | MIT               | Renderer            |
-| `use-sync-external-store`                                       | 1.7.0   | MIT               | Renderer            |
-| [Lucide](https://lucide.dev) (`lucide-react`)                   | 1.74.0  | ISC (+ MIT)       | Renderer            |
-| [wouter](https://github.com/molefrog/wouter)                    | 3.13.0  | Unlicense         | Renderer            |
-| [regexparam](https://github.com/lukeed/regexparam)              | 3.0.0   | MIT               | Renderer            |
-| [Zustand](https://github.com/pmndrs/zustand) (`zustand`)        | 5.1.0   | MIT               | Renderer            |
-| [Tailwind CSS](https://tailwindcss.com) (`tailwindcss`)         | 4.3.5   | MIT               | Renderer (CSS)      |
-| [Zod](https://zod.dev) (`zod`)                                  | 4.6.7   | MIT               | Main process        |
-| Inter font (`@fontsource-variable/inter`)                       | 5.3.0   | OFL-1.1           | Renderer (fonts)    |
-| Bebas Neue font (`@fontsource/bebas-neue`)                      | 5.3.0   | OFL-1.1           | Renderer (fonts)    |
+| Component                                                                                     | Version | License           | Shipped in                                 |
+| --------------------------------------------------------------------------------------------- | ------- | ----------------- | ------------------------------------------ |
+| [Electron](https://github.com/electron/electron) (and Chromium)                               | 45.3.3  | MIT (+ see below) | Application runtime                        |
+| [Apache ECharts](https://echarts.apache.org) (`echarts`)                                      | 6.1.0   | Apache-2.0        | Renderer                                   |
+| [ZRender](https://github.com/ecomfe/zrender) (`zrender`)                                      | 6.1.0   | BSD-3-Clause      | Renderer                                   |
+| [tslib](https://github.com/Microsoft/tslib)                                                   | 2.3.0   | 0BSD              | Renderer                                   |
+| [React](https://react.dev) (`react`)                                                          | 19.3.1  | MIT               | Renderer                                   |
+| `react-dom`                                                                                   | 19.3.1  | MIT               | Renderer                                   |
+| `scheduler`                                                                                   | 0.28.0  | MIT               | Renderer                                   |
+| `use-sync-external-store`                                                                     | 1.7.0   | MIT               | Renderer                                   |
+| [Lucide](https://lucide.dev) (`lucide-react`)                                                 | 1.74.0  | ISC (+ MIT)       | Renderer                                   |
+| [wouter](https://github.com/molefrog/wouter)                                                  | 3.13.0  | Unlicense         | Renderer                                   |
+| [regexparam](https://github.com/lukeed/regexparam)                                            | 3.0.0   | MIT               | Renderer                                   |
+| [Zustand](https://github.com/pmndrs/zustand) (`zustand`)                                      | 5.1.0   | MIT               | Renderer                                   |
+| [Tailwind CSS](https://tailwindcss.com) (`tailwindcss`)                                       | 4.3.5   | MIT               | Renderer (CSS)                             |
+| [Zod](https://zod.dev) (`zod`)                                                                | 4.6.7   | MIT               | Main process                               |
+| [better-sqlite3-multiple-ciphers](https://github.com/m4heshd/better-sqlite3-multiple-ciphers) | 13.2.0  | MIT (+ see below) | Data service (native, `app.asar.unpacked`) |
+| SQLite (embedded in the above)                                                                | 3.54.1  | Public domain     | Data service (native)                      |
+| [SQLite3 Multiple Ciphers](https://github.com/utelle/SQLite3MultipleCiphers) (embedded)       | 2.7.1   | MIT               | Data service (native)                      |
+| [hash-wasm](https://github.com/Daninet/hash-wasm) (Argon2 module)                             | 4.13.0  | MIT               | Data service                               |
+| Inter font (`@fontsource-variable/inter`)                                                     | 5.3.0   | OFL-1.1           | Renderer (fonts)                           |
+| Bebas Neue font (`@fontsource/bebas-neue`)                                                    | 5.3.0   | OFL-1.1           | Renderer (fonts)                           |
 
 ## Electron and Chromium
 
@@ -72,6 +76,138 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+### better-sqlite3-multiple-ciphers — MIT License (and the components it embeds)
+
+The native module ships a compiled amalgamation of SQLite and SQLite3 Multiple Ciphers. Components and their terms, as stated in the amalgamation source (`deps/sqlite3/sqlite3.c`):
+
+- **SQLite** 3.54.1 — public domain ("The author disclaims copyright to this source code").
+- **SQLite3 Multiple Ciphers** 2.7.1 — MIT License, Copyright (c) 2006-2026 Ulrich Telle.
+- **AEGIS** cipher implementation — MIT License, Copyright (c) 2023-2024 Frank Denis.
+- **SHA-224/256/384/512** implementation — BSD 3-Clause License, Copyright (C) 2005, 2007 Olivier Gay (text below).
+- **MD5** implementation by Alexander Peslyak — public domain (fallback: "Redistribution and use in source and binary forms, with or without modification, are permitted. There's ABSOLUTELY NO WARRANTY, express or implied.").
+- **Rijndael (AES)** implementation based on Vincent Rijmen, Antoon Bosselaers and Paulo Barreto's code — public domain.
+- **SHA-1** implementation by Steve Reid, ChaCha20/Poly1305 and other primitives — public domain or CC0 1.0.
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2021-2026 Mahesh Bandara Wijerathna
+Copyright (c) 2017 Joshua Wise
+Copyright (c) 2019-2026 Ulrich Telle
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+SHA-2 implementation (embedded in SQLite3 Multiple Ciphers):
+
+```text
+Copyright (C) 2005, 2007 Olivier Gay <olivier.gay@a3.epfl.ch>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. Neither the name of the project nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE PROJECT OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+```
+
+### hash-wasm — MIT License
+
+Only the Argon2 module (Argon2 and BLAKE2b, compiled to WebAssembly) is bundled into the data service.
+
+```text
+MIT License
+
+Copyright (c) 2020 Dani Biró
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Embedded C implementations might use other, similarly permissive licenses.
+Check the beginning of the files from the /src directory.
+```
+
+The bundled Argon2 C code is "based on Golang's Argon2 implementation from crypto package" (BSD 3-Clause License, Copyright (c) 2009 The Go Authors).
+
+```text
+Copyright 2009 The Go Authors.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google LLC nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 ### regexparam — MIT License

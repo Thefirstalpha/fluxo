@@ -25,7 +25,7 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 
 | ID  | Fonctionnalité                                                        | Origine     | Jalon   | Statut |
 | --- | --------------------------------------------------------------------- | ----------- | ------- | ------ |
-| B01 | Base locale chiffrée au repos (SQLCipher)                             | Besoin      | M1      | ⬜     |
+| B01 | Base locale chiffrée au repos (SQLCipher)                             | Besoin      | M1      | 🟡     |
 | B02 | Déverrouillage par trousseau du système et/ou mot de passe maître     | Besoin      | M1      | ⬜     |
 | B03 | Verrouillage automatique (inactivité, verrouillage de session)        | Proposition | M1      | ⬜     |
 | B04 | Sauvegardes chiffrées automatiques, restauration                      | Proposition | M1      | ⬜     |

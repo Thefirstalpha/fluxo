@@ -16,8 +16,17 @@ const sharedAlias = {
 export default defineConfig({
   main: {
     resolve: { alias: sharedAlias },
-    // Non minifié : des traces d'erreur lisibles dans les journaux valent plus que quelques Ko.
-    build: { emptyOutDir: true },
+    build: {
+      emptyOutDir: true,
+      // Deux points d'entrée : le process main et le service de données (utilityProcess).
+      // Non minifiés : des traces d'erreur lisibles dans les journaux valent plus que quelques Ko.
+      rolldownOptions: {
+        input: {
+          index: resolve('src/main/index.ts'),
+          'data-service': resolve('src/data/index.ts'),
+        },
+      },
+    },
   },
   preload: {
     resolve: { alias: sharedAlias },

@@ -17,6 +17,12 @@ files:
   - out/**/*
   - package.json
   - '!**/*.map'
+  # Module natif SQLCipher (ADR-027) : seul le binaire précompilé de la plateforme et de
+  # l'architecture cibles est embarqué ; ni les sources C (~10 Mo), ni les autres binaires.
+  - '!node_modules/better-sqlite3-multiple-ciphers/{deps,src,binding.gyp,README.md}{,/**}'
+  - '!node_modules/better-sqlite3-multiple-ciphers/prebuilds/!(${platform}-${arch}.node)'
+  # En-têtes C++ utiles à la seule compilation.
+  - '!node_modules/node-addon-api{,/**}'
 
 # Licences livrées avec l'application (dossier resources/) : celle de Fluxo et celles des
 # composants tiers embarqués. Electron conserve de son côté LICENSE.electron.txt et LICENSES.chromium.html.
@@ -27,7 +33,8 @@ extraResources:
     to: THIRD_PARTY_NOTICES.md
 
 asar: true
-npmRebuild: false # Aucune dépendance native pour l'instant (passera à true au jalon M1 : SQLCipher).
+# Aucune recompilation : le module natif passe par N-API et fournit ses binaires précompilés (ADR-027).
+npmRebuild: false
 
 # Légèreté : on ne garde que les locales Chromium utiles (~40 Mo économisés).
 electronLanguages:

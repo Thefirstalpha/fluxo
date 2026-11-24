@@ -2,6 +2,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { app, BrowserWindow, nativeTheme, session } from 'electron'
 import { IPC_CHANNELS } from '@shared/ipc'
+import { DataServiceClient } from './data/data-service'
 import { registerIpcHandlers } from './ipc/register'
 import { initFileLogging, logger } from './logger'
 import { installApplicationMenu } from './menu'
@@ -83,6 +84,20 @@ async function start(): Promise<void> {
       },
     )
   }
+
+  // Service de données (base chiffrée) dans un processus utilitaire dédié.
+  const dataService = new DataServiceClient(join(app.getPath('userData'), 'vault'))
+  app.on('will-quit', (event) => {
+    event.preventDefault()
+    dataService
+      .stop()
+      .catch((error: unknown) => logger.error('Arrêt du service de données', error))
+      .finally(() => app.exit(0))
+  })
+  dataService
+    .call('status')
+    .then((status) => logger.info(`Coffre : ${status.state}.`))
+    .catch((error: unknown) => logger.error('Service de données indisponible', error))
 
   // Préférences & IPC.
   const settings = await SettingsStore.open(join(app.getPath('userData'), 'settings.json'))

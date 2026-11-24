@@ -155,6 +155,16 @@ test('une erreur de l’interface est consignée, expurgée, dans le journal loc
   await app.close()
 })
 
+test('le service de données démarre dans un processus séparé', async () => {
+  const { app } = await launch()
+  const logFile = join(userDataDir, 'logs', 'fluxo.log')
+  await expect
+    .poll(() => (existsSync(logFile) ? readFileSync(logFile, 'utf8') : ''))
+    .toContain('[données] Service de données prêt.')
+  expect(existsSync(join(userDataDir, 'vault'))).toBe(true)
+  await app.close()
+})
+
 test('aucune nouvelle fenêtre ne peut être ouverte vers un site non autorisé', async () => {
   const { app, page } = await launch()
   await page.evaluate(() => {

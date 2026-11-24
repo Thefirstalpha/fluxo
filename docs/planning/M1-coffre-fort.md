@@ -1,6 +1,6 @@
 # M1 — Coffre-fort local
 
-> **Statut : ⬜ À venir** · Taille : L · Dépend de : M0 · Version : 0.2
+> **Statut : 🟡 En cours** (démarré le 24/11/2026) · Taille : L · Dépend de : M0 · Version : 0.2
 
 ## Objectif
 
@@ -27,10 +27,10 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 
 ### Lot 1 — Moteur & architecture
 
-- [ ] Décision (ADR) : SQLite chiffré via **SQLCipher** (`better-sqlite3-multiple-ciphers`) ; couche de requêtes typées (Drizzle ORM, Kysely ou SQL typé) départagée par un prototype : poids, typage, migrations. `Socle`
-- [ ] **Service de données** dans un `utilityProcess` dédié : le process main reste réactif ; échanges par `MessagePort`, API typée et validée (même discipline que l'IPC). `Socle`
-- [ ] Dépendance native : `npmRebuild: true`, `electron-builder install-app-deps`, revue de ses scripts d'installation dans `allowScripts`, binaires précompilés pour x64/arm64 sur les 3 OS. `Socle`
-- [ ] Réglages SQLite : `journal_mode=WAL`, `foreign_keys=ON`, `secure_delete=ON`, contrôle d'intégrité au démarrage. `Socle`
+- [x] Décision ([ADR-027](../architecture/decisions.md#adr-027--moteur-du-coffre--sqlite3-multiple-ciphers-format-sqlcipher-sql-typé-service-isolé)) : `better-sqlite3-multiple-ciphers` 13.2 au format SQLCipher 4, clé brute ; **SQL typé** sans ORM, départagé par un prototype (Kysely 158 Ko, Drizzle 64 Ko, SQL typé 0 Ko) ; Argon2id par hash-wasm (`crypto.argon2` absent d'Electron). `Socle`
+- [x] **Service de données** dans un `utilityProcess` dédié (`src/data/`, `out/main/data-service.js`) : échanges par `MessagePort`, API typée, requêtes validées par zod et traitées une par une, erreurs réduites à un code, journal relayé au main ; relancé après un arrêt inattendu. `Socle`
+- [x] Dépendance native : liaison **N-API** dont les binaires précompilés (3 OS × x64/arm64) sont dans le paquet npm — ni `npmRebuild` ni `install-app-deps` ; script implicite `node-gyp rebuild` refusé dans `allowScripts` ; seul le binaire de la cible est embarqué (vérifié sous Windows : `win32-x64.node` dans `app.asar.unpacked`, démarrage du service depuis l'application packagée). `Socle`
+- [x] Réglages SQLite : `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON`, `secure_delete=ON`, `temp_store=MEMORY` ; `quick_check` à chaque ouverture (base endommagée signalée, testé par altération d'une page). `Socle`
 
 ### Lot 2 — Clés & déverrouillage
 
