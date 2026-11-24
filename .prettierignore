@@ -1,0 +1,10 @@
+out/
+dist/
+release/
+coverage/
+playwright-report/
+test-results/
+node_modules/
+package-lock.json
+build/*.png
+resources/*.png

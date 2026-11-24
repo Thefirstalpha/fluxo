@@ -1,0 +1,148 @@
+# M0 — Fondations
+
+> **Statut : 🟡 En cours** — socle applicatif livré et vérifié le 24/11/2026 ; restent l'outillage du dépôt public, la CI et la validation du packaging.
+> Taille : M · Dépend de : — · Version : 0.1
+
+## Objectif
+
+Poser un socle **sûr, léger et testable** que les jalons suivants pourront enrichir sans retour en arrière : application Electron durcie, interface et système de design, internationalisation, chaîne de qualité, packaging.
+
+## Livré ✅
+
+### Application & sécurité
+
+| Élément                       | Détail                                                                                                                                                                      | Emplacement                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Stack                         | Electron 45, electron-vite 6 (Vite 8), React 19, TypeScript 6 strict, Tailwind CSS 4                                                                                        | `package.json`, `electron.vite.config.ts`                    |
+| Isolation                     | `sandbox`, `contextIsolation`, pas de `nodeIntegration`, `webviewTag` désactivé, `app.enableSandbox()`                                                                      | `src/main/window.ts`, `src/main/index.ts`                    |
+| Protocole privé               | Interface servie par `app://fluxo/` (jamais `file://`), garde-fou contre la traversée de répertoires, liste blanche de types MIME                                           | `src/main/protocol.ts`, `src/main/security/paths.ts`         |
+| CSP                           | En-tête HTTP strict en production (aucun script inline, aucun `eval`, aucun réseau depuis le renderer) ; assouplissements limités au serveur Vite en développement          | `src/main/security/csp.ts`                                   |
+| Navigation                    | Navigations et redirections hors application bloquées, nouvelles fenêtres refusées (liens HTTPS autorisés ouverts dans le navigateur)                                       | `src/main/security/hardening.ts`                             |
+| Permissions                   | Toutes refusées sauf l'écriture dans le presse-papiers ; téléchargements web bloqués ; correcteur orthographique coupé                                                      | `src/main/security/hardening.ts`                             |
+| IPC                           | Émetteur vérifié, entrée validée par schéma zod, erreurs réduites à un code ; API preload minimale et typée                                                                 | `src/main/ipc/`, `src/preload/index.ts`, `src/shared/ipc.ts` |
+| Préférences                   | Fichier JSON validé, écriture atomique, fichier corrompu mis de côté (jamais écrasé)                                                                                        | `src/main/settings/`                                         |
+| Journaux                      | Locaux, rotation 1 Mo, masquage des IBAN, NIR, e-mails, numéros de carte et du dossier personnel                                                                            | `src/main/logger/`                                           |
+| Instance unique, menu minimal | Pas de rechargement ni d'outils de développement par raccourci dans l'app packagée                                                                                          | `src/main/index.ts`, `src/main/menu.ts`                      |
+| Binaire durci                 | Fuses Electron (pas de `RUN_AS_NODE`, pas de `NODE_OPTIONS`, intégrité ASAR, chargement depuis l'ASAR uniquement…), entitlements macOS minimaux, locales Chromium réduites  | `electron-builder.yml`, `build/`                             |
+| Chaîne d'approvisionnement    | npm 12 : scripts d'installation tiers bloqués (`allowScripts`, mode strict), versions publiées depuis ≥ 7 jours, pas de dépendances Git/URL, versions exactes, `devEngines` | `.npmrc`, `package.json`                                     |
+
+### Interface
+
+- Coque façon éditeur de code : barre de titre intégrée (contrôles natifs Windows/Linux, feux macOS), barre latérale avec jalons à venir, barre d'état sur le dégradé d'action. (A02)
+- Thème **Système / Clair / Sombre** dans les paramètres et en raccourci dans la barre de titre ; piloté par `nativeTheme`, donc appliqué dès la première image (pas de flash) et persistant. (A01)
+- Système de design « Vice Sunset » : fonds neutres, accents sur cadres, titres en dégradé, boutons ; palette des graphiques **validée** (daltonisme, contraste, luminosité). (A03)
+- Logo et icône d'application originaux (`build/icon.svg` → `npm run icons`).
+- Paramètres : thème avec aperçus, langue (FR/EN), devise de référence, masquage des montants, protection contre les captures, informations de version. (A04, A05, A06)
+- Tableau de bord de **démonstration** : 4 indicateurs avec variations, flux mensuels (colonnes divergentes + solde net), zoom (Ctrl + molette, curseur), sélection d'un mois au clic ou au clavier, infobulles complètes, vue tableau, dépenses par catégorie classées, aperçu du bulletin « du brut au net » avec contrôles de cohérence. (F01, F04, F05, G02)
+- Pages « à venir » pour chaque section, reliées à leur jalon.
+
+### Domaine (graines pour les jalons suivants)
+
+- Montants en centimes, formatage localisé, analyse robuste des montants (FR/EN/CH, notation comptable, signe final). (D10)
+- Calcul de mois indépendant du fuseau horaire.
+- Modèle simplifié de bulletin + contrôles arithmétiques. (G07)
+- Catégories par défaut (pack France) et générateur de données de démonstration déterministe. (C05, A09)
+
+### Qualité & outillage
+
+- ESLint (règles typées, interdiction d'`innerHTML`/`eval`, frontières d'architecture main/preload/renderer/shared), Prettier, EditorConfig.
+- Vitest : **15 fichiers, 105 tests** (sécurité, montants, bulletins, préférences, palette, composants).
+- Playwright : **6 tests E2E** sur la build de production — protocole `app://`, isolation du renderer, CSP qui bloque script injecté et réseau, rejet d'une mise à jour IPC invalide, thème appliqué et conservé au redémarrage, `window.open` bloqué.
+- Débogage VS Code (main + renderer), extensions recommandées.
+
+### Vérifications réalisées (24/11/2026, Windows 11)
+
+| Contrôle            | Résultat                                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run typecheck` | ✅ 0 erreur                                                                                                                        |
+| `npm run lint`      | ✅ 0 erreur                                                                                                                        |
+| `npm test`          | ✅ 105/105                                                                                                                         |
+| `npm run test:e2e`  | ✅ 6/6                                                                                                                             |
+| `npm run build`     | ✅ renderer 259 Ko + tableau de bord 604 Ko (ECharts inclus), main 184 Ko, preload 1,4 Ko                                          |
+| Revue visuelle      | ✅ tableau de bord et paramètres, clair et sombre, montants masqués                                                                |
+| `npm audit`         | ⚠ 6 alertes « moderate » dans `minimatch` (dépendance d'electron-builder, outil de build — rien n'est embarqué dans l'application) |
+
+### Écueils rencontrés et résolus
+
+| Problème                                                                                           | Résolution                                                                   |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Vitest échoue sous Windows quand le terminal démarre en `c:\` minuscule (deux instances du runner) | Lanceur `scripts/vitest.mjs` qui normalise le répertoire courant             |
+| `ELECTRON_RUN_AS_NODE` hérité des terminaux d'éditeurs basés sur Electron                          | Retiré dans les tests E2E ; neutralisé en production par le fuse `runAsNode` |
+| Playwright émule `prefers-color-scheme: light`                                                     | `colorScheme: null` dans les tests E2E                                       |
+| TypeScript 7 (compilateur natif) non pris en charge par typescript-eslint                          | TypeScript 6.0 conservé (à réévaluer)                                        |
+| La paire rose/turquoise est indiscernable pour les daltoniens (ΔE 2,6)                             | Ordre des séries recalculé ; revenus/dépenses en lagon/couchant              |
+| electron-vite ne minifie pas le renderer par défaut                                                | Minification activée : chunk du tableau de bord 1,4 Mo → 604 Ko              |
+| L'infobulle ECharts masquée laissait un cadre vide                                                 | Habillage déplacé sur un conteneur interne                                   |
+
+## Plan d'action restant ⬜
+
+### Lot A — Dépôt public
+
+- [ ] Initialiser Git (`main`), premier commit, créer le dépôt GitHub. `Socle`
+- [x] Licence tranchée : MIT ([ADR-015](../architecture/decisions.md#adr-015--licence-mit)), fichier [`LICENSE`](../../LICENSE) ajouté.
+- [ ] `THIRD_PARTY_NOTICES` (polices SIL OFL, ECharts Apache-2.0, etc.). `Socle`
+- [ ] Remplacer les valeurs provisoires : `OWNER` (`package.json`, `src/shared/app-meta.ts`, `README.md`), `appId`, contact `maintainer` Linux. `Socle`
+- [ ] `CONTRIBUTING.md`, **en anglais** (public international de contributeurs) : prérequis, scripts, conventions (Conventional Commits), architecture, pièges Windows, règle « aucune donnée réelle dans les fixtures ». `Socle`
+- [ ] `SECURITY.md` : versions prises en charge, signalement privé (GitHub Private Vulnerability Reporting), délais de réponse. `Socle`
+- [ ] `CODE_OF_CONDUCT.md` (Contributor Covenant), `CHANGELOG.md` (Keep a Changelog). `Socle`
+- [ ] Modèles d'issues (bug, fonctionnalité, nouveau format bancaire, nouveau modèle de bulletin) et de pull request (cases sécurité, accessibilité, i18n, tests). `Socle`
+- [ ] Protection de la branche `main` : revue obligatoire, CI verte, historique linéaire. `Socle`
+
+### Lot B — Intégration continue (GitHub Actions)
+
+Principes : actions **épinglées par SHA** (version en commentaire), permissions minimales (`contents: read` par défaut, élevées par job), aucun `pull_request_target` exécutant le code d'une PR, `persist-credentials: false`.
+
+| Workflow                | Déclencheurs              | Contenu                                                                                                                                                                                                                                                     |
+| ----------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`                | push `main`, pull request | Job qualité (Ubuntu) : npm 12, `npm ci`, typecheck, lint, format, tests + couverture, `npm audit --omit=dev --audit-level=high`. Matrice build + E2E sur Ubuntu (écran virtuel), Windows, macOS. Artefacts : couverture, rapport Playwright en cas d'échec. |
+| `codeql.yml`            | push, PR, hebdomadaire    | CodeQL `javascript-typescript` et `actions`, requêtes `security-extended`.                                                                                                                                                                                  |
+| `dependency-review.yml` | pull request              | Bloque les dépendances vulnérables (≥ moderate) et les licences incompatibles avec la licence retenue.                                                                                                                                                      |
+| `scorecard.yml`         | hebdomadaire, push `main` | OpenSSF Scorecard (SARIF + badge public).                                                                                                                                                                                                                   |
+| `release.yml`           | tag `v*.*.*`              | Squelette : build par OS, SBOM CycloneDX (`npm sbom`), sommes SHA-256, attestations de provenance, release **brouillon**. La signature est activée au [M9](M9-distribution.md).                                                                             |
+| `dependabot.yml`        | hebdomadaire              | npm + actions, mises à jour groupées, délai de 7 jours (`cooldown`), TypeScript ≥ 7 ignoré tant que typescript-eslint ne le supporte pas.                                                                                                                   |
+
+Versions vérifiées le 24/11/2026 :
+
+| Action                             | Version | SHA                                        |
+| ---------------------------------- | ------- | ------------------------------------------ |
+| `actions/checkout`                 | v7.0.1  | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
+| `actions/setup-node`               | v7.1.0  | `949feb2413d6458794dcd2491c4babbbce0c15c1` |
+| `actions/upload-artifact`          | v7.0.2  | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` |
+| `actions/download-artifact`        | v8.0.2  | `9000827ccba6bdab643e8b6fd33ac0654aef8333` |
+| `github/codeql-action`             | v4.39.4 | `1bd86f2fdb4b86187fa4059f16f31a3202acc9ea` |
+| `actions/dependency-review-action` | v5.0.1  | `bbc44d14a204704ccc493733616cd1e93a0321ec` |
+| `ossf/scorecard-action`            | v2.6.0  | `23f22cd43608bae7a1f1fa2603d7314dee9538a5` |
+| `actions/attest-build-provenance`  | v4.2.2  | `4d101475d8b20a2381f78447822ac1eab6504dd8` |
+
+Tâches :
+
+- [ ] Écrire les workflows et `dependabot.yml` ci-dessus. `Besoin`
+- [ ] Contrôle de budget de poids (échec si un chunk dépasse son budget). `Proposition`
+- [ ] Badges CI, CodeQL et Scorecard dans le README. `Socle`
+
+Points d'attention :
+
+- Node 26 LTS embarque npm 11 : installer npm ≥ 12.2 **hors du dossier du projet** (sinon `devEngines` bloque l'installation).
+- Ubuntu 24.04 : `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` pour le bac à sable Chromium, tests sous `xvfb-run`.
+- Les secrets de signature ne servent qu'au workflow de release, dans un environnement GitHub protégé.
+
+### Lot C — Packaging & finitions
+
+- [ ] Valider `npm run package` sur Windows, macOS et Linux : démarrage avec les fuses actifs (intégrité ASAR, `onlyLoadAppFromAsar`) et le protocole `app://`. `Socle`
+- [ ] Mémoriser la taille et la position de la fenêtre. `Proposition`
+- [ ] Gestion des erreurs de l'interface : `ErrorBoundary`, écran d'erreur, remontée des erreurs du renderer vers le journal local (expurgées). `Socle`
+- [ ] Polices : ne conserver qu'Inter latin + latin-ext (−85 Ko dans le paquet). `Proposition`
+
+## Critères d'acceptation
+
+- [x] L'application démarre en développement et en build de production ; thème appliqué sans flash.
+- [x] Renderer isolé, CSP stricte, IPC validé — vérifiés par les tests E2E.
+- [x] Tests unitaires et E2E verts ; types et lint sans erreur.
+- [ ] CI verte sur Windows, macOS et Linux.
+- [ ] Dépôt public prêt : licence, fichiers communautaires, valeurs provisoires remplacées.
+- [ ] Packaging vérifié sur les trois systèmes.
+
+## Risques & questions
+
+- **Changements majeurs attendus** sur le périmètre ou la stack : c'est le bon moment (le socle est petit et testé). Voir [questions ouvertes](questions-ouvertes.md).
+- Les données de démonstration du tableau de bord seront remplacées par les vraies données au M2 ; le mode démo restera disponible.

@@ -1,0 +1,261 @@
+@import 'tailwindcss';
+@import './tokens.css';
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource/bebas-neue/latin-400.css';
+@import '@fontsource/bebas-neue/latin-ext-400.css';
+
+/* Les utilitaires Tailwind lisent les tokens : bg-surface, text-fg-2, border-border… */
+@theme inline {
+  --color-bg: var(--fx-bg);
+  --color-titlebar: var(--fx-titlebar);
+  --color-surface: var(--fx-surface);
+  --color-surface-2: var(--fx-surface-2);
+  --color-surface-3: var(--fx-surface-3);
+  --color-border: var(--fx-border);
+  --color-border-strong: var(--fx-border-strong);
+  --color-fg: var(--fx-text);
+  --color-fg-2: var(--fx-text-2);
+  --color-muted: var(--fx-text-muted);
+  --color-pink: var(--fx-pink);
+  --color-orange: var(--fx-orange);
+  --color-violet: var(--fx-violet);
+  --color-teal: var(--fx-teal);
+  --color-gold: var(--fx-gold);
+  --color-income: var(--fx-income);
+  --color-expense: var(--fx-expense);
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bebas Neue', 'Inter Variable', system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--fx-bg);
+    color: var(--fx-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--fx-pink) 28%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--fx-teal);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--fx-text-muted) 35%, transparent);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* — Barre de titre intégrée (zone de déplacement de la fenêtre) — */
+  .fx-titlebar {
+    -webkit-app-region: drag;
+    height: 40px;
+    /* Windows/Linux : réserve la place des boutons natifs (Window Controls Overlay). */
+    padding-right: calc(
+      100vw - env(titlebar-area-width, calc(100vw - 140px)) - env(titlebar-area-x, 0px)
+    );
+  }
+  :root[data-platform='darwin'] .fx-titlebar {
+    padding-left: 84px;
+    padding-right: 12px;
+  }
+  .fx-no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  /* — Typographie d'affiche (titres) — */
+  .fx-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .fx-gradient-text {
+    background: var(--fx-gradient-sunset);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* — Cartes et cadres — */
+  .fx-card {
+    position: relative;
+    background: var(--fx-surface);
+    border: 1px solid var(--fx-border);
+    border-radius: var(--fx-radius-lg);
+    box-shadow: 0 1px 2px var(--fx-shadow);
+  }
+  /* Liseré dégradé en tête de carte : le « cadre » signature. */
+  .fx-card--accent::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 2px;
+    border-radius: var(--fx-radius-lg) var(--fx-radius-lg) 0 0;
+    background: var(--fx-gradient-sunset);
+  }
+  /* Cadre dégradé complet (éléments mis en avant, état actif). */
+  .fx-frame {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--fx-surface), var(--fx-surface)) padding-box,
+      var(--fx-gradient-sunset) border-box;
+  }
+
+  /* — Boutons — */
+  .fx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 32px;
+    padding: 0 0.875rem;
+    border-radius: var(--fx-radius);
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    transition:
+      filter 120ms ease,
+      background-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+  .fx-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .fx-btn--primary {
+    background: var(--fx-gradient-action);
+    color: var(--fx-on-action);
+  }
+  .fx-btn--primary:hover:not(:disabled) {
+    filter: brightness(1.06) saturate(1.05);
+    box-shadow: 0 0 0 4px var(--fx-glow);
+  }
+  .fx-btn--secondary {
+    color: var(--fx-text);
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--fx-surface), var(--fx-surface)) padding-box,
+      var(--fx-gradient-sunset) border-box;
+  }
+  .fx-btn--secondary:hover:not(:disabled) {
+    background:
+      linear-gradient(var(--fx-surface-2), var(--fx-surface-2)) padding-box,
+      var(--fx-gradient-sunset) border-box;
+  }
+  .fx-btn--ghost {
+    color: var(--fx-text-2);
+  }
+  .fx-btn--ghost:hover:not(:disabled) {
+    background: var(--fx-surface-2);
+    color: var(--fx-text);
+  }
+  .fx-btn--icon {
+    width: 32px;
+    padding: 0;
+  }
+
+  /* — Chiffres — */
+  .fx-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* — Infobulles de graphiques (contenu construit avec des classes, pas de style inline).
+       Le conteneur ECharts reste transparent : seul l'habillage interne .fx-tt est visible,
+       pour qu'une infobulle masquée ne laisse jamais de cadre vide. — */
+  .fx-chart-tooltip {
+    font-family: var(--font-sans);
+  }
+  .fx-tt {
+    min-width: 180px;
+    padding: 10px 12px;
+    border: 1px solid var(--fx-border-strong);
+    border-radius: var(--fx-radius);
+    background: var(--fx-surface);
+    color: var(--fx-text);
+    box-shadow: 0 8px 24px var(--fx-shadow);
+    font-size: 12px;
+  }
+  .fx-tt__title {
+    margin-bottom: 6px;
+    color: var(--fx-text-2);
+    font-weight: 600;
+  }
+  .fx-tt__row {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.7;
+  }
+  .fx-tt__value {
+    color: var(--fx-text);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .fx-tt__label {
+    color: var(--fx-text-2);
+  }
+  .fx-tt__note {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--fx-border);
+    color: var(--fx-text-muted);
+  }
+  /* Clés de série : un trait court (pas une pastille pleine). */
+  .fx-key {
+    display: inline-block;
+    width: 12px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--fx-text-2);
+  }
+  .fx-key--income {
+    background: var(--fx-series-3);
+  }
+  .fx-key--expense {
+    background: var(--fx-series-2);
+  }
+  .fx-key--net {
+    background: var(--fx-text-2);
+  }
+  .fx-key--s1 {
+    background: var(--fx-series-1);
+  }
+}

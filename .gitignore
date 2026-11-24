@@ -1,0 +1,44 @@
+# Dépendances et sorties de build
+node_modules/
+out/
+dist/
+release/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Caches
+.eslintcache
+.vite/
+.cache/
+
+# Journaux
+*.log
+npm-debug.log*
+
+# Environnement & secrets — ne jamais committer
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Données personnelles : relevés, bulletins, bases locales
+# (les fixtures de test sont anonymisées et vivent dans tests/fixtures/)
+*.sqlite
+*.sqlite3
+*.db
+/data/
+/private/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json

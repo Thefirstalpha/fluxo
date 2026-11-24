@@ -1,0 +1,85 @@
+# Packaging & distribution — https://www.electron.build/
+# Les secrets de signature ne sont jamais dans ce fichier : ils sont fournis par
+# l'environnement de CI (voir .github/workflows/release.yml et docs/planning/M9-distribution.md).
+
+appId: app.fluxo.desktop # À personnaliser AVANT la première release publique (ne plus changer ensuite).
+productName: Fluxo
+copyright: Copyright © 2026 Les contributeurs Fluxo
+
+directories:
+  buildResources: build
+  output: release/${version}
+
+# Seule la build est embarquée : tout le reste (sources, tests, docs) est exclu.
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+
+asar: true
+npmRebuild: false # Aucune dépendance native pour l'instant (passera à true au jalon M1 : SQLCipher).
+
+# Légèreté : on ne garde que les locales Chromium utiles (~40 Mo économisés).
+electronLanguages:
+  - fr
+  - en
+  - en-US
+
+# Durcissement du binaire Electron (https://www.electronjs.org/docs/latest/tutorial/fuses).
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  loadBrowserProcessSpecificV8Snapshot: false
+  grantFileProtocolExtraPrivileges: false
+
+win:
+  executableName: Fluxo
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  shortcutName: Fluxo
+  uninstallDisplayName: Fluxo
+  # Les données financières de l'utilisateur ne sont JAMAIS supprimées à la désinstallation.
+  deleteAppDataOnUninstall: false
+  artifactName: ${productName}-${version}-win-${arch}-setup.${ext}
+
+mac:
+  category: public.app-category.finance
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize: false # Activé par la CI de release quand les identifiants Apple sont configurés.
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+
+dmg:
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+
+linux:
+  category: Office
+  synopsis: Finances personnelles, en local et chiffrées.
+  maintainer: Les contributeurs Fluxo <maintainers@fluxo.invalid> # À remplacer par un contact réel.
+  target:
+    - AppImage
+    - deb
+
+appImage:
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+
+deb:
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+
+publish:
+  provider: github
+  releaseType: draft

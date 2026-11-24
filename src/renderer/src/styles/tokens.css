@@ -1,0 +1,112 @@
+/*
+ * Design tokens Fluxo — thème « Vice Sunset ».
+ *
+ * Fonds NEUTRES (inspirés des thèmes « Modern » des éditeurs de code), couleur réservée
+ * aux cadres, textes d'accent, boutons et données. Référence : docs/design/systeme-de-design.md.
+ *
+ * Le thème est piloté par le process main (nativeTheme.themeSource) qui fait basculer
+ * `prefers-color-scheme` : le bon jeu de couleurs s'applique dès la première image, sans script.
+ *
+ * ⚠ --fx-bg / --fx-titlebar / --fx-text doivent rester alignés sur src/shared/theme-chrome.ts,
+ *   et --fx-series-* sur src/renderer/src/lib/charts/chart-theme.ts (vérifié par tokens.test.ts).
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Neutres */
+  --fx-bg: #f8f8f8;
+  --fx-titlebar: #f8f8f8;
+  --fx-surface: #ffffff;
+  --fx-surface-2: #f3f3f3;
+  --fx-surface-3: #ebebeb;
+  --fx-border: #e5e5e5;
+  --fx-border-strong: #d4d4d4;
+  --fx-text: #1f1f1f;
+  --fx-text-2: #4d4d4d;
+  --fx-text-muted: #6b6b6b;
+  --fx-shadow: rgb(0 0 0 / 0.06);
+
+  /* Accents « Vice Sunset » — tous ≥ 4,5:1 sur la surface (texte normal, WCAG AA) */
+  --fx-pink: #c8175f;
+  --fx-orange: #b93c06;
+  --fx-violet: #6d28d9;
+  --fx-teal: #0b7a72;
+  --fx-gold: #8a5a00;
+  --fx-glow: rgb(200 23 95 / 0.16);
+
+  /* Dégradés signature */
+  --fx-gradient-sunset: linear-gradient(100deg, #d9480f 0%, #d0156a 52%, #7c3aed 100%);
+  --fx-gradient-action: linear-gradient(100deg, #c8175f 0%, #c2410c 100%);
+  --fx-on-action: #ffffff;
+
+  /* Sémantique financière (texte) — toujours doublée d'un signe + / − */
+  --fx-income: #08795f;
+  --fx-expense: #b93c06;
+
+  /* Graphiques — palette catégorielle validée (daltonisme, contraste, luminosité) */
+  --fx-grid: #ececec;
+  --fx-axis: #cfcfcf;
+  --fx-series-1: #dd2a80;
+  --fx-series-2: #e5690c;
+  --fx-series-3: #0e9b8f;
+  --fx-series-4: #dca81c;
+  --fx-series-5: #7a40da;
+  --fx-series-6: #cc272e;
+  --fx-series-7: #0977cb;
+  --fx-series-8: #278733;
+
+  /* Statuts — fixes, jamais thématisés, toujours avec icône + libellé */
+  --fx-status-good: #0ca30c;
+  --fx-status-warning: #fab219;
+  --fx-status-serious: #ec835a;
+  --fx-status-critical: #d03b3b;
+
+  /* Formes */
+  --fx-radius-sm: 6px;
+  --fx-radius: 8px;
+  --fx-radius-lg: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --fx-bg: #181818;
+    --fx-titlebar: #181818;
+    --fx-surface: #1f1f1f;
+    --fx-surface-2: #262626;
+    --fx-surface-3: #2e2e2e;
+    --fx-border: #2b2b2b;
+    --fx-border-strong: #3c3c3c;
+    --fx-text: #e6e6e6;
+    --fx-text-2: #b4b4b4;
+    --fx-text-muted: #8f8f8f;
+    --fx-shadow: rgb(0 0 0 / 0.45);
+
+    --fx-pink: #ff5fa2;
+    --fx-orange: #ff8a3d;
+    --fx-violet: #b392ff;
+    --fx-teal: #2dd4c4;
+    --fx-gold: #ffc24d;
+    --fx-glow: rgb(255 95 162 / 0.2);
+
+    --fx-gradient-sunset: linear-gradient(100deg, #ffb347 0%, #ff3d8b 52%, #a970ff 100%);
+    --fx-gradient-action: linear-gradient(100deg, #ff5fa2 0%, #ff8a3d 100%);
+    --fx-on-action: #1a0b14;
+
+    --fx-income: #34d3a6;
+    --fx-expense: #ff8a3d;
+
+    --fx-grid: #2c2c2c;
+    --fx-axis: #3a3a3a;
+    --fx-series-1: #e8428c;
+    --fx-series-2: #e26b1b;
+    --fx-series-3: #10a89b;
+    --fx-series-4: #bb8d0d;
+    --fx-series-5: #8c5ee8;
+    --fx-series-6: #d33a3c;
+    --fx-series-7: #2f8adc;
+    --fx-series-8: #409d48;
+  }
+}
