@@ -18,6 +18,17 @@ export default defineConfig({
           name: 'node',
           environment: 'node',
           include: ['src/main/**/*.test.ts', 'src/data/**/*.test.ts', 'src/shared/**/*.test.ts'],
+          exclude: ['src/**/*.perf.test.ts'],
+        },
+      },
+      {
+        // Mesures de performance (npm run test:perf) : hors npm test, dépendent de la machine.
+        extends: true,
+        test: {
+          name: 'perf',
+          environment: 'node',
+          include: ['src/**/*.perf.test.ts'],
+          testTimeout: 120_000,
         },
       },
       {

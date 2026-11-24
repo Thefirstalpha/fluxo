@@ -178,7 +178,7 @@ export class Vault {
 
   // ——— État ————————————————————————————————————————————————————————
 
-  status(): ServiceStatus {
+  status(): Omit<ServiceStatus, 'demo'> {
     const keystore = this.keystore
     return {
       state: this.db ? 'unlocked' : keystore ? 'locked' : 'absent',
@@ -201,7 +201,7 @@ export class Vault {
 
   // ——— Création —————————————————————————————————————————————————————
 
-  async create(params: CreateParams): Promise<ServiceStatus> {
+  async create(params: CreateParams): Promise<Omit<ServiceStatus, 'demo'>> {
     if (this.keystore) throw new ServiceError('VAULT_EXISTS')
     if (params.mode === 'password' && checkPassword(params.password)) {
       throw new ServiceError('INVALID_REQUEST')
@@ -363,7 +363,7 @@ export class Vault {
     this.viaRecovery = viaRecovery
   }
 
-  lock(): ServiceStatus {
+  lock(): Omit<ServiceStatus, 'demo'> {
     if (this.db) {
       closeDatabase(this.db)
       this.db = null

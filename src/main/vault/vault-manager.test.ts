@@ -1,11 +1,12 @@
 import { readdirSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SessionUnavailableReason, VaultStatus } from '@shared/vault'
+import { VaultHost } from '../../data/host'
 import { createMethods } from '../../data/methods'
-import { resolveVaultPaths, Vault } from '../../data/vault'
+import { resolveVaultPaths } from '../../data/vault'
 import { idleLockDue, startAutoLock, type PowerEvents } from './auto-lock'
 import type { SecureStorage } from './secure-storage'
 import { VaultManager, type DataServiceCaller } from './vault-manager'
@@ -13,8 +14,8 @@ import { VaultManager, type DataServiceCaller } from './vault-manager'
 const PASSWORD = 'une phrase de passe solide'
 
 /** Service de données exécuté dans le même processus, schémas compris (sans utilityProcess). */
-function inProcessService(vault: Vault): DataServiceCaller {
-  const methods = createMethods(vault)
+function inProcessService(host: VaultHost): DataServiceCaller {
+  const methods = createMethods(host)
   return {
     call: ((method: keyof typeof methods, params?: unknown) => {
       const definition = methods[method]
@@ -37,26 +38,29 @@ function fakeStorage(reason: SessionUnavailableReason | null = null) {
 }
 
 let directory: string
-let vault: Vault
+let host: VaultHost
 
 beforeEach(async () => {
   directory = await mkdtemp(join(tmpdir(), 'fluxo-manager-'))
 })
 
 afterEach(async () => {
-  vault?.lock()
+  host?.shutdown()
   await rm(directory, { recursive: true, force: true })
 })
 
 async function setup(storage = fakeStorage()) {
-  vault = await Vault.open(resolveVaultPaths(directory), vi.fn(), {
-    kdf: { memoryKiB: 64, iterations: 1, parallelism: 1 },
-  })
+  host = await VaultHost.open(
+    resolveVaultPaths(directory),
+    resolveVaultPaths(join(directory, '..', `${basename(directory)}-demo`)),
+    vi.fn(),
+    { kdf: { memoryKiB: 64, iterations: 1, parallelism: 1 } },
+  )
   const dialogs = {
     chooseDirectory: vi.fn(() => Promise.resolve<string | null>(null)),
     chooseBackupFile: vi.fn(() => Promise.resolve<string | null>(null)),
   }
-  const manager = new VaultManager(inProcessService(vault), storage, dialogs)
+  const manager = new VaultManager(inProcessService(host), storage, dialogs)
   const statuses: VaultStatus[] = []
   manager.onStatusChange((status) => statuses.push(status))
   return { manager, storage, statuses, dialogs }
@@ -166,12 +170,15 @@ describe('VaultManager — sauvegardes et effacement', () => {
   })
 
   it('« Tout effacer » appelle le nettoyage des journaux et repasse à « absent »', async () => {
-    vault = await Vault.open(resolveVaultPaths(directory), vi.fn(), {
-      kdf: { memoryKiB: 64, iterations: 1, parallelism: 1 },
-    })
+    host = await VaultHost.open(
+      resolveVaultPaths(directory),
+      resolveVaultPaths(join(directory, '..', `${basename(directory)}-demo`)),
+      vi.fn(),
+      { kdf: { memoryKiB: 64, iterations: 1, parallelism: 1 } },
+    )
     const onErased = vi.fn(() => Promise.resolve())
     const manager = new VaultManager(
-      inProcessService(vault),
+      inProcessService(host),
       fakeStorage(),
       {
         chooseDirectory: () => Promise.resolve(null),

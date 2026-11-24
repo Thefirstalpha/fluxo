@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { LOCALES } from '@shared/settings'
 import { PASSWORD_MAX_LENGTH } from '@shared/vault'
 import type { DataServiceApi, DataServiceMethod } from './api'
 import { DATABASE_KEY_BYTES } from './db/connection'
 import { defineMethod, type MethodDefinition } from './server'
-import type { Vault } from './vault'
+import type { VaultHost } from './host'
 
 const noParams = z.undefined()
 /** Borne large (en unités UTF-16) : la règle de longueur exacte est vérifiée par le coffre. */
@@ -22,30 +23,39 @@ const path = z.string().min(1).max(4096)
 const token = z.string().regex(/^[0-9a-f]{32}$/)
 
 /** Table des méthodes exposées au process main, chacune avec son schéma d'entrée. */
-export function createMethods(vault: Vault): Readonly<Record<DataServiceMethod, MethodDefinition>> {
+export function createMethods(
+  host: VaultHost,
+): Readonly<Record<DataServiceMethod, MethodDefinition>> {
   // Vérifie à la compilation que chaque méthode respecte le contrat `DataServiceApi`.
+  const real = () => host.realOnly()
   const api: DataServiceApi = {
-    status: () => vault.status(),
-    sessionBlob: () => vault.sessionBlob(),
-    create: (params) => vault.create(params),
-    unlock: (params) => vault.unlock(params),
-    lock: () => vault.lock(),
-    changePassword: (params) => vault.changePassword(params),
-    exportKeyForSession: (params) => vault.exportKeyForSession(params),
-    setSessionMode: (params) => vault.setSessionMode(params),
-    createRecoveryCode: (params) => vault.createRecoveryCode(params),
-    removeRecoveryCode: (params) => vault.removeRecoveryCode(params),
-    backupNow: () => vault.backupNow(),
-    autoBackupIfDue: () => vault.autoBackupIfDue(),
-    backupInfo: () => vault.backupInfo(),
-    setBackupDirectory: (params) => vault.setBackupDirectory(params),
-    setAutoBackup: (params) => vault.setAutoBackup(params),
-    inspectBackup: (params) => vault.inspectBackup(params),
-    previewRestore: (params) => vault.previewRestore(params),
-    confirmRestore: (params) => vault.confirmRestore(params),
-    cancelRestore: () => vault.cancelRestore(),
-    exportData: (params) => vault.exportData(params),
-    eraseAll: (params) => vault.eraseAll(params),
+    status: () => host.status(),
+    sessionBlob: () => (host.isDemo() ? Promise.resolve(null) : real().sessionBlob()),
+    create: async (params) => {
+      await real().create(params)
+      return host.status()
+    },
+    unlock: (params) => real().unlock(params),
+    // Verrouiller pendant la démonstration la referme (le coffre réel est déjà verrouillé).
+    lock: () => (host.isDemo() ? host.exitDemo() : { ...real().lock(), demo: false }),
+    changePassword: (params) => real().changePassword(params),
+    exportKeyForSession: (params) => real().exportKeyForSession(params),
+    setSessionMode: (params) => real().setSessionMode(params),
+    createRecoveryCode: (params) => real().createRecoveryCode(params),
+    removeRecoveryCode: (params) => real().removeRecoveryCode(params),
+    backupNow: () => real().backupNow(),
+    autoBackupIfDue: () => (host.isDemo() ? Promise.resolve(false) : real().autoBackupIfDue()),
+    backupInfo: () => real().backupInfo(),
+    setBackupDirectory: (params) => real().setBackupDirectory(params),
+    setAutoBackup: (params) => real().setAutoBackup(params),
+    inspectBackup: (params) => real().inspectBackup(params),
+    previewRestore: (params) => real().previewRestore(params),
+    confirmRestore: (params) => real().confirmRestore(params),
+    cancelRestore: () => real().cancelRestore(),
+    exportData: (params) => real().exportData(params),
+    eraseAll: (params) => real().eraseAll(params),
+    enterDemo: (params) => host.enterDemo(params),
+    exitDemo: () => host.exitDemo(),
   }
   return {
     status: defineMethod(noParams, () => api.status()),
@@ -103,5 +113,9 @@ export function createMethods(vault: Vault): Readonly<Record<DataServiceMethod, 
       api.exportData(params),
     ),
     eraseAll: defineMethod(currentPassword, (params) => api.eraseAll(params)),
+    enterDemo: defineMethod(z.strictObject({ locale: z.enum(LOCALES) }), (params) =>
+      api.enterDemo(params),
+    ),
+    exitDemo: defineMethod(noParams, () => api.exitDemo()),
   }
 }

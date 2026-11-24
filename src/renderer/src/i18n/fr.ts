@@ -219,6 +219,15 @@ export const fr = {
     },
     setupRestore: 'J’ai déjà une sauvegarde Fluxo : la restaurer',
     setupBack: 'Créer un nouveau coffre plutôt',
+    demo: {
+      enter: 'Explorer avec des données de démonstration',
+      enterHint:
+        'Un coffre séparé, rempli de données fictives et supprimé à la sortie. Votre coffre n’est pas touché.',
+      banner:
+        'Mode démonstration : données fictives, effacées à la sortie. Votre coffre est verrouillé et n’est pas modifié.',
+      exit: 'Quitter la démonstration',
+      unavailable: 'Indisponible en mode démonstration : ces réglages concernent votre coffre.',
+    },
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
     errors: {

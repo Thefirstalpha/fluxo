@@ -93,4 +93,8 @@ export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDep
   handle(IPC_CHANNELS.vaultCancelRestore, noInput, () => vault.cancelRestore())
   handle(IPC_CHANNELS.vaultExport, noInput, () => vault.exportData())
   handle(IPC_CHANNELS.vaultEraseAll, currentPasswordSchema, (input) => vault.eraseAll(input))
+
+  // Démonstration : coffre séparé, libellés dans la langue de l'interface.
+  handle(IPC_CHANNELS.vaultEnterDemo, noInput, () => vault.enterDemo(settings.get().locale))
+  handle(IPC_CHANNELS.vaultExitDemo, noInput, () => vault.exitDemo())
 }

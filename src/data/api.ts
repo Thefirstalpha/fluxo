@@ -3,6 +3,7 @@
  * Chaque méthode est validée côté service par un schéma (voir `methods.ts`).
  * Ce module ne contient que des types : il est importé par le main et par le service.
  */
+import type { Locale } from '@shared/settings'
 import type {
   BackupInfo,
   BackupNowResult,
@@ -25,6 +26,8 @@ export interface ServiceStatus {
   hasRecoveryCode: boolean
   retryAfterMs: number
   needsNewPassword: boolean
+  /** Le coffre ouvert est celui de démonstration. */
+  demo: boolean
 }
 
 /** Création : en mode session, la clé est tirée et enveloppée par le main (`safeStorage`). */
@@ -67,6 +70,9 @@ export interface DataServiceApi {
   cancelRestore(): void
   exportData(params: { directory: string }): ExportResult
   eraseAll(params: CurrentPasswordInput): Promise<VaultResult>
+  /** Coffre de démonstration séparé, recréé à chaque entrée ; verrouille le coffre réel. */
+  enterDemo(params: { locale: Locale }): Promise<ServiceStatus>
+  exitDemo(): ServiceStatus
 }
 
 export type DataServiceMethod = keyof DataServiceApi

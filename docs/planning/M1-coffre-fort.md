@@ -1,6 +1,6 @@
 # M1 — Coffre-fort local
 
-> **Statut : 🟡 En cours** (démarré le 24/11/2026) · Taille : L · Dépend de : M0 · Version : 0.2
+> **Statut : 🟡 Livré en local, CI à constater** — les cinq lots sont livrés et vérifiés sous Windows 11 (24/11/2026). Reste à constater sur la CI (macOS, Linux) les deux modes de déverrouillage, notamment le refus du mode session sans trousseau sous Linux. · Taille : L · Dépend de : M0 · Version : 0.2
 
 ## Objectif
 
@@ -59,8 +59,8 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 
 ### Lot 5 — Démo & outillage
 
-- [ ] Mode démo : coffre séparé, rempli par le générateur déterministe, sans jamais toucher au coffre réel. `Proposition`
-- [ ] Générateur de jeux volumineux (50 000 transactions) pour les tests de performance. `Socle`
+- [x] Mode démo : coffre séparé (`demo-vault/`, clé aléatoire jamais enregistrée), rempli par le grand livre déterministe — cohérent au centime avec le tableau de bord —, supprimé à la sortie ; le coffre réel reste verrouillé et toute opération sur ses secrets est refusée ([ADR-031](../architecture/decisions.md#adr-031--coffre-de-démonstration-séparé-et-jetable)). `Proposition`
+- [x] Générateur de jeux volumineux (50 000 opérations, déterministe) et mesures `npm run test:perf` : ouverture 309 ms, requêtes courantes ≤ 3,7 ms (voir « Vérifications réalisées »). `Socle`
 
 ## Sécurité & confidentialité
 
@@ -80,8 +80,21 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 
 ## Critères d'acceptation
 
-- Données persistées entre redémarrages, chiffrées (vérifié par test) ; les deux modes de déverrouillage fonctionnent sur les 3 OS.
-- Sauvegarde et restauration fonctionnelles ; migrations testées ; aucune donnée sensible dans les journaux.
+- [x] Données persistées entre redémarrages, chiffrées (vérifié par test unitaire et E2E : en-tête et contenu illisibles, mauvaise clé refusée).
+- [ ] Les deux modes de déverrouillage fonctionnent sur les 3 OS (Windows ✅ ; macOS et Linux par la CI).
+- [x] Sauvegarde et restauration fonctionnelles (même coffre et autre ordinateur) ; migrations testées (montée de version, échec annulé, base trop récente refusée).
+- [x] Aucune donnée sensible dans les journaux : seuls des codes et des noms d'erreur, expurgés ; aucun secret, aucune clé, aucun chemin de base.
+
+## Vérifications réalisées (24/11/2026, Windows 11)
+
+| Contrôle                         | Résultat                                                                                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                  | ✅ types, lint, format ; 245 tests unitaires (service de données, enveloppe de clé, coffre, sauvegardes, démonstration, gestionnaire, écrans)              |
+| `npm run test:e2e`               | ✅ 19/19 (création, redémarrage en mode session et mot de passe, verrouillage, sauvegarde et restauration, export, effacement, démonstration)              |
+| `npm run test:perf` (50 000 op.) | ✅ ouverture 309 ms (budget 500) ; requêtes courantes 0,01 à 3,7 ms (budget 20) ; insertion du jeu 2,1 s                                                   |
+| Argon2id (64 Mio, 3 passes)      | ≈ 215 ms sous Electron                                                                                                                                     |
+| Application packagée             | ✅ service de données démarré depuis l'ASAR (binaire natif dans `app.asar.unpacked`), installeur NSIS x64 114,5 Mo, 283 Mo de mémoire privée (5 processus) |
+| Revue visuelle                   | ✅ création, code de récupération, déverrouillage, paramètres (sécurité, sauvegardes), bandeau de démonstration, clair et sombre                           |
 
 ## Risques & questions
 

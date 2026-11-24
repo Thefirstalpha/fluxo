@@ -7,6 +7,7 @@ import { useT } from '../../i18n'
 import { getApi } from '../../lib/api'
 import { cx } from '../../lib/cx'
 import { useVaultStore } from '../../stores/vault'
+import { DemoLink } from './DemoLink'
 import { GateLayout } from './GateLayout'
 import { RestoreFlow } from './RestoreFlow'
 import { failureMessage, newPasswordError } from './messages'
@@ -183,14 +184,15 @@ export function SetupScreen({ status }: { status: VaultStatus }) {
           {busy ? t.vault.setup.working : t.vault.setup.create}
         </Button>
 
-        <div className="border-t border-border pt-4 text-sm">
+        <div className="grid gap-3 border-t border-border pt-4 text-sm">
           <button
             type="button"
-            className="text-teal underline-offset-2 hover:underline"
+            className="justify-self-start text-teal underline-offset-2 hover:underline"
             onClick={() => setRestoring(true)}
           >
             {t.vault.setupRestore}
           </button>
+          <DemoLink />
         </div>
       </form>
     </GateLayout>

@@ -17,6 +17,7 @@ import type {
   VaultStatus,
 } from '@shared/vault'
 import type { DataServiceMethod, MethodParams, MethodResult } from '../../data/api'
+import type { Locale } from '@shared/settings'
 import { logger } from '../logger'
 import type { SecureStorage } from './secure-storage'
 
@@ -63,7 +64,6 @@ export class VaultManager {
     const unavailable = this.storage.unavailableReason()
     return {
       ...service,
-      demo: false,
       sessionAvailable: unavailable === null,
       sessionUnavailableReason: unavailable,
     }
@@ -168,6 +168,20 @@ export class VaultManager {
     const result = await this.service.call('removeRecoveryCode', input)
     await this.publish()
     return result
+  }
+
+  // ——— Démonstration ——————————————————————————————————————————————————
+
+  /** Ouvre un coffre de démonstration séparé (le coffre réel est verrouillé, jamais modifié). */
+  async enterDemo(locale: Locale): Promise<void> {
+    await this.service.call('enterDemo', { locale })
+    await this.publish()
+  }
+
+  /** Le coffre réel reste verrouillé à la sortie, comme avant l'entrée en démonstration. */
+  async exitDemo(): Promise<void> {
+    await this.service.call('exitDemo')
+    await this.publish()
   }
 
   // ——— Sauvegardes, restauration, export, effacement ——————————————————

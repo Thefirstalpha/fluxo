@@ -17,7 +17,7 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 | A06 | Exclusion de la fenêtre des captures d'écran                                                                    | Proposition | M0      | ✅     |
 | A07 | Palette de commandes (Ctrl/⌘ K) et recherche universelle                                                        | Proposition | M2      | ⬜     |
 | A08 | Raccourcis clavier documentés                                                                                   | Proposition | M2      | ⬜     |
-| A09 | Mode démonstration (données fictives déterministes)                                                             | Proposition | M0 → M1 | 🟡     |
+| A09 | Mode démonstration (données fictives déterministes)                                                             | Proposition | M0 → M1 | ✅     |
 | A10 | Accessibilité WCAG 2.2 AA (clavier, lecteurs d'écran, contrastes, mouvement réduit)                             | Socle       | M0 → M9 | 🟡     |
 | A11 | Assistant de premier lancement (langue, devise, sécurité, démo ou départ vierge)                                | Proposition | M9      | ⬜     |
 

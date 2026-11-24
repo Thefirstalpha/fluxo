@@ -6,7 +6,9 @@
 import type { ServiceInit } from './api'
 import { createMethods } from './methods'
 import { createPortLogger, describeError, serveMethods } from './server'
-import { resolveVaultPaths, Vault } from './vault'
+import { dirname, join } from 'node:path'
+import { VaultHost } from './host'
+import { resolveVaultPaths } from './vault'
 
 function isInit(value: unknown): value is ServiceInit {
   if (typeof value !== 'object' || value === null) return false
@@ -24,12 +26,16 @@ process.parentPort.once('message', (event) => {
     process.exit(1)
   }
   const log = createPortLogger(port)
-  Vault.open(resolveVaultPaths(event.data.vaultDirectory), log, {
-    appVersion: event.data.appVersion,
-  })
-    .then((vault) => {
-      serveMethods(port, createMethods(vault), log)
-      process.on('exit', () => vault.lock())
+  const { vaultDirectory, appVersion } = event.data
+  VaultHost.open(
+    resolveVaultPaths(vaultDirectory),
+    resolveVaultPaths(join(dirname(vaultDirectory), 'demo-vault')),
+    log,
+    { appVersion },
+  )
+    .then((host) => {
+      serveMethods(port, createMethods(host), log)
+      process.on('exit', () => host.shutdown())
       log('info', 'Service de données prêt.')
     })
     .catch((error: unknown) => {

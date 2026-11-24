@@ -242,3 +242,15 @@ Chaque décision structurante est consignée ici : contexte, choix, conséquence
   - **Export** : JSON (toutes les tables) et un CSV par table, **non chiffrés** (avertissement affiché) ; les cellules CSV commençant par `=`, `+`, `-`, `@`, tabulation ou retour chariot sont préfixées d'une apostrophe (injection de formule), les nombres restent tels quels.
   - **Tout effacer** : base, enveloppe, compteur d'échecs, sauvegardes du dossier par défaut et fichiers `Fluxo-*.fluxo-backup` du dossier choisi, journaux ; mot de passe actuel exigé (mode mot de passe) et mot de confirmation saisi. Les préférences d'affichage sont conservées.
 - **Conséquences** : une sauvegarde se copie et se restaure comme un fichier ordinaire, sans service en ligne ; la base entière est lue en mémoire pour l'emballer (acceptable pour la taille d'une base personnelle, à revoir si elle dépassait quelques centaines de Mo).
+
+### ADR-031 — Coffre de démonstration séparé et jetable
+
+- **Statut** : acceptée (2026-11-24, M1 lot 5).
+- **Contexte** : le mode démonstration (A09) sert à découvrir Fluxo, faire des captures et tester sans données réelles ; il ne doit jamais pouvoir modifier, révéler ou être confondu avec le coffre réel.
+- **Décisions** :
+  - Un **second coffre**, dans un dossier distinct (`demo-vault/`), créé à chaque entrée avec une clé aléatoire **jamais enregistrée**, rempli par le grand livre déterministe (`src/shared/demo/demo-ledger.ts`) et **supprimé** à la sortie (et au démarrage, après un arrêt brutal).
+  - Entrer en démonstration **verrouille le coffre réel** ; on y entre depuis l'écran de création ou de déverrouillage, jamais coffre réel ouvert. En sortir le laisse verrouillé.
+  - Pendant la démonstration, le service refuse tout ce qui concerne le coffre réel ou ses secrets : mots de passe, code de récupération, sauvegardes, restauration, export, effacement ; la sauvegarde automatique est suspendue. Verrouiller referme la démonstration.
+  - Un bandeau permanent et la barre d'état signalent le mode démonstration.
+  - Le grand livre reproduit **exactement** les synthèses du tableau de bord de démonstration (même graine, mêmes totaux par mois et par catégorie : vérifié par test) ; les comptes à relevé y reçoivent un lot d'import « démo », conformément à l'[ADR-026](#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé).
+- **Conséquences** : la démonstration coûte une création de coffre (≈ 0,2 s) à chaque entrée ; elle ne laisse aucune trace une fois fermée. Les libellés des comptes et catégories de démonstration (pack France, FR/EN) vivent dans `src/shared` car le service de données n'a pas accès aux dictionnaires du renderer.

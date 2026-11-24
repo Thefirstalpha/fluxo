@@ -215,6 +215,15 @@ export const en: Dictionary = {
     },
     setupRestore: 'I already have a Fluxo backup: restore it',
     setupBack: 'Create a new vault instead',
+    demo: {
+      enter: 'Explore with demo data',
+      enterHint:
+        'A separate vault, filled with fictitious data and deleted when you leave. Your vault is not touched.',
+      banner:
+        'Demo mode: fictitious data, erased when you leave. Your vault is locked and not modified.',
+      exit: 'Leave the demo',
+      unavailable: 'Not available in demo mode: these settings apply to your vault.',
+    },
     showPassword: 'Show password',
     hidePassword: 'Hide password',
     errors: {

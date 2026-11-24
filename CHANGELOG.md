@@ -30,6 +30,8 @@ Jalons [M0 — Fondations](docs/planning/M0-fondations.md) (socle applicatif, in
 
 - **Sauvegardes** (M1) : sauvegarde chiffrée automatique (quotidienne, conservée 7 jours, 4 semaines et 12 mois) et à la demande, dans le dossier de votre choix ; restauration vérifiée avec aperçu, y compris sur un autre ordinateur (mot de passe ou code de récupération) ; export complet en JSON et CSV ; « Tout effacer ».
 
+- **Démonstration** (M1) : explorer Fluxo dans un coffre séparé rempli de données fictives, supprimé à la sortie, sans toucher à votre coffre.
+
 ### Sécurité
 
 - Renderer isolé : `sandbox`, `contextIsolation`, pas de Node.js, balise `<webview>` désactivée, bac à sable activé pour toute l'application.

@@ -2,14 +2,14 @@
 
 Fluxo est livré par **jalons** successifs, ordonnés par importance et par logique d'implémentation : chaque jalon s'appuie sur les précédents et produit une application utilisable.
 
-> Dernière mise à jour : 24 novembre 2026 — jalon en cours : **M1** ; M0 livré en local, en attente de la publication du dépôt GitHub (premier passage de la CI sur les trois systèmes).
+> Dernière mise à jour : 24 novembre 2026 — M0 et M1 livrés en local, en attente de la publication du dépôt GitHub (premier passage de la CI sur les trois systèmes) ; prochain jalon : **M2** (non démarré).
 
 ## Vue d'ensemble
 
 | Jalon                            | Titre                         | Objectif                                                                                | Statut                   | Taille | Version         |
 | -------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------ | ------ | --------------- |
 | [M0](M0-fondations.md)           | Fondations                    | Socle Electron sécurisé, interface, design, i18n, tests, CI                             | 🟡 Livré, CI à constater | M      | 0.1             |
-| [M1](M1-coffre-fort.md)          | Coffre-fort local             | Base chiffrée, déverrouillage, sauvegardes, migrations                                  | 🟡 En cours              | L      | 0.2             |
+| [M1](M1-coffre-fort.md)          | Coffre-fort local             | Base chiffrée, déverrouillage, sauvegardes, migrations                                  | 🟡 Livré, CI à constater | L      | 0.2             |
 | [M2](M2-comptes-transactions.md) | Comptes & transactions        | Registre rapide, ventilation, virements, catégories                                     | ⬜                       | L      | 0.3             |
 | [M3](M3-import-releves.md)       | Import des relevés            | CSV, OFX/QFX, QIF, CAMT.053, doublons, annulation                                       | ⬜                       | L      | 0.4 · **Alpha** |
 | [M4](M4-categorisation.md)       | Catégorisation automatique    | Règles, apprentissage local, abonnements                                                | ⬜                       | L      | 0.5             |

@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button'
 import { PasswordField } from '../../components/ui/PasswordField'
 import { useT } from '../../i18n'
 import { getApi } from '../../lib/api'
+import { DemoLink } from './DemoLink'
 import { GateLayout } from './GateLayout'
 import { failureMessage } from './messages'
 
@@ -142,6 +143,7 @@ export function UnlockScreen({ status }: { status: VaultStatus }) {
             </button>
           )}
         </div>
+        <DemoLink />
       </form>
     </GateLayout>
   )

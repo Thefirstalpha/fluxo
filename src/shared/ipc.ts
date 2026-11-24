@@ -47,6 +47,8 @@ export const IPC_CHANNELS = {
   vaultCancelRestore: 'fluxo:vault:cancel-restore',
   vaultExport: 'fluxo:vault:export',
   vaultEraseAll: 'fluxo:vault:erase-all',
+  vaultEnterDemo: 'fluxo:vault:enter-demo',
+  vaultExitDemo: 'fluxo:vault:exit-demo',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -123,5 +125,8 @@ export interface FluxoApi {
     /** Export en clair (JSON, CSV) dans un dossier choisi par boîte de dialogue. */
     exportData(): Promise<ExportResult>
     eraseAll(input: CurrentPasswordInput): Promise<VaultResult>
+    /** Coffre de démonstration séparé (données fictives, supprimé à la sortie). */
+    enterDemo(): Promise<void>
+    exitDemo(): Promise<void>
   }
 }

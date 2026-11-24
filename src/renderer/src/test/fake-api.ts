@@ -109,6 +109,8 @@ export function createFakeApi() {
         }),
       ),
       eraseAll: vi.fn(ok),
+      enterDemo: vi.fn(() => Promise.resolve()),
+      exitDemo: vi.fn(() => Promise.resolve()),
     },
   } satisfies FluxoApi
   return api

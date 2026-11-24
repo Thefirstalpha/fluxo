@@ -163,6 +163,8 @@ Dossier `vault/` du dossier de données de l'application (droits limités à l'u
 
 Une base sans enveloppe (création interrompue) est renommée en `*.orphan-<horodatage>` à la création suivante, jamais supprimée.
 
+Le coffre de démonstration vit à part, dans `demo-vault/` (même structure), recréé à chaque entrée et supprimé à la sortie ([ADR-031](decisions.md#adr-031--coffre-de-démonstration-séparé-et-jetable)).
+
 Clés de la table `meta` : `vault_id`, `created_at`, `backup_directory` (dossier choisi, absent = dossier par défaut), `backup_auto` (`0` pour désactiver la sauvegarde automatique).
 
 ### Sauvegarde (`.fluxo-backup`)

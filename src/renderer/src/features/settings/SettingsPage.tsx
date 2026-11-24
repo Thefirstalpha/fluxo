@@ -10,6 +10,7 @@ import { Switch } from '../../components/ui/Switch'
 import { LOCALE_LABELS, useT } from '../../i18n'
 import { getApi } from '../../lib/api'
 import { useSettingsStore } from '../../stores/settings'
+import { useVaultStore } from '../../stores/vault'
 import { ThemePicker } from './ThemePicker'
 import { DataSettings } from './DataSettings'
 import { VaultSettings } from './VaultSettings'
@@ -66,6 +67,7 @@ export default function SettingsPage() {
   const t = useT()
   const settings = useSettingsStore((state) => state.settings)
   const update = useSettingsStore((state) => state.update)
+  const demo = useVaultStore((state) => state.status?.demo ?? false)
   const [info, setInfo] = useState<AppInfo | null>(null)
 
   useEffect(() => {
@@ -111,9 +113,16 @@ export default function SettingsPage() {
           </div>
         </Card>
 
-        <VaultSettings />
-
-        <DataSettings />
+        {demo ? (
+          <Card title={t.settings.security.title}>
+            <p className="text-sm text-fg-2">{t.vault.demo.unavailable}</p>
+          </Card>
+        ) : (
+          <>
+            <VaultSettings />
+            <DataSettings />
+          </>
+        )}
 
         <Card title={t.settings.privacy.title}>
           <div className="divide-y divide-border">

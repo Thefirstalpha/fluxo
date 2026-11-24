@@ -40,23 +40,24 @@ Supply-chain policy ([`.npmrc`](.npmrc), [security doc](docs/architecture/securi
 
 ## Scripts
 
-| Script                                    | What it does                                                                   |
-| ----------------------------------------- | ------------------------------------------------------------------------------ |
-| `npm run dev`                             | Starts the app in development mode (Vite dev server, hot reload).              |
-| `npm start`                               | Runs the production build locally (`electron-vite preview`).                   |
-| `npm run build`                           | Production build into `out/` (main, preload, renderer).                        |
-| `npm run size`                            | Checks the bundle-size budgets on `out/` (run after `npm run build`).          |
-| `npm run typecheck`                       | TypeScript checks for main/preload, renderer and tests.                        |
-| `npm run lint` / `lint:fix`               | ESLint (type-aware rules, security and architecture boundaries).               |
-| `npm run format` / `format:check`         | Prettier.                                                                      |
-| `npm test`                                | Unit and component tests (Vitest, happy-dom).                                  |
-| `npm run test:watch`                      | Vitest in watch mode.                                                          |
-| `npm run test:coverage`                   | Unit tests with V8 coverage.                                                   |
-| `npm run test:e2e`                        | Production build, then end-to-end tests on the real Electron app (Playwright). |
-| `npm run check`                           | **typecheck + lint + format check + unit tests** — must be green before a PR.  |
-| `npm run icons`                           | Regenerates application icons from `build/icon.svg`.                           |
-| `npm run package`                         | Build + unpacked package for the current OS (`electron-builder --dir`).        |
-| `npm run dist` (`:win`, `:mac`, `:linux`) | Build + installers (unsigned locally).                                         |
+| Script                                    | What it does                                                                                                                                 |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                             | Starts the app in development mode (Vite dev server, hot reload).                                                                            |
+| `npm start`                               | Runs the production build locally (`electron-vite preview`).                                                                                 |
+| `npm run build`                           | Production build into `out/` (main, preload, renderer).                                                                                      |
+| `npm run size`                            | Checks the bundle-size budgets on `out/` (run after `npm run build`).                                                                        |
+| `npm run typecheck`                       | TypeScript checks for main/preload, renderer and tests.                                                                                      |
+| `npm run lint` / `lint:fix`               | ESLint (type-aware rules, security and architecture boundaries).                                                                             |
+| `npm run format` / `format:check`         | Prettier.                                                                                                                                    |
+| `npm test`                                | Unit and component tests (Vitest, happy-dom).                                                                                                |
+| `npm run test:watch`                      | Vitest in watch mode.                                                                                                                        |
+| `npm run test:coverage`                   | Unit tests with V8 coverage.                                                                                                                 |
+| `npm run test:e2e`                        | Production build, then end-to-end tests on the real Electron app (Playwright).                                                               |
+| `npm run test:perf`                       | Performance measurements of the encrypted vault with 50,000 transactions (not part of `npm run check` or CI: timings depend on the machine). |
+| `npm run check`                           | **typecheck + lint + format check + unit tests** — must be green before a PR.                                                                |
+| `npm run icons`                           | Regenerates application icons from `build/icon.svg`.                                                                                         |
+| `npm run package`                         | Build + unpacked package for the current OS (`electron-builder --dir`).                                                                      |
+| `npm run dist` (`:win`, `:mac`, `:linux`) | Build + installers (unsigned locally).                                                                                                       |
 
 ## Architecture in a nutshell
 

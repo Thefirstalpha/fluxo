@@ -75,6 +75,8 @@ const api: FluxoApi = {
     exportData: () => ipcRenderer.invoke(IPC_CHANNELS.vaultExport) as Promise<ExportResult>,
     eraseAll: (input) =>
       ipcRenderer.invoke(IPC_CHANNELS.vaultEraseAll, input) as Promise<VaultResult>,
+    enterDemo: () => ipcRenderer.invoke(IPC_CHANNELS.vaultEnterDemo) as Promise<void>,
+    exitDemo: () => ipcRenderer.invoke(IPC_CHANNELS.vaultExitDemo) as Promise<void>,
   },
 }
 

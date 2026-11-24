@@ -81,7 +81,7 @@ fluxo/
 │  │  ├─ window-state/ Taille et position de la fenêtre (adaptées aux écrans branchés)
 │  │  └─ fs/           Écriture atomique de petits fichiers
 │  ├─ data/            Service de données (utilityProcess) : RPC, base SQLCipher, coffre,
-│  │                   schéma et migrations, sauvegardes (backup/), export
+│  │                   schéma et migrations, sauvegardes (backup/), export, démonstration (demo/)
 │  ├─ preload/         Pont contextBridge (window.fluxo) et ses types
 │  ├─ renderer/        Interface React
 │  │  └─ src/
@@ -127,14 +127,15 @@ Règles de sécurité outillées : pas d'`innerHTML`/`outerHTML`/`insertAdjacent
 
 ## Scripts
 
-| Commande                             | Rôle                                                |
-| ------------------------------------ | --------------------------------------------------- |
-| `npm run dev`                        | Application en développement (rechargement à chaud) |
-| `npm run build`                      | Build de production (`out/`)                        |
-| `npm start`                          | Lance la build de production                        |
-| `npm run check`                      | Types + lint + format + tests unitaires             |
-| `npm test` · `npm run test:coverage` | Tests unitaires (via `scripts/vitest.mjs`)          |
-| `npm run test:e2e`                   | Build + tests de bout en bout                       |
-| `npm run size`                       | Vérifie les budgets de poids de la build            |
-| `npm run icons`                      | Génère `build/icon.png` depuis `build/icon.svg`     |
-| `npm run package` · `npm run dist`   | Application non empaquetée · installeurs            |
+| Commande                             | Rôle                                                 |
+| ------------------------------------ | ---------------------------------------------------- |
+| `npm run dev`                        | Application en développement (rechargement à chaud)  |
+| `npm run build`                      | Build de production (`out/`)                         |
+| `npm start`                          | Lance la build de production                         |
+| `npm run check`                      | Types + lint + format + tests unitaires              |
+| `npm test` · `npm run test:coverage` | Tests unitaires (via `scripts/vitest.mjs`)           |
+| `npm run test:perf`                  | Mesures de performance du coffre (50 000 opérations) |
+| `npm run test:e2e`                   | Build + tests de bout en bout                        |
+| `npm run size`                       | Vérifie les budgets de poids de la build             |
+| `npm run icons`                      | Génère `build/icon.png` depuis `build/icon.svg`      |
+| `npm run package` · `npm run dist`   | Application non empaquetée · installeurs             |
