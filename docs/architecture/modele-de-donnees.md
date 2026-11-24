@@ -4,14 +4,14 @@ Modèle **cible** des données de Fluxo, introduit progressivement (M1 → M8). 
 
 ## Règles transverses
 
-| Règle             | Détail                                                                                                                                                                              |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Montants          | Entiers en **centimes** (`MinorUnits`) + code devise ISO 4217. Jamais de flottant. Les taux (cotisations, PAS) sont des décimaux stockés en millionièmes ou en texte décimal exact. |
-| Dates             | Date **calendaire** `AAAA-MM-JJ` pour les opérations (pas de fuseau) ; horodatages UTC ISO 8601 pour l'audit et les imports ; mois `AAAA-MM`.                                       |
-| Identifiants      | UUIDv7 (triables dans le temps, compatibles avec une future synchronisation).                                                                                                       |
-| Suppression       | Archivage plutôt que suppression pour les entités référencées (comptes, catégories) ; suppression réelle pour les opérations, tracée dans l'audit.                                  |
-| Audit             | Toute écriture produit une entrée de journal (entité, avant/après, origine : saisie, import, règle, IA).                                                                            |
-| Données sensibles | IBAN, NIR, adresses : chiffrés avec la base, masqués à l'affichage, jamais journalisés.                                                                                             |
+| Règle             | Détail                                                                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Montants          | Entiers en **centimes** (`MinorUnits`) + code devise ISO 4217. Jamais de flottant. Les taux (cotisations, PAS) sont des décimaux stockés en millionièmes ou en texte décimal exact.          |
+| Dates             | Date **calendaire** `AAAA-MM-JJ` pour les opérations (pas de fuseau) ; horodatages UTC ISO 8601 pour l'audit et les imports ; mois `AAAA-MM`.                                                |
+| Identifiants      | UUIDv7 (triables dans le temps, compatibles avec une future synchronisation).                                                                                                                |
+| Suppression       | Archivage plutôt que suppression pour les entités référencées (comptes, catégories) ; suppression réelle pour les opérations, tracée dans l'audit.                                           |
+| Audit             | Toute écriture produit une entrée de journal (entité, avant/après, origine : saisie, import, règle, IA, système) ; journal en ajout seul ; une écriture en masse produit une entrée par lot. |
+| Données sensibles | IBAN, NIR, adresses : chiffrés avec la base, masqués à l'affichage, jamais journalisés.                                                                                                      |
 
 ## Entités
 
@@ -48,7 +48,7 @@ erDiagram
 | Entité                        | Champs principaux                                                                                                                                                                                                                                                                                                                                                        | Jalon   |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
 | **Account**                   | nom, type (courant, épargne, carte différée, espèces, titres-restaurant, placement, prêt, autre actif), mode de suivi (relevé importé, saisie manuelle ou valorisation manuelle — défaut selon le type, voir [ADR-026](decisions.md#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé)), établissement, devise, solde et date d'ouverture, IBAN chiffré, archivé | M2      |
-| **Transaction**               | compte, date d'opération, date de valeur, montant, devise, montant converti, libellé brut, libellé affiché, tiers, statut (en attente, pointée, rapprochée), nature (opération, ajustement de solde — M3), lot d'import, empreinte de déduplication, lien de virement                                                                                                    | M2      |
+| **Transaction**               | compte, date d'opération, date de valeur, montant, devise, montant converti, libellé brut, libellé affiché, tiers, statut (en attente, pointée, rapprochée), nature (opération, ajustement de solde — M3), note (obligatoire pour un ajustement), lot d'import, empreinte de déduplication, lien de virement                                                             | M2      |
 | **Split**                     | transaction, catégorie, montant (Σ = montant de la transaction), étiquettes, note                                                                                                                                                                                                                                                                                        | M2      |
 | **Category**                  | nom, parent, type (dépense, revenu, épargne, transfert), icône, couleur, ordre, archivée                                                                                                                                                                                                                                                                                 | M2      |
 | **Payee**                     | nom canonique, alias, catégorie par défaut                                                                                                                                                                                                                                                                                                                               | M2 / M4 |
@@ -93,6 +93,26 @@ Le **mode de suivi** du compte détermine d'où viennent ses opérations ([ADR-0
 - **Relevé importé** (défaut pour courant, épargne, carte à débit différé) : les opérations ne sont créées que par un import (M3) ou une écriture d'ajustement (D11). Montant, date et compte d'une opération importée ne sont pas modifiables ; on l'**annote** (libellé affiché, catégorie, ventilation, étiquettes, notes, lien de virement). Seule l'annulation de son lot d'import la retire. Le service de données refuse toute création manuelle sur un tel compte.
 - **Saisie manuelle** (défaut pour espèces et titres-restaurant) : il n'existe pas de relevé à contredire, la saisie, la modification et la suppression sont libres. La contrepartie d'un virement depuis un compte bancaire (retrait au distributeur, rechargement) est créée en liant l'opération importée au compte saisi.
 - **Valorisation manuelle** (placement, immobilier) : pas d'opérations, une suite de `ValuationEntry`.
+
+## Schéma v1 (M1)
+
+Implémenté dans `src/data/db/schema-v1.ts` ([ADR-029](decisions.md#adr-029--schéma-v1--règles-portées-par-la-base-migrations-transactionnelles)) ; les entités des jalons suivants (crédits, budgets, bulletins…) arriveront par migrations.
+
+| Table          | Entité      | Particularités                                                                                                                                                           |
+| -------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `meta`         | Métadonnées | clé/valeur : identifiant du coffre (`vault_id`, identique à l'enveloppe de clé), date de création                                                                        |
+| `account`      | Account     | type et mode de suivi en énumérations fermées, IBAN de 15 à 34 caractères, ordre d'affichage, archivage                                                                  |
+| `category`     | Category    | parent (pas de cycle direct), type, icône, couleur `#rrggbb`, ordre, archivage                                                                                           |
+| `payee`        | Payee       | alias en tableau JSON, catégorie par défaut                                                                                                                              |
+| `tag`          | Tag         | nom unique sans distinction de casse                                                                                                                                     |
+| `import_batch` | ImportBatch | empreinte SHA-256 du fichier, format (`csv`, `ofx`, `qfx`, `qif`, `camt053`, `demo`), période, compteurs, état                                                           |
+| `transactions` | Transaction | index (compte, date), date, empreinte de déduplication, lot, tiers ; triggers ADR-026 (origine selon le mode de suivi, opérations importées figées)                      |
+| `split`        | Split       | position unique par transaction ; supprimée avec sa transaction                                                                                                          |
+| `split_tag`    | Split ↔ Tag | relation plusieurs-à-plusieurs ([ADR-013](decisions.md#adr-013--étiquettes-posées-sur-la-ventilation-split-pas-sur-la-transaction))                                      |
+| `rule`         | Rule        | conditions et actions en JSON validé, priorité, statistiques                                                                                                             |
+| `audit_entry`  | AuditEntry  | UUIDv7 (ordre chronologique), entité, action (`create`, `update`, `delete`, `import`, `revert`, `seed`, `migrate`, `restore`), origine, avant/après en JSON ; ajout seul |
+
+Toutes les tables sont `STRICT` ; dates `AAAA-MM-JJ` vérifiées par `date(x) IS x`, horodatages au format `toISOString()`, devises `[A-Z]{3}`.
 
 ## Bulletin de paie (France)
 

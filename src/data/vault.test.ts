@@ -4,6 +4,8 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { listAudit } from './db/audit'
+import { MIGRATIONS, schemaVersion } from './db/migrations'
 import { ServiceError } from './rpc'
 import { resolveVaultPaths, Vault } from './vault'
 
@@ -22,8 +24,8 @@ afterEach(async () => {
   await rm(directory, { recursive: true, force: true })
 })
 
-async function openVault(): Promise<Vault> {
-  const vault = await Vault.open(resolveVaultPaths(directory), vi.fn(), { kdf: FAST })
+async function openVault(options: Parameters<typeof Vault.open>[2] = {}): Promise<Vault> {
+  const vault = await Vault.open(resolveVaultPaths(directory), vi.fn(), { kdf: FAST, ...options })
   vaults.push(vault)
   return vault
 }
@@ -251,5 +253,56 @@ describe('Vault — changement de mode', () => {
     expect(await vault.unlock({ method: 'password', password: PASSWORD })).toMatchObject({
       ok: true,
     })
+  })
+})
+
+describe('Vault — schéma et migrations', () => {
+  it('crée le schéma à jour, l’identifiant du coffre et les entrées d’audit', async () => {
+    const vault = await openVault()
+    await vault.create({ mode: 'password', password: PASSWORD })
+    const db = vault.database()
+    expect(schemaVersion(db)).toBe(MIGRATIONS.length)
+    const keystore = JSON.parse(await readFile(join(directory, 'keystore.json'), 'utf8')) as {
+      vaultId: string
+    }
+    expect(db.prepare("SELECT value FROM meta WHERE key = 'vault_id'").pluck().get()).toBe(
+      keystore.vaultId,
+    )
+    expect(listAudit(db).map((entry) => entry.action)).toEqual(['migrate', 'create'])
+  })
+
+  it('sauvegarde la base (chiffrée) avant de la migrer, puis consigne la migration', async () => {
+    const first = await openVault()
+    await first.create({ mode: 'password', password: PASSWORD })
+    first.lock()
+
+    const next = { version: 2, name: 'test', up: 'CREATE TABLE ajout (id TEXT) STRICT;' }
+    const second = await openVault({ migrations: [...MIGRATIONS, next] })
+    expect(await second.unlock({ method: 'password', password: PASSWORD })).toMatchObject({
+      ok: true,
+    })
+    expect(schemaVersion(second.database())).toBe(2)
+    const backups = readdirSync(join(directory, 'backups'))
+    expect(backups).toHaveLength(1)
+    expect(backups[0]).toMatch(/^pre-migration-v1-.*\.db$/)
+    const header = (await readFile(join(directory, 'backups', backups[0] ?? ''))).subarray(0, 15)
+    expect(header.toString('latin1')).not.toBe('SQLite format 3')
+    expect(listAudit(second.database()).at(-1)).toMatchObject({
+      action: 'migrate',
+      after: { version: 2 },
+    })
+  })
+
+  it('refuse d’ouvrir une base enregistrée par une version plus récente', async () => {
+    const first = await openVault()
+    await first.create({ mode: 'password', password: PASSWORD })
+    first.database().pragma('user_version = 42')
+    first.lock()
+    const second = await openVault()
+    expect(await second.unlock({ method: 'password', password: PASSWORD })).toEqual({
+      ok: false,
+      reason: 'vault-too-new',
+    })
+    expect(second.status().state).toBe('locked')
   })
 })

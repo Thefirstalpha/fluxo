@@ -35,7 +35,12 @@ export type UnlockInput =
   | { method: 'recovery'; code: string }
 
 export type VaultFailureReason =
-  'wrong-credentials' | 'locked-out' | 'invalid-password' | 'session-unavailable' | 'vault-corrupt'
+  | 'wrong-credentials'
+  | 'locked-out'
+  | 'invalid-password'
+  | 'session-unavailable'
+  | 'vault-corrupt'
+  | 'vault-too-new'
 
 export interface VaultFailure {
   ok: false

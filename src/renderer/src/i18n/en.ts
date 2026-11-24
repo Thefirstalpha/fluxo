@@ -196,6 +196,8 @@ export const en: Dictionary = {
       sessionUnavailable: 'The system keychain is not available.',
       corrupt:
         'The database is damaged and cannot be opened. It has not been modified; a backup will be able to replace it.',
+      tooNew:
+        'This vault was saved by a newer version of Fluxo. Update Fluxo to open it (it has not been modified).',
       generic: 'The operation failed. Details are recorded in the local log.',
     },
   },

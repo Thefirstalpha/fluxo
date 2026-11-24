@@ -199,6 +199,8 @@ export const fr = {
       sessionUnavailable: 'Le trousseau du système n’est pas disponible.',
       corrupt:
         'La base est endommagée et ne peut pas être ouverte. Elle n’a pas été modifiée ; une sauvegarde pourra la remplacer.',
+      tooNew:
+        'Ce coffre a été enregistré par une version plus récente de Fluxo. Mettez Fluxo à jour pour l’ouvrir (il n’a pas été modifié).',
       generic: 'L’opération a échoué. Le détail est consigné dans le journal local.',
     },
   },

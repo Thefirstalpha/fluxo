@@ -18,6 +18,8 @@ export function failureMessage(
       return t.vault.errors.sessionUnavailable
     case 'vault-corrupt':
       return t.vault.errors.corrupt
+    case 'vault-too-new':
+      return t.vault.errors.tooNew
   }
 }
 

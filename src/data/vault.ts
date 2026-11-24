@@ -35,6 +35,8 @@ import {
   WrongKeyError,
   type Db,
 } from './db/connection'
+import { recordAudit } from './db/audit'
+import { migrate, MIGRATIONS, SchemaTooNewError, type Migration } from './db/migrations'
 import { Lockout } from './lockout'
 import { ServiceError } from './rpc'
 import type { ServiceLogger } from './server'
@@ -44,6 +46,7 @@ export interface VaultPaths {
   database: string
   keystore: string
   lockout: string
+  backups: string
 }
 
 export function resolveVaultPaths(directory: string): VaultPaths {
@@ -52,6 +55,7 @@ export function resolveVaultPaths(directory: string): VaultPaths {
     database: join(directory, 'fluxo.db'),
     keystore: join(directory, 'keystore.json'),
     lockout: join(directory, 'lockout.json'),
+    backups: join(directory, 'backups'),
   }
 }
 
@@ -59,6 +63,8 @@ export interface VaultOptions {
   /** Paramètres Argon2id des nouvelles enveloppes (réduits dans les tests). */
   kdf?: KdfParams
   now?: () => Date
+  /** Migrations appliquées à l'ouverture (remplaçables dans les tests de montée de version). */
+  migrations?: readonly Migration[]
 }
 
 const failure = (reason: VaultFailure['reason'], retryAfterMs?: number): VaultFailure =>
@@ -76,6 +82,7 @@ export class Vault {
   private sessionExportPending = false
   private readonly kdf: KdfParams
   private readonly now: () => Date
+  private readonly migrations: readonly Migration[]
 
   private constructor(
     readonly paths: VaultPaths,
@@ -85,6 +92,7 @@ export class Vault {
   ) {
     this.kdf = options.kdf ?? DEFAULT_KDF
     this.now = options.now ?? (() => new Date())
+    this.migrations = options.migrations ?? MIGRATIONS
   }
 
   static async open(
@@ -152,6 +160,23 @@ export class Vault {
     // (et sera mise de côté à la prochaine création), jamais l'inverse.
     const db = openEncryptedDatabase(this.paths.database, key, { create: true })
     try {
+      this.prepareSchema(db, vaultId)
+      db.transaction(() => {
+        const insert = db.prepare('INSERT INTO meta (key, value) VALUES (?, ?)')
+        insert.run('vault_id', vaultId)
+        insert.run('created_at', keystore.createdAt)
+        recordAudit(
+          db,
+          {
+            entity: 'vault',
+            entityId: vaultId,
+            action: 'create',
+            origin: 'user',
+            after: { mode: params.mode },
+          },
+          this.now(),
+        )
+      })()
       await writeKeystore(this.paths.keystore, keystore)
     } catch (error) {
       closeDatabase(db)
@@ -202,6 +227,14 @@ export class Vault {
       if (error instanceof CorruptDatabaseError) return failure('vault-corrupt')
       throw error
     }
+    try {
+      this.prepareSchema(db, keystore.vaultId)
+    } catch (error) {
+      closeDatabase(db)
+      key.fill(0)
+      if (error instanceof SchemaTooNewError) return failure('vault-too-new')
+      throw error
+    }
     await this.lockout.reset()
     const viaRecovery = params.method === 'recovery'
     this.adopt(db, key, viaRecovery)
@@ -223,6 +256,38 @@ export class Vault {
     const code = normalizeRecoveryCode(params.code)
     if (!code || !keystore.recovery) return null
     return unwrapKey(keystore.recovery, code, 'recovery', keystore.vaultId)
+  }
+
+  /**
+   * Amène la base au dernier schéma. Une base existante est d'abord copiée (chiffrée, même clé)
+   * dans `backups/` ; chaque migration est consignée dans l'audit.
+   */
+  private prepareSchema(db: Db, vaultId: string): void {
+    const result = migrate(db, {
+      migrations: this.migrations,
+      beforeMigrating: (from) => {
+        mkdirSync(this.paths.backups, { recursive: true, mode: 0o700 })
+        const stamp = this.now().toISOString().replace(/[:.]/g, '-')
+        db.prepare('VACUUM INTO ?').run(
+          join(this.paths.backups, `pre-migration-v${from}-${stamp}.db`),
+        )
+        this.log('info', `Sauvegarde avant migration (schéma v${from}).`)
+      },
+      afterEach: (migration) => {
+        recordAudit(
+          db,
+          {
+            entity: 'vault',
+            entityId: vaultId,
+            action: 'migrate',
+            origin: 'system',
+            after: { version: migration.version, name: migration.name },
+          },
+          this.now(),
+        )
+      },
+    })
+    if (result.to !== result.from) this.log('info', `Schéma v${result.from} → v${result.to}.`)
   }
 
   private adopt(db: Db, key: Buffer, viaRecovery: boolean): void {

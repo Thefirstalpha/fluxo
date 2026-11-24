@@ -45,9 +45,9 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 
 ### Lot 3 — Schéma & migrations
 
-- [ ] Schéma v1 (voir [modèle de données](../architecture/modele-de-donnees.md)) : comptes, catégories, tiers, transactions, ventilations, étiquettes, lots d'import, règles, journal d'audit, métadonnées. `Socle`
-- [ ] Migrations versionnées et transactionnelles ; sauvegarde automatique avant chaque migration ; tests de montée de version. `Socle`
-- [ ] Identifiants UUIDv7 (triables), dates ISO 8601, montants en centimes (contraintes `CHECK`). `Socle`
+- [x] Schéma v1 (voir [modèle de données](../architecture/modele-de-donnees.md)) : comptes, catégories, tiers, transactions, ventilations, étiquettes, lots d'import, règles, journal d'audit (en ajout seul), métadonnées ; tables `STRICT`, contraintes `CHECK` et triggers de l'ADR-026 ([ADR-029](../architecture/decisions.md#adr-029--schéma-v1--règles-portées-par-la-base-migrations-transactionnelles)). `Socle`
+- [x] Migrations versionnées (`user_version`) et transactionnelles ; copie chiffrée de la base avant toute montée de version ; base plus récente refusée sans modification ; tests de montée de version et d'échec annulé. `Socle`
+- [x] Identifiants UUIDv7 (triables, monotones dans une même milliseconde), dates ISO 8601 valides, montants en centimes (tables `STRICT` et contraintes `CHECK`). `Socle`
 - [x] Préférences : restent en JSON, lues avant le déverrouillage et sans donnée sensible ([ADR-028](../architecture/decisions.md#adr-028--clés-du-coffre--clé-aléatoire-enveloppée-session-ou-mot-de-passe-code-de-récupération)). `Socle`
 
 ### Lot 4 — Sauvegarde, restauration, export
