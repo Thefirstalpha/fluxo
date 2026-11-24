@@ -45,7 +45,7 @@ Le premier marché visé est **francophone** (bulletins de paie et formats banca
 
 ## Périmètre de la version 1.0
 
-Inclus : comptes et transactions (dont épargne et comptes externes à valorisation manuelle), étiquettes transverses aux catégories, import des formats bancaires standards, catégorisation automatique, analyses et synthèses mensuelles, suivi détaillé des salaires (France), analyse de documents assistée (relevés et bulletins), crédits et patrimoine net, budgets et prévisions simples, installeurs signés et mises à jour automatiques, interface en français et en anglais.
+Inclus : comptes et transactions (dont épargne et comptes externes à valorisation manuelle), étiquettes transverses aux catégories, import des formats bancaires standards, catégorisation automatique, analyses et synthèses mensuelles, suivi détaillé des salaires (France), analyse de documents assistée (relevés et bulletins), crédits et patrimoine net, budgets, prévisions et simulation à long terme des comptes, installeurs signés et mises à jour automatiques, interface en français et en anglais.
 
 ## Non-objectifs
 
@@ -64,21 +64,21 @@ Inclus : comptes et transactions (dont épargne et comptes externes à valorisat
 
 ## Glossaire
 
-| Terme                             | Définition                                                                                           |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Brut**                          | Rémunération totale avant cotisations sociales.                                                      |
-| **Cotisations salariales**        | Part des cotisations sociales prélevée sur le salaire (santé, retraite, chômage, CSG/CRDS…).         |
-| **Net à payer avant impôt**       | Brut moins cotisations salariales.                                                                   |
-| **Net imposable**                 | Base du prélèvement à la source (inclut notamment la CSG/CRDS non déductible).                       |
-| **Prélèvement à la source (PAS)** | Impôt sur le revenu retenu par l'employeur : taux × net imposable.                                   |
-| **Net payé**                      | Montant effectivement viré : net avant impôt − PAS ± autres éléments (titres-restaurant, acomptes…). |
-| **Montant net social**            | Mention obligatoire depuis juillet 2023, utilisée pour les prestations sociales.                     |
-| **Astreinte**                     | Période de disponibilité rémunérée hors temps de travail.                                            |
-| **13ᵉ mois**                      | Prime annuelle conventionnelle, souvent versée en décembre.                                          |
-| **Ventilation**                   | Répartition d'une transaction sur plusieurs catégories.                                              |
-| **CAMT.053**                      | Format XML ISO 20022 de relevé de compte (très répandu en Europe).                                   |
-| **Rapprochement**                 | Vérification qu'un solde ou un virement correspond aux données attendues.                            |
-| **Étiquette**                      | Marqueur libre posé sur une dépense, indépendant de sa catégorie, pour la retrouver transversalement (ex. « Abonnement téléphonique »). |
-| **Capital restant dû**            | Part du capital d'un crédit qu'il reste à rembourser à une date donnée.                               |
-| **TAEG**                          | Taux annuel effectif global : coût total d'un crédit (intérêts, assurance, frais) en pourcentage annuel. |
-| **Patrimoine net**                | Valeur des actifs (comptes, épargne, placements) moins le capital restant dû de tous les crédits.    |
+| Terme                             | Définition                                                                                                                              |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Brut**                          | Rémunération totale avant cotisations sociales.                                                                                         |
+| **Cotisations salariales**        | Part des cotisations sociales prélevée sur le salaire (santé, retraite, chômage, CSG/CRDS…).                                            |
+| **Net à payer avant impôt**       | Brut moins cotisations salariales.                                                                                                      |
+| **Net imposable**                 | Base du prélèvement à la source (inclut notamment la CSG/CRDS non déductible).                                                          |
+| **Prélèvement à la source (PAS)** | Impôt sur le revenu retenu par l'employeur : taux × net imposable.                                                                      |
+| **Net payé**                      | Montant effectivement viré : net avant impôt − PAS ± autres éléments (titres-restaurant, acomptes…).                                    |
+| **Montant net social**            | Mention obligatoire depuis juillet 2023, utilisée pour les prestations sociales.                                                        |
+| **Astreinte**                     | Période de disponibilité rémunérée hors temps de travail.                                                                               |
+| **13ᵉ mois**                      | Prime annuelle conventionnelle, souvent versée en décembre.                                                                             |
+| **Ventilation**                   | Répartition d'une transaction sur plusieurs catégories.                                                                                 |
+| **CAMT.053**                      | Format XML ISO 20022 de relevé de compte (très répandu en Europe).                                                                      |
+| **Rapprochement**                 | Vérification qu'un solde ou un virement correspond aux données attendues.                                                               |
+| **Étiquette**                     | Marqueur libre posé sur une dépense, indépendant de sa catégorie, pour la retrouver transversalement (ex. « Abonnement téléphonique »). |
+| **Capital restant dû**            | Part du capital d'un crédit qu'il reste à rembourser à une date donnée.                                                                 |
+| **TAEG**                          | Taux annuel effectif global : coût total d'un crédit (intérêts, assurance, frais) en pourcentage annuel.                                |
+| **Patrimoine net**                | Valeur des actifs (comptes, épargne, placements) moins le capital restant dû de tous les crédits.                                       |

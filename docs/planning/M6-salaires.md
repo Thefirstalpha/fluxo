@@ -4,7 +4,7 @@
 
 ## Objectif
 
-Le **vrai détail des salaires** : du brut au net payé, chaque cotisation, l'impôt prélevé (taux et montant), les éléments variables (astreintes, heures supplémentaires, primes, 13ᵉ mois…), les congés, les cumuls annuels — et leur évolution dans le temps.
+Le **vrai détail des salaires** : du brut au net payé, chaque cotisation, l'impôt prélevé (taux et montant), les éléments variables (astreintes, heures supplémentaires, primes, 13ᵉ mois…), les cumuls annuels — et leur évolution dans le temps.
 
 ## Déjà en place (démonstration M0)
 
@@ -18,7 +18,6 @@ Le **vrai détail des salaires** : du brut au net payé, chaque cotisation, l'im
 - Je veux suivre l'évolution de mon **brut, net, net imposable** et de mon **taux de prélèvement** sur plusieurs années.
 - Je veux connaître la part de mes **astreintes, primes et 13ᵉ mois** dans ma rémunération annuelle.
 - Je veux vérifier que le **virement reçu** correspond au net payé, et que les **cumuls de décembre** collent à la somme des mois.
-- Je veux suivre mes **congés et RTT**.
 
 ## Plan d'action
 
@@ -29,7 +28,6 @@ Le **vrai détail des salaires** : du brut au net payé, chaque cotisation, l'im
 - [ ] **Éléments variables typés** : astreintes, heures supplémentaires (25 %, 50 %, défiscalisées), 13ᵉ mois, prime de vacances, ancienneté, objectifs, indemnités (transport, télétravail), avantages en nature. `Besoin`
 - [ ] **Cotisations ligne à ligne** : base, taux et montant salarial, taux et montant patronal ; regroupements (santé, retraite de base et complémentaire, chômage, CSG/CRDS déductible et non déductible, prévoyance, mutuelle). `Besoin`
 - [ ] **Totaux** : brut, total des cotisations salariales et patronales, net à payer avant impôt, net imposable, **montant net social**, **prélèvement à la source** (taux personnalisé ou non, base, montant), net payé. `Besoin`
-- [ ] **Congés payés** (acquis, pris, soldes N et N-1) et **RTT**. `Proposition`
 - [ ] **Cumuls annuels** (brut, net imposable, prélèvement, heures). `Besoin`
 - [ ] Architecture **« pack pays »** : règles de validation et libellés propres à chaque pays, France en premier. `Socle`
 

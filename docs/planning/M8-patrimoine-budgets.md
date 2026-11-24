@@ -1,19 +1,19 @@
 # M8 — Patrimoine, crédits, budgets & prévisions
 
-> **Statut : ⬜ À venir** · Taille : L · Dépend de : M2 (comptes), M4 (catégorisation, pour les budgets et les prévisions) · Version : 0.9 — **RC**
+> **Statut : ⬜ À venir** · Taille : XL · Dépend de : M2 (comptes), M4 (catégorisation et récurrences, pour les budgets, les prévisions et la simulation) ; M6 facultatif (salaire projeté) · Version : 0.9 — **RC**
 
 ## Objectif
 
-Passer du constat à l'**anticipation**, et donner une vision complète : budgets par catégorie, objectifs d'épargne, **crédits** (immobilier, consommation…) avec leur échéancier, **patrimoine net** dans le temps, prélèvements à venir et solde prévisionnel de fin de mois.
+Passer du constat à l'**anticipation**, et donner une vision complète : budgets par catégorie, objectifs d'épargne, **crédits** (immobilier, consommation…) avec leur échéancier, **patrimoine net** dans le temps, prélèvements à venir, solde prévisionnel de fin de mois et **simulation à long terme** des comptes courants et d'épargne.
 
 ## Valeur pour l'utilisateur
 
-« Je sais combien je dois encore rembourser sur mon crédit immobilier, ce que je possède au total, et si je vais tenir mon budget ce mois-ci. »
+« Je sais combien je dois encore rembourser sur mon crédit immobilier, ce que je possède au total, et si je vais tenir mon budget ce mois-ci. Je vois aussi où mèneront mes comptes dans deux ou cinq ans si mes abonnements, mon énergie et mes crédits évoluent comme prévu. »
 
 ## Périmètre
 
-**Inclus** : budgets, objectifs d'épargne, crédits et tableaux d'amortissement, comptes externes à valorisation manuelle (placements, immobilier), vue patrimoine net, prélèvements à venir, solde prévisionnel.
-**Hors périmètre** : connexion bancaire ou boursière automatique (M10, sous conditions), aide à la déclaration de revenus (M10).
+**Inclus** : budgets, objectifs d'épargne, crédits et tableaux d'amortissement, comptes externes à valorisation manuelle (placements, immobilier), vue patrimoine net, prélèvements à venir, solde prévisionnel, simulation à long terme et scénarios « et si ».
+**Hors périmètre** : connexion bancaire ou boursière automatique (M10, sous conditions), aide à la déclaration de revenus (M10), projection de rendements de marché ou conseil en placement ([non-objectif](../projet/vision.md#non-objectifs)), simulation fiscale.
 
 ## Récits utilisateur
 
@@ -24,6 +24,8 @@ Passer du constat à l'**anticipation**, et donner une vision complète : budget
 - Je veux voir mon patrimoine net (ce que je possède moins ce que je dois) évoluer dans le temps.
 - Je veux mettre à jour la valeur de mon PEA ou de mon bien immobilier de temps en temps, sans connexion automatique.
 - Je veux voir les prélèvements des 30 prochains jours (factures et mensualités de crédit) et mon solde estimé en fin de mois.
+- Je veux simuler sur plusieurs années mes comptes courant et épargne en tenant compte de mes charges futures : abonnements, mensualités de crédit, eau, gaz, électricité, assurances.
+- Je veux tester un « et si » (nouvel abonnement, hausse du gaz de 10 %/an, fin de mon crédit auto, 200 €/mois de plus sur mon livret) et le comparer à la situation actuelle.
 
 ## Plan d'action
 
@@ -58,13 +60,21 @@ Passer du constat à l'**anticipation**, et donner une vision complète : budget
 - [ ] **Solde prévisionnel** de fin de mois avec intervalle (récurrences + dépenses variables moyennes) et **« reste à vivre »**. `Proposition`
 - [ ] Alerte de découvert prévisionnel. `Proposition`
 
-### Lot 6 — Motivation (facultatif)
+### Lot 6 — Simulation à long terme
+
+- [ ] **Scénario de base** dérivé des données existantes : récurrences détectées (M4 : abonnements, énergie, eau, assurances…), échéances de crédit (lot 3), salaire (M6 si renseigné), dépenses variables moyennes par catégorie ; régénéré à la demande. `Proposition`
+- [ ] **Projection mois par mois** des soldes des comptes courants et d'épargne choisis, horizon au choix (quelques mois à plusieurs années), rémunération des comptes d'épargne au taux saisi. `Proposition`
+- [ ] **Hypothèses** ajoutées, modifiées ou retirées : charge ou revenu récurrent (début, fin, périodicité), dépense ponctuelle prévue (voiture, travaux), indexation annuelle par élément ou par défaut (ex. énergie + 8 %/an), fin anticipée d'un crédit. `Proposition`
+- [ ] **Scénarios « et si »** : variantes du scénario de base, comparaison côte à côte, date de franchissement d'un seuil (découvert, objectif d'épargne atteint, épargne de précaution). `Proposition`
+- [ ] Graphique de projection avec incertitude croissante et liste des hypothèses, vue tableau équivalente, respect du masquage des montants. `Proposition`
+
+### Lot 7 — Motivation (facultatif)
 
 - [ ] Défis (« 30 jours sans livraison de repas »), séries, succès ; écran de réussite stylisé « Vice Sunset » (création originale, discret, désactivable). `Proposition`
 
 ## Sécurité & confidentialité
 
-- Taux, échéanciers et valorisations sont des données sensibles au même titre qu'un solde : chiffrés avec le reste de la base, jamais journalisés.
+- Taux, échéanciers, valorisations et scénarios de simulation sont des données sensibles au même titre qu'un solde : chiffrés avec le reste de la base, jamais journalisés.
 - Aucune cotation ni connexion bancaire automatique par défaut ([ADR-014](../architecture/decisions.md#adr-014--crédits-et-actifs-externes-modélisés-comme-des-comptes-valorisation-manuelle-par-défaut)) : la saisie manuelle garde l'utilisateur maître de ce qui est partagé.
 
 ## Critères d'acceptation
@@ -73,9 +83,11 @@ Passer du constat à l'**anticipation**, et donner une vision complète : budget
 - Tableau d'amortissement exact à l'arrondi près (tests dédiés, taux fixes et variables courants du marché français).
 - Patrimoine net cohérent avec la somme des soldes de comptes et des capitaux restants dus (tests d'invariants).
 - Prévision de fin de mois avec une erreur médiane < 10 % sur l'historique de test (rétro-test).
+- Simulation : au mois 0, solde projeté = solde réel ; chaque mois projeté = mois précédent + Σ des éléments prévus du mois, en centimes entiers ; mensualités projetées identiques au tableau d'amortissement ; indexation arrondie au centime (tests d'invariants).
 
 ## Risques & questions
 
 - Prévisions trompeuses si les récurrences sont mal détectées : afficher l'incertitude et les hypothèses.
 - Un patrimoine net dépend de valorisations à jour : afficher clairement la date de la dernière valorisation de chaque actif externe.
+- Une simulation sur plusieurs années n'est pas une prédiction : hypothèses toujours visibles, incertitude affichée, aucune recommandation de placement.
 - Diversité des types de crédits français (taux fixe, variable, lissé, différé) : couvrir d'abord les cas les plus courants (taux fixe, mensualités constantes), documenter les limites.

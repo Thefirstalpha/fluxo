@@ -116,7 +116,7 @@ Chaque décision structurante est consignée ici : contexte, choix, conséquence
 
 ### ADR-018 — Pas de conservation des documents sources par défaut
 
-- **Statut** : acceptée (2026-11-24).
+- **Statut** : acceptée (2026-11-24) ; l'exception des justificatifs (C09) est retirée par [ADR-025](#adr-025--revue-des-propositions-du-24-novembre-2026).
 - **Contexte** : [Q5](../planning/questions-ouvertes.md) ; Fluxo n'est pas conçu comme un système de stockage de documents, et conserver des bulletins ou relevés originaux élargit la surface de données sensibles à protéger.
 - **Décision** : un document déposé (bulletin, relevé) est traité puis **supprimé** ; seules les données extraites, validées, et une empreinte (pour la détection de doublons) sont conservées dans la base chiffrée. Un export du fichier original reste possible **immédiatement après traitement, avant suppression**, à l'initiative de l'utilisateur. Les justificatifs attachés à une transaction (tickets, factures — C09) restent un geste délibéré et distinct, non concerné par cette règle.
 - **Conséquences** : la proposition « Coffre des documents » (ancien H10 / P-29) est retirée du périmètre par défaut et remplacée par l'export immédiat facultatif ; le modèle de données `Document` ne prévoit plus de stockage chiffré de l'original par défaut.
@@ -169,3 +169,21 @@ Chaque décision structurante est consignée ici : contexte, choix, conséquence
 - **Contexte** : [Q1](../planning/questions-ouvertes.md) ; « Vice » évoque « Vice City » (GTA), ce qui a motivé la question. Un thème de couleurs et de typographie n'est cependant pas un signe distinctif déposé par Rockstar, et le reste de l'identité (logo, nom de l'application, palette) est déjà entièrement original.
 - **Décision** : le nom « Vice Sunset » est conservé pour désigner l'identité visuelle, dans tous les documents et dans le code.
 - **Conséquences** : aucun changement de vocabulaire à faire ; à revisiter seulement si une mise en demeure ou un retour de la communauté l'exigeait.
+
+### ADR-025 — Revue des propositions du 24 novembre 2026
+
+- **Statut** : acceptée (2026-11-24) ; remplace la dernière phrase de la décision d'[ADR-018](#adr-018--pas-de-conservation-des-documents-sources-par-défaut).
+- **Contexte** : revue des [propositions](../planning/propositions.md) par la personne qui pilote le projet.
+- **Décisions** :
+  - **Saisie en langage naturel** (ancienne P-11) abandonnée : la priorité est d'**annoter** les opérations issues des relevés (notes, étiquettes, catégories), pas d'accélérer leur saisie. Elle est remplacée par l'**écriture d'ajustement** (P-11 révisée, D11) : quand le rapprochement des soldes (D08) révèle un écart, l'utilisateur peut le combler par une opération d'ajustement annotée, sans disposer du relevé manquant ; si ce relevé est importé plus tard, l'ajustement est proposé à la suppression.
+  - **Justificatifs attachés** (C09, ancienne P-12) retirés : Fluxo ne stocke aucun fichier, y compris les tickets et factures ; l'exception prévue par ADR-018 disparaît. Une note texte sur l'opération (« facture rangée dans… ») reste possible.
+  - **Congés & RTT** (G05, ancienne P-24) retirés, jugés inutiles ; la section correspondante sort du modèle du bulletin.
+  - Les identifiants retirés (C09, G05, P-12, P-24) ne sont **pas réattribués**, pour que les renvois existants restent sans ambiguïté.
+- **Conséquences** : aucune entité de pièce jointe dans le modèle de données ; `Transaction` gagne une nature « ajustement », comptée dans le solde mais exclue par défaut des revenus et dépenses ; M6 et M7 perdent les lots correspondants.
+
+### ADR-026 — Saisie manuelle réservée aux comptes sans relevé
+
+- **Statut** : acceptée (2026-11-24) ; complète [ADR-025](#adr-025--revue-des-propositions-du-24-novembre-2026).
+- **Contexte** : une dépense saisie à la main sur un compte bancaire peut ne jamais correspondre à une ligne du relevé (montant arrondi, date décalée, oubli, doublon avec l'import) : le solde de Fluxo s'écarte alors de celui de la banque sans qu'on sache pourquoi.
+- **Décision** : le relevé de la banque fait foi. Chaque compte a un **mode de suivi** : _relevé importé_ (défaut pour courant, épargne, carte à débit différé), _saisie manuelle_ (défaut pour espèces et titres-restaurant, qui n'ont pas de relevé à contredire), _valorisation manuelle_ (placements, [ADR-014](#adr-014--crédits-et-actifs-externes-modélisés-comme-des-comptes-valorisation-manuelle-par-défaut)). Sur un compte à relevé, les opérations ne viennent que d'un import ou d'une écriture d'ajustement (D11) ; on les annote (catégorie, ventilation, étiquettes, notes, libellé affiché) sans toucher à leur montant, leur date ni leur compte. Le service de données refuse toute autre écriture.
+- **Conséquences** : le statut « prévue » disparaît des opérations (l'anticipation relève des prévisions et de la simulation, M8) ; la saisie rapide (Ctrl/⌘ N) ne vise que les comptes en saisie manuelle ; avant le M3, les comptes à relevé ne contiennent que des données de démonstration. La saisie des bulletins (M6) et des valorisations (M8) n'est pas concernée : ce ne sont pas des opérations bancaires.

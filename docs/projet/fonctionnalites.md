@@ -35,47 +35,49 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 
 ## C. Comptes & transactions
 
-| ID  | Fonctionnalité                                                           | Origine     | Jalon | Statut |
-| --- | ------------------------------------------------------------------------ | ----------- | ----- | ------ |
-| C01 | Comptes multiples (courant, épargne, carte, espèces, titres-restaurant…) | Besoin      | M2    | ⬜     |
-| C02 | Saisie, modification, suppression de transactions                        | Besoin      | M2    | ⬜     |
-| C03 | Ventilation d'une transaction sur plusieurs catégories                   | Besoin      | M2    | ⬜     |
-| C04 | Virements internes exclus des dépenses                                   | Socle       | M2    | ⬜     |
-| C05 | Catégories hiérarchiques personnalisables (pack France par défaut)       | Besoin      | M2    | 🟡     |
-| C06 | Étiquettes multiples par ventilation, indépendantes des catégories, pour une corrélation transverse (ex. tous les abonnements téléphoniques) | Proposition | M2    | ⬜     |
-| C07 | Recherche instantanée, filtres, tri, édition en masse                    | Besoin      | M2    | ⬜     |
-| C08 | Multi-devises (EUR, CHF…) avec devise de référence                       | Proposition | M2    | 🟡     |
-| C09 | Justificatifs attachés (tickets, factures, garanties)                    | Proposition | M7    | ⬜     |
-| C10 | Comptes d'épargne multiples et comptes externes à valorisation manuelle (livret, PEA, assurance-vie, immobilier) | Besoin      | M2    | ⬜     |
-| C11 | Virement vers un compte d'épargne classé comme épargne (ni dépense, ni simple virement neutre) | Besoin      | M2    | ⬜     |
+| ID  | Fonctionnalité                                                                                                                                                                                                                                                        | Origine     | Jalon | Statut |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
+| C01 | Comptes multiples (courant, épargne, carte, espèces, titres-restaurant…)                                                                                                                                                                                              | Besoin      | M2    | ⬜     |
+| C02 | Saisie d'opérations sur les comptes sans relevé (espèces, titres-restaurant) ; annotation des opérations importées, jamais de saisie libre sur un compte bancaire ([ADR-026](../architecture/decisions.md#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé)) | Besoin      | M2    | ⬜     |
+| C03 | Ventilation d'une transaction sur plusieurs catégories                                                                                                                                                                                                                | Besoin      | M2    | ⬜     |
+| C04 | Virements internes exclus des dépenses                                                                                                                                                                                                                                | Socle       | M2    | ⬜     |
+| C05 | Catégories hiérarchiques personnalisables (pack France par défaut)                                                                                                                                                                                                    | Besoin      | M2    | 🟡     |
+| C06 | Étiquettes multiples par ventilation, indépendantes des catégories, pour une corrélation transverse (ex. tous les abonnements téléphoniques)                                                                                                                          | Proposition | M2    | ⬜     |
+| C07 | Recherche instantanée, filtres, tri, édition en masse                                                                                                                                                                                                                 | Besoin      | M2    | ⬜     |
+| C08 | Multi-devises (EUR, CHF…) avec devise de référence                                                                                                                                                                                                                    | Proposition | M2    | 🟡     |
+| C10 | Comptes d'épargne multiples et comptes externes à valorisation manuelle (livret, PEA, assurance-vie, immobilier)                                                                                                                                                      | Besoin      | M2    | ⬜     |
+| C11 | Virement vers un compte d'épargne classé comme épargne (ni dépense, ni simple virement neutre)                                                                                                                                                                        | Besoin      | M2    | ⬜     |
+
+C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)). Les identifiants retirés ne sont pas réattribués.
 
 ## D. Import des relevés bancaires
 
-| ID  | Fonctionnalité                                                      | Origine     | Jalon | Statut |
-| --- | ------------------------------------------------------------------- | ----------- | ----- | ------ |
-| D01 | Import CSV avec assistant de correspondance et profils par banque   | Besoin      | M3    | ⬜     |
-| D02 | Import OFX / QFX                                                    | Besoin      | M3    | ⬜     |
-| D03 | Import QIF                                                          | Besoin      | M3    | ⬜     |
-| D04 | Import CAMT.053 (ISO 20022)                                         | Besoin      | M3    | ⬜     |
-| D05 | Import MT940                                                        | Proposition | M3    | ⬜     |
-| D06 | Détection des doublons (exacte et approchée)                        | Besoin      | M3    | ⬜     |
-| D07 | Aperçu avant import et annulation d'un import                       | Besoin      | M3    | ⬜     |
-| D08 | Contrôle des soldes de début et de fin de relevé                    | Proposition | M3    | ⬜     |
-| D09 | Relevés PDF (via le pipeline documents)                             | Besoin      | M7    | ⬜     |
-| D10 | Analyse robuste des montants (formats FR/EN/CH, notation comptable) | Socle       | M0    | ✅     |
+| ID  | Fonctionnalité                                                                                                       | Origine     | Jalon | Statut |
+| --- | -------------------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
+| D01 | Import CSV avec assistant de correspondance et profils par banque                                                    | Besoin      | M3    | ⬜     |
+| D02 | Import OFX / QFX                                                                                                     | Besoin      | M3    | ⬜     |
+| D03 | Import QIF                                                                                                           | Besoin      | M3    | ⬜     |
+| D04 | Import CAMT.053 (ISO 20022)                                                                                          | Besoin      | M3    | ⬜     |
+| D05 | Import MT940                                                                                                         | Proposition | M3    | ⬜     |
+| D06 | Détection des doublons (exacte et approchée)                                                                         | Besoin      | M3    | ⬜     |
+| D07 | Aperçu avant import et annulation d'un import                                                                        | Besoin      | M3    | ⬜     |
+| D08 | Contrôle des soldes de début et de fin de relevé                                                                     | Proposition | M3    | ⬜     |
+| D09 | Relevés PDF (via le pipeline documents)                                                                              | Besoin      | M7    | ⬜     |
+| D10 | Analyse robuste des montants (formats FR/EN/CH, notation comptable)                                                  | Socle       | M0    | ✅     |
+| D11 | Écriture d'ajustement (rattrapage) d'un écart de solde détecté, annotée, remplaçable par l'import du relevé manquant | Proposition | M3    | ⬜     |
 
 ## E. Catégorisation automatique
 
-| ID  | Fonctionnalité                                                          | Origine     | Jalon | Statut |
-| --- | ----------------------------------------------------------------------- | ----------- | ----- | ------ |
-| E01 | Normalisation des libellés et des marchands                             | Besoin      | M4    | ⬜     |
-| E02 | Règles personnalisables (conditions → catégorie, étiquettes, renommage) | Besoin      | M4    | ⬜     |
-| E03 | Apprentissage local à partir des corrections                            | Besoin      | M4    | ⬜     |
-| E04 | File « à valider » avec niveau de confiance                             | Besoin      | M4    | ⬜     |
-| E05 | Détection des récurrences et abonnements                                | Proposition | M4    | ⬜     |
-| E06 | Alerte de hausse de prix d'un abonnement                                | Proposition | M4    | ⬜     |
-| E07 | Détection automatique des virements internes                            | Socle       | M4    | ⬜     |
-| E08 | Suggestions par IA pour les marchands inconnus (facultatif)             | Besoin      | M7    | ⬜     |
+| ID  | Fonctionnalité                                                                | Origine     | Jalon | Statut |
+| --- | ----------------------------------------------------------------------------- | ----------- | ----- | ------ |
+| E01 | Normalisation des libellés et des marchands                                   | Besoin      | M4    | ⬜     |
+| E02 | Règles personnalisables (conditions → catégorie, étiquettes, renommage)       | Besoin      | M4    | ⬜     |
+| E03 | Apprentissage local à partir des corrections                                  | Besoin      | M4    | ⬜     |
+| E04 | File « à valider » avec niveau de confiance                                   | Besoin      | M4    | ⬜     |
+| E05 | Détection des récurrences et abonnements                                      | Proposition | M4    | ⬜     |
+| E06 | Alerte de hausse de prix d'un abonnement                                      | Proposition | M4    | ⬜     |
+| E07 | Détection automatique des virements internes                                  | Socle       | M4    | ⬜     |
+| E08 | Suggestions par IA pour les marchands inconnus (facultatif)                   | Besoin      | M7    | ⬜     |
 | E09 | Règles pouvant poser une ou plusieurs étiquettes, pas seulement une catégorie | Besoin      | M4    | ⬜     |
 
 ## F. Analyses & synthèses
@@ -103,7 +105,6 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 | G02 | Bulletin détaillé : base, brut, cotisations, net avant impôt, net imposable, net social, net payé | Besoin      | M6      | 🟡     |
 | G03 | Éléments variables : astreintes, heures supplémentaires, 13ᵉ mois, primes, avantages              | Besoin      | M6      | 🟡     |
 | G04 | Prélèvement à la source : taux (%) et montant prélevé, historique des taux                        | Besoin      | M6      | 🟡     |
-| G05 | Congés payés et RTT (acquis, pris, soldes)                                                        | Proposition | M6      | ⬜     |
 | G06 | Cumuls annuels et contrôle avec le bulletin de décembre                                           | Besoin      | M6      | ⬜     |
 | G07 | Contrôles de cohérence arithmétique                                                               | Socle       | M0 → M6 | 🟡     |
 | G08 | Tableau de bord salaire : évolution brut/net, part variable, taux effectifs                       | Besoin      | M6      | ⬜     |
@@ -111,36 +112,40 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 | G10 | Coût employeur et cotisations patronales                                                          | Proposition | M6      | ⬜     |
 | G11 | Simulateur brut → net (augmentation, changement de taux)                                          | Proposition | M6      | ⬜     |
 
+G05 (congés payés et RTT) a été retiré, jugé inutile ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)).
+
 ## H. Documents & IA
 
-| ID  | Fonctionnalité                                                   | Origine     | Jalon | Statut |
-| --- | ---------------------------------------------------------------- | ----------- | ----- | ------ |
-| H01 | Boîte de dépôt de documents (glisser-déposer)                    | Besoin      | M7    | ⬜     |
-| H02 | Extraction du texte des PDF                                      | Besoin      | M7    | ⬜     |
-| H03 | Reconnaissance de caractères (OCR) pour les scans                | Besoin      | M7    | ⬜     |
-| H04 | Modèles déterministes pour les formats connus                    | Socle       | M7    | ⬜     |
-| H05 | Extraction structurée par IA (bulletins, relevés)                | Besoin      | M7    | ⬜     |
-| H06 | IA locale (sans réseau)                                          | Proposition | M7    | ⬜     |
-| H07 | IA cloud facultative, clé personnelle, consentement par document | Besoin      | M7    | ⬜     |
-| H08 | Anonymisation avant tout envoi                                   | Socle       | M7    | ⬜     |
-| H09 | Relecture côte à côte avant validation                           | Socle       | M7    | ⬜     |
+| ID  | Fonctionnalité                                                                                            | Origine     | Jalon | Statut |
+| --- | --------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
+| H01 | Boîte de dépôt de documents (glisser-déposer)                                                             | Besoin      | M7    | ⬜     |
+| H02 | Extraction du texte des PDF                                                                               | Besoin      | M7    | ⬜     |
+| H03 | Reconnaissance de caractères (OCR) pour les scans                                                         | Besoin      | M7    | ⬜     |
+| H04 | Modèles déterministes pour les formats connus                                                             | Socle       | M7    | ⬜     |
+| H05 | Extraction structurée par IA (bulletins, relevés)                                                         | Besoin      | M7    | ⬜     |
+| H06 | IA locale (sans réseau)                                                                                   | Proposition | M7    | ⬜     |
+| H07 | IA cloud facultative, clé personnelle, consentement par document                                          | Besoin      | M7    | ⬜     |
+| H08 | Anonymisation avant tout envoi                                                                            | Socle       | M7    | ⬜     |
+| H09 | Relecture côte à côte avant validation                                                                    | Socle       | M7    | ⬜     |
 | H10 | Export facultatif du document original, proposé juste après l'extraction (aucune conservation par défaut) | Proposition | M7    | ⬜     |
 
 ## I. Patrimoine, crédits, budgets & prévisions
 
-| ID  | Fonctionnalité                                                 | Origine     | Jalon | Statut |
-| --- | -------------------------------------------------------------- | ----------- | ----- | ------ |
-| I01 | Budgets mensuels par catégorie (montant fixe ou % des revenus) | Proposition | M8    | ⬜     |
-| I02 | Alertes de dépassement (notifications locales)                 | Proposition | M8    | ⬜     |
-| I03 | Objectifs d'épargne avec projection                            | Proposition | M8    | ⬜     |
-| I04 | Calendrier des prélèvements à venir (factures, mensualités de crédit) | Proposition | M8    | ⬜     |
-| I05 | Prévision du solde de fin de mois, « reste à vivre »           | Proposition | M8    | ⬜     |
-| I06 | Défis et succès (gamification sobre)                           | Proposition | M8    | ⬜     |
-| I07 | Crédits (immobilier, consommation, auto, étudiant) : échéancier et tableau d'amortissement | Besoin      | M8    | ⬜     |
+| ID  | Fonctionnalité                                                                                                    | Origine     | Jalon | Statut |
+| --- | ----------------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
+| I01 | Budgets mensuels par catégorie (montant fixe ou % des revenus)                                                    | Proposition | M8    | ⬜     |
+| I02 | Alertes de dépassement (notifications locales)                                                                    | Proposition | M8    | ⬜     |
+| I03 | Objectifs d'épargne avec projection                                                                               | Proposition | M8    | ⬜     |
+| I04 | Calendrier des prélèvements à venir (factures, mensualités de crédit)                                             | Proposition | M8    | ⬜     |
+| I05 | Prévision du solde de fin de mois, « reste à vivre »                                                              | Proposition | M8    | ⬜     |
+| I06 | Défis et succès (gamification sobre)                                                                              | Proposition | M8    | ⬜     |
+| I07 | Crédits (immobilier, consommation, auto, étudiant) : échéancier et tableau d'amortissement                        | Besoin      | M8    | ⬜     |
 | I08 | Vue patrimoine net : actifs (comptes, épargne, placements valorisés) − passifs (capital restant dû) dans le temps | Besoin      | M8    | ⬜     |
-| I09 | Rapprochement mensualité de crédit ↔ transaction                | Proposition | M8    | ⬜     |
-| I10 | Alerte d'échéance de crédit et simulateur de remboursement anticipé | Proposition | M8    | ⬜     |
-| I11 | Valorisation manuelle périodique des actifs externes (placements, immobilier) | Besoin      | M8    | ⬜     |
+| I09 | Rapprochement mensualité de crédit ↔ transaction                                                                  | Proposition | M8    | ⬜     |
+| I10 | Alerte d'échéance de crédit et simulateur de remboursement anticipé                                               | Proposition | M8    | ⬜     |
+| I11 | Valorisation manuelle périodique des actifs externes (placements, immobilier)                                     | Besoin      | M8    | ⬜     |
+| I12 | Simulation à long terme des soldes (courant, épargne) : récurrences, crédits, salaire, charges futures prévues    | Proposition | M8    | ⬜     |
+| I13 | Scénarios « et si » comparables (nouvel abonnement, hausse de l'énergie, fin de crédit, épargne mensuelle)        | Proposition | M8    | ⬜     |
 
 ## J. Distribution
 
@@ -153,14 +158,14 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 
 ## K. Après la v1
 
-| ID  | Fonctionnalité                                                | Origine     | Jalon | Statut |
-| --- | ------------------------------------------------------------- | ----------- | ----- | ------ |
-| K01 | Synchronisation chiffrée de bout en bout entre appareils      | Proposition | M10   | ⬜     |
-| K02 | Connexion bancaire DSP2 via un agrégateur agréé               | Proposition | M10   | ⬜     |
-| K03 | Packs pays (Suisse, Belgique, Luxembourg, Québec…)            | Proposition | M10   | ⬜     |
-| K04 | Aide à la déclaration de revenus                              | Proposition | M10   | ⬜     |
-| K05 | Assistant conversationnel sur ses données (local)             | Proposition | M10   | ⬜     |
-| K06 | Extensions (formats, banques, pays) par la communauté         | Proposition | M10   | ⬜     |
-| K07 | Dépenses partagées et notes de frais à rembourser             | Proposition | M10   | ⬜     |
+| ID  | Fonctionnalité                                                                                        | Origine     | Jalon | Statut |
+| --- | ----------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
+| K01 | Synchronisation chiffrée de bout en bout entre appareils                                              | Proposition | M10   | ⬜     |
+| K02 | Connexion bancaire DSP2 via un agrégateur agréé                                                       | Proposition | M10   | ⬜     |
+| K03 | Packs pays (Suisse, Belgique, Luxembourg, Québec…)                                                    | Proposition | M10   | ⬜     |
+| K04 | Aide à la déclaration de revenus                                                                      | Proposition | M10   | ⬜     |
+| K05 | Assistant conversationnel sur ses données (local)                                                     | Proposition | M10   | ⬜     |
+| K06 | Extensions (formats, banques, pays) par la communauté                                                 | Proposition | M10   | ⬜     |
+| K07 | Dépenses partagées et notes de frais à rembourser                                                     | Proposition | M10   | ⬜     |
 | K08 | Cotations automatiques de placements (API boursière), en complément de la valorisation manuelle (I11) | Proposition | M10   | ⬜     |
-| K09 | Mode « Foyer » : comptes et budgets partagés entre plusieurs personnes, visibilité par membre | Proposition | M10   | ⬜     |
+| K09 | Mode « Foyer » : comptes et budgets partagés entre plusieurs personnes, visibilité par membre         | Proposition | M10   | ⬜     |

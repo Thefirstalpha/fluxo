@@ -4,12 +4,12 @@ Fluxo manipule des données parmi les plus sensibles qui soient : opérations ba
 
 ## Actifs à protéger
 
-| Actif                 | Exemples                         | Conséquence d'une fuite                         |
-| --------------------- | -------------------------------- | ----------------------------------------------- |
+| Actif                 | Exemples                                                        | Conséquence d'une fuite                         |
+| --------------------- | --------------------------------------------------------------- | ----------------------------------------------- |
 | Données financières   | Opérations, soldes, budgets, crédits (taux, capital restant dû) | Atteinte à la vie privée, profilage             |
-| Bulletins de paie     | Salaire, NIR, adresse, employeur | Usurpation d'identité                           |
-| Secrets               | Clé de la base, clés d'API IA    | Accès à toutes les données, facturation abusive |
-| Intégrité des calculs | Soldes, bulletins, imports, tableaux d'amortissement | Mauvaises décisions financières                 |
+| Bulletins de paie     | Salaire, NIR, adresse, employeur                                | Usurpation d'identité                           |
+| Secrets               | Clé de la base, clés d'API IA                                   | Accès à toutes les données, facturation abusive |
+| Intégrité des calculs | Soldes, bulletins, imports, tableaux d'amortissement            | Mauvaises décisions financières                 |
 
 ## Menaces considérées
 

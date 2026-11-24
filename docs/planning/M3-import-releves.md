@@ -22,6 +22,7 @@ Importer les relevés de **n'importe quelle banque** sans ressaisie, en sécurit
 - Je veux ré-importer un relevé qui chevauche le précédent **sans créer de doublons**.
 - Je veux **annuler** un import raté en un clic.
 - Je veux être alerté si le solde final ne correspond pas à celui du relevé.
+- Je veux pouvoir combler un écart de solde par un ajustement annoté quand je n'ai plus le relevé manquant, puis le voir disparaître si je l'importe plus tard.
 
 ## Plan d'action
 
@@ -45,6 +46,7 @@ Importer les relevés de **n'importe quelle banque** sans ressaisie, en sécurit
 
 - [ ] Doublons : empreinte exacte (compte + date + montant + libellé normalisé) et correspondance approchée (± 3 jours, libellé proche) → choix « ignorer / importer quand même ». `Besoin`
 - [ ] **Rapprochement des soldes** : solde calculé = solde de clôture du relevé (CAMT, OFX), sinon alerte expliquée. `Proposition`
+- [ ] **Écriture d'ajustement** (mode rattrapage, D11) : depuis un écart détecté, créer une opération de nature « ajustement » du montant de l'écart, note obligatoire, comptée dans le solde mais exclue par défaut des revenus et dépenses ; proposée à la suppression si un import ultérieur couvre la période ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)). `Proposition`
 - [ ] Opérations en attente et cartes à débit différé. `Socle`
 
 ### Lot 4 — Interface
@@ -56,7 +58,7 @@ Importer les relevés de **n'importe quelle banque** sans ressaisie, en sécurit
 
 - Tout fichier est **non fiable** : aucune exécution, processus sans privilège, tailles bornées.
 - XML : aucune entité externe (XXE), aucune expansion d'entités (« billion laughs »).
-- Les fichiers source ne sont pas conservés par défaut (option : coffre des documents, M7).
+- Les fichiers source ne sont pas conservés ([ADR-018](../architecture/decisions.md#adr-018--pas-de-conservation-des-documents-sources-par-défaut)).
 - Export CSV : neutralisation des formules (cellules commençant par `=`, `+`, `-`, `@`).
 
 ## Légèreté & performance
