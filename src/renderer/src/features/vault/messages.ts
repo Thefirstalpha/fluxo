@@ -20,6 +20,12 @@ export function failureMessage(
       return t.vault.errors.corrupt
     case 'vault-too-new':
       return t.vault.errors.tooNew
+    case 'invalid-backup':
+      return t.vault.errors.invalidBackup
+    case 'not-allowed':
+      return t.vault.errors.notPortable
+    case 'cancelled':
+      return t.vault.errors.cancelled
   }
 }
 

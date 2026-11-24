@@ -1,7 +1,17 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import { IPC_CHANNELS, type AppInfo, type FluxoApi } from '@shared/ipc'
 import type { Settings } from '@shared/settings'
-import type { RecoveryCodeResult, VaultResult, VaultStatus } from '@shared/vault'
+import type {
+  BackupInfo,
+  BackupInfoResult,
+  BackupNowResult,
+  ExportResult,
+  PickBackupResult,
+  RecoveryCodeResult,
+  RestorePreviewResult,
+  VaultResult,
+  VaultStatus,
+} from '@shared/vault'
 
 /**
  * Pont minimal et typé entre le renderer (sandboxé) et le process main.
@@ -48,6 +58,23 @@ const api: FluxoApi = {
       ipcRenderer.invoke(IPC_CHANNELS.vaultCreateRecovery, input) as Promise<RecoveryCodeResult>,
     removeRecoveryCode: (input) =>
       ipcRenderer.invoke(IPC_CHANNELS.vaultRemoveRecovery, input) as Promise<VaultResult>,
+    backupNow: () => ipcRenderer.invoke(IPC_CHANNELS.vaultBackupNow) as Promise<BackupNowResult>,
+    backupInfo: () => ipcRenderer.invoke(IPC_CHANNELS.vaultBackupInfo) as Promise<BackupInfo>,
+    chooseBackupDirectory: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.vaultChooseBackupDirectory) as Promise<BackupInfoResult>,
+    resetBackupDirectory: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.vaultResetBackupDirectory) as Promise<BackupInfoResult>,
+    setAutoBackup: (enabled) =>
+      ipcRenderer.invoke(IPC_CHANNELS.vaultSetAutoBackup, enabled) as Promise<BackupInfo>,
+    pickBackup: () => ipcRenderer.invoke(IPC_CHANNELS.vaultPickBackup) as Promise<PickBackupResult>,
+    previewRestore: (input) =>
+      ipcRenderer.invoke(IPC_CHANNELS.vaultPreviewRestore, input) as Promise<RestorePreviewResult>,
+    confirmRestore: (token) =>
+      ipcRenderer.invoke(IPC_CHANNELS.vaultConfirmRestore, token) as Promise<VaultResult>,
+    cancelRestore: () => ipcRenderer.invoke(IPC_CHANNELS.vaultCancelRestore) as Promise<void>,
+    exportData: () => ipcRenderer.invoke(IPC_CHANNELS.vaultExport) as Promise<ExportResult>,
+    eraseAll: (input) =>
+      ipcRenderer.invoke(IPC_CHANNELS.vaultEraseAll, input) as Promise<VaultResult>,
   },
 }
 

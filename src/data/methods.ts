@@ -17,6 +17,9 @@ const sessionBlob = z
   .regex(/^[A-Za-z0-9+/]+={0,2}$/)
   .max(4096)
 const currentPassword = z.strictObject({ currentPassword: secret.optional() })
+/** Chemin absolu fourni par une boîte de dialogue du main (vérifié aussi par le coffre). */
+const path = z.string().min(1).max(4096)
+const token = z.string().regex(/^[0-9a-f]{32}$/)
 
 /** Table des méthodes exposées au process main, chacune avec son schéma d'entrée. */
 export function createMethods(vault: Vault): Readonly<Record<DataServiceMethod, MethodDefinition>> {
@@ -32,6 +35,17 @@ export function createMethods(vault: Vault): Readonly<Record<DataServiceMethod, 
     setSessionMode: (params) => vault.setSessionMode(params),
     createRecoveryCode: (params) => vault.createRecoveryCode(params),
     removeRecoveryCode: (params) => vault.removeRecoveryCode(params),
+    backupNow: () => vault.backupNow(),
+    autoBackupIfDue: () => vault.autoBackupIfDue(),
+    backupInfo: () => vault.backupInfo(),
+    setBackupDirectory: (params) => vault.setBackupDirectory(params),
+    setAutoBackup: (params) => vault.setAutoBackup(params),
+    inspectBackup: (params) => vault.inspectBackup(params),
+    previewRestore: (params) => vault.previewRestore(params),
+    confirmRestore: (params) => vault.confirmRestore(params),
+    cancelRestore: () => vault.cancelRestore(),
+    exportData: (params) => vault.exportData(params),
+    eraseAll: (params) => vault.eraseAll(params),
   }
   return {
     status: defineMethod(noParams, () => api.status()),
@@ -62,5 +76,32 @@ export function createMethods(vault: Vault): Readonly<Record<DataServiceMethod, 
     ),
     createRecoveryCode: defineMethod(currentPassword, (params) => api.createRecoveryCode(params)),
     removeRecoveryCode: defineMethod(currentPassword, (params) => api.removeRecoveryCode(params)),
+    backupNow: defineMethod(noParams, () => api.backupNow()),
+    autoBackupIfDue: defineMethod(noParams, () => api.autoBackupIfDue()),
+    backupInfo: defineMethod(noParams, () => api.backupInfo()),
+    setBackupDirectory: defineMethod(z.strictObject({ directory: path.nullable() }), (params) =>
+      api.setBackupDirectory(params),
+    ),
+    setAutoBackup: defineMethod(z.strictObject({ enabled: z.boolean() }), (params) =>
+      api.setAutoBackup(params),
+    ),
+    inspectBackup: defineMethod(z.strictObject({ file: path }), (params) =>
+      api.inspectBackup(params),
+    ),
+    previewRestore: defineMethod(
+      z.strictObject({
+        token,
+        secret: z
+          .strictObject({ method: z.enum(['password', 'recovery']), value: secret })
+          .optional(),
+      }),
+      (params) => api.previewRestore(params),
+    ),
+    confirmRestore: defineMethod(z.strictObject({ token }), (params) => api.confirmRestore(params)),
+    cancelRestore: defineMethod(noParams, () => api.cancelRestore()),
+    exportData: defineMethod(z.strictObject({ directory: path }), (params) =>
+      api.exportData(params),
+    ),
+    eraseAll: defineMethod(currentPassword, (params) => api.eraseAll(params)),
   }
 }

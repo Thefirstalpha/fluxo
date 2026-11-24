@@ -28,8 +28,8 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 | B01 | Base locale chiffrée au repos (SQLCipher)                             | Besoin      | M1      | ✅     |
 | B02 | Déverrouillage par trousseau du système et/ou mot de passe maître     | Besoin      | M1      | ✅     |
 | B03 | Verrouillage automatique (inactivité, verrouillage de session)        | Proposition | M1      | ✅     |
-| B04 | Sauvegardes chiffrées automatiques, restauration                      | Proposition | M1      | ⬜     |
-| B05 | Export complet des données (JSON, CSV) et suppression totale          | Proposition | M1 → M9 | ⬜     |
+| B04 | Sauvegardes chiffrées automatiques, restauration                      | Proposition | M1      | ✅     |
+| B05 | Export complet des données (JSON, CSV) et suppression totale          | Proposition | M1 → M9 | ✅     |
 | B06 | Aucune télémétrie ; journaux locaux expurgés des données personnelles | Besoin      | M0      | ✅     |
 | B07 | Historique des modifications et annulation                            | Proposition | M2      | ⬜     |
 

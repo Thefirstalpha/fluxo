@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -51,10 +52,14 @@ async function setup(storage = fakeStorage()) {
   vault = await Vault.open(resolveVaultPaths(directory), vi.fn(), {
     kdf: { memoryKiB: 64, iterations: 1, parallelism: 1 },
   })
-  const manager = new VaultManager(inProcessService(vault), storage)
+  const dialogs = {
+    chooseDirectory: vi.fn(() => Promise.resolve<string | null>(null)),
+    chooseBackupFile: vi.fn(() => Promise.resolve<string | null>(null)),
+  }
+  const manager = new VaultManager(inProcessService(vault), storage, dialogs)
   const statuses: VaultStatus[] = []
   manager.onStatusChange((status) => statuses.push(status))
-  return { manager, storage, statuses }
+  return { manager, storage, statuses, dialogs }
 }
 
 describe('VaultManager', () => {
@@ -119,6 +124,65 @@ describe('VaultManager', () => {
     })
     expect(await manager.enableSessionMode({ currentPassword: PASSWORD })).toEqual({ ok: true })
     expect((await manager.status()).mode).toBe('session')
+  })
+})
+
+describe('VaultManager — sauvegardes et effacement', () => {
+  it('annuler une boîte de dialogue ne fait rien', async () => {
+    const { manager } = await setup()
+    await manager.create({ mode: 'password', password: PASSWORD })
+    expect(await manager.pickBackup()).toEqual({ ok: false, reason: 'cancelled' })
+    expect(await manager.exportData()).toEqual({ ok: false, reason: 'cancelled' })
+    expect(await manager.chooseBackupDirectory()).toEqual({ ok: false, reason: 'cancelled' })
+  })
+
+  it('exporte dans le dossier choisi par la boîte de dialogue', async () => {
+    const { manager, dialogs } = await setup()
+    await manager.create({ mode: 'password', password: PASSWORD })
+    dialogs.chooseDirectory.mockResolvedValueOnce(directory)
+    const result = await manager.exportData()
+    expect(result.ok && result.folderName).toMatch(/^Fluxo-export-/)
+    expect(dialogs.chooseDirectory).toHaveBeenCalledWith('export')
+  })
+
+  it('restaure une sauvegarde « session » en reprenant le mode session', async () => {
+    const { manager, dialogs } = await setup()
+    await manager.create({ mode: 'session' })
+    const recovery = await manager.createRecoveryCode({})
+    if (!recovery.ok) throw new Error('code attendu')
+    await manager.backupNow()
+    const backups = join(directory, 'backups')
+    const [file] = readdirSync(backups)
+    dialogs.chooseBackupFile.mockResolvedValueOnce(join(backups, file ?? ''))
+    const picked = await manager.pickBackup()
+    if (!picked.ok) throw new Error('sauvegarde attendue')
+    expect(await manager.previewRestore({ token: picked.token })).toMatchObject({ ok: true })
+    expect(await manager.confirmRestore(picked.token)).toEqual({ ok: true })
+    expect(await manager.status()).toMatchObject({
+      state: 'unlocked',
+      mode: 'session',
+      needsNewPassword: false,
+    })
+  })
+
+  it('« Tout effacer » appelle le nettoyage des journaux et repasse à « absent »', async () => {
+    vault = await Vault.open(resolveVaultPaths(directory), vi.fn(), {
+      kdf: { memoryKiB: 64, iterations: 1, parallelism: 1 },
+    })
+    const onErased = vi.fn(() => Promise.resolve())
+    const manager = new VaultManager(
+      inProcessService(vault),
+      fakeStorage(),
+      {
+        chooseDirectory: () => Promise.resolve(null),
+        chooseBackupFile: () => Promise.resolve(null),
+      },
+      onErased,
+    )
+    await manager.create({ mode: 'session' })
+    expect(await manager.eraseAll({})).toEqual({ ok: true })
+    expect(onErased).toHaveBeenCalledTimes(1)
+    expect((await manager.status()).state).toBe('absent')
   })
 })
 

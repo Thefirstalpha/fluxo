@@ -1,10 +1,11 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { app, BrowserWindow, nativeTheme, powerMonitor, session } from 'electron'
+import { DIALOG_LABELS } from '@shared/i18n/dialogs'
 import { IPC_CHANNELS } from '@shared/ipc'
 import { DataServiceClient } from './data/data-service'
 import { registerIpcHandlers } from './ipc/register'
-import { initFileLogging, logger } from './logger'
+import { clearLogs, initFileLogging, logger } from './logger'
 import { installApplicationMenu } from './menu'
 import { APP_ENTRY_URL, APP_ORIGIN, registerAppScheme, serveAppProtocol } from './protocol'
 import { buildContentSecurityPolicy } from './security/csp'
@@ -13,6 +14,7 @@ import { matchesOrigin, type OriginMatcher } from './security/url'
 import { SettingsStore } from './settings/settings-store'
 import { applyThemePreference, resolvedTheme, syncWindowChrome } from './theme'
 import { startAutoLock } from './vault/auto-lock'
+import { electronVaultDialogs } from './vault/dialogs'
 import { electronSecureStorage } from './vault/secure-storage'
 import { VaultManager } from './vault/vault-manager'
 import { createMainWindow } from './window'
@@ -89,7 +91,10 @@ async function start(): Promise<void> {
   }
 
   // Service de données (base chiffrée) dans un processus utilitaire dédié.
-  const dataService = new DataServiceClient(join(app.getPath('userData'), 'vault'))
+  const dataService = new DataServiceClient(
+    join(app.getPath('userData'), 'vault'),
+    app.getVersion(),
+  )
   app.on('will-quit', (event) => {
     event.preventDefault()
     dataService
@@ -103,7 +108,12 @@ async function start(): Promise<void> {
   applyThemePreference(settings.get().theme)
 
   // Coffre : état diffusé à l'interface, verrouillage automatique, déverrouillage en mode session.
-  const vault = new VaultManager(dataService, electronSecureStorage())
+  const vault = new VaultManager(
+    dataService,
+    electronSecureStorage(),
+    electronVaultDialogs(() => DIALOG_LABELS[settings.get().locale]),
+    clearLogs,
+  )
   vault.onStatusChange((status) => {
     for (const window of BrowserWindow.getAllWindows()) {
       window.webContents.send(IPC_CHANNELS.vaultStatusChanged, status)
@@ -120,6 +130,8 @@ async function start(): Promise<void> {
     lock: (reason) => vault.lock(reason),
     onError: (error) => logger.error('Verrouillage automatique impossible', error),
   })
+  // Sauvegarde automatique : au déverrouillage, puis vérification toutes les heures.
+  setInterval(() => vault.runAutoBackup(), 60 * 60 * 1000).unref()
   try {
     await vault.unlockAtStartup()
     logger.info(`Coffre : ${(await vault.status()).state}.`)

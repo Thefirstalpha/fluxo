@@ -8,6 +8,7 @@ import { getApi } from '../../lib/api'
 import { cx } from '../../lib/cx'
 import { useVaultStore } from '../../stores/vault'
 import { GateLayout } from './GateLayout'
+import { RestoreFlow } from './RestoreFlow'
 import { failureMessage, newPasswordError } from './messages'
 
 function ModeOption({
@@ -65,6 +66,7 @@ export function SetupScreen({ status }: { status: VaultStatus }) {
   const [withRecovery, setWithRecovery] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [restoring, setRestoring] = useState(false)
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -93,6 +95,23 @@ export function SetupScreen({ status }: { status: VaultStatus }) {
       setBusy(false)
       setSetupInProgress(false)
     }
+  }
+
+  if (restoring) {
+    return (
+      <GateLayout title={t.vault.restore.title} description={t.vault.setup.description}>
+        <div className="grid gap-4">
+          <RestoreFlow onClose={() => setRestoring(false)} />
+          <button
+            type="button"
+            className="justify-self-start text-sm text-teal underline-offset-2 hover:underline"
+            onClick={() => setRestoring(false)}
+          >
+            {t.vault.setupBack}
+          </button>
+        </div>
+      </GateLayout>
+    )
   }
 
   return (
@@ -163,6 +182,16 @@ export function SetupScreen({ status }: { status: VaultStatus }) {
         <Button type="submit" variant="primary" disabled={busy} className="justify-self-start">
           {busy ? t.vault.setup.working : t.vault.setup.create}
         </Button>
+
+        <div className="border-t border-border pt-4 text-sm">
+          <button
+            type="button"
+            className="text-teal underline-offset-2 hover:underline"
+            onClick={() => setRestoring(true)}
+          >
+            {t.vault.setupRestore}
+          </button>
+        </div>
       </form>
     </GateLayout>
   )

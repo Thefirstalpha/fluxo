@@ -38,7 +38,7 @@ const kdfSchema = z.strictObject({
   salt: base64,
 })
 
-const wrappedKeySchema = z.strictObject({
+export const wrappedKeySchema = z.strictObject({
   kdf: kdfSchema,
   cipher: z.literal('aes-256-gcm'),
   iv: base64,

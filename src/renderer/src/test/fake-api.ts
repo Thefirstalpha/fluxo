@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import type { AppInfo, FluxoApi } from '@shared/ipc'
 import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@shared/settings'
-import type { VaultStatus } from '@shared/vault'
+import type { BackupInfo, PickBackupResult, VaultStatus } from '@shared/vault'
 
 export const TEST_APP_INFO: AppInfo = {
   name: 'Fluxo',
@@ -23,6 +23,15 @@ export const UNLOCKED_STATUS: VaultStatus = {
   needsNewPassword: false,
   sessionAvailable: true,
   sessionUnavailableReason: null,
+}
+
+export const TEST_BACKUP_INFO: BackupInfo = {
+  directory: '/home/test/.config/Fluxo/vault/backups',
+  isDefault: true,
+  auto: true,
+  lastAutomaticAt: '2026-11-24T08:00:00.000Z',
+  count: 4,
+  portable: true,
 }
 
 /** Double du preload : le renderer ne voit que cette API. Chaque fonction est espionnable. */
@@ -54,6 +63,52 @@ export function createFakeApi() {
         Promise.resolve({ ok: true as const, code: 'ABCD-EFGH-JKMN-PQRS-TVWX-YZ01-2345-6789' }),
       ),
       removeRecoveryCode: vi.fn(ok),
+      backupNow: vi.fn(() =>
+        Promise.resolve({ ok: true as const, createdAt: '2026-11-24T10:00:00.000Z' }),
+      ),
+      backupInfo: vi.fn(() => Promise.resolve(TEST_BACKUP_INFO)),
+      chooseBackupDirectory: vi.fn(() =>
+        Promise.resolve({ ok: true as const, info: TEST_BACKUP_INFO }),
+      ),
+      resetBackupDirectory: vi.fn(() =>
+        Promise.resolve({ ok: true as const, info: TEST_BACKUP_INFO }),
+      ),
+      setAutoBackup: vi.fn((auto: boolean) => Promise.resolve({ ...TEST_BACKUP_INFO, auto })),
+      pickBackup: vi.fn((): Promise<PickBackupResult> =>
+        Promise.resolve({
+          ok: true as const,
+          token: 'a'.repeat(32),
+          summary: {
+            createdAt: '2026-11-20T08:00:00.000Z',
+            kind: 'automatic' as const,
+            appVersion: '0.2.0',
+            sameVault: true,
+            methods: ['password' as const],
+          },
+        }),
+      ),
+      previewRestore: vi.fn(() =>
+        Promise.resolve({
+          ok: true as const,
+          preview: {
+            createdAt: '2026-11-20T08:00:00.000Z',
+            accounts: 3,
+            transactions: 1250,
+            firstDate: '2025-06-01',
+            lastDate: '2026-11-19',
+          },
+        }),
+      ),
+      confirmRestore: vi.fn(ok),
+      cancelRestore: vi.fn(() => Promise.resolve()),
+      exportData: vi.fn(() =>
+        Promise.resolve({
+          ok: true as const,
+          folderName: 'Fluxo-export-20261124-100000',
+          rows: 42,
+        }),
+      ),
+      eraseAll: vi.fn(ok),
     },
   } satisfies FluxoApi
   return api

@@ -1,9 +1,16 @@
 import { randomBytes } from 'node:crypto'
 import type {
+  BackupInfo,
+  BackupInfoResult,
+  BackupNowResult,
   ChangePasswordInput,
   CreateVaultInput,
   CurrentPasswordInput,
+  ExportResult,
+  PickBackupResult,
   RecoveryCodeResult,
+  RestorePreviewResult,
+  RestoreSecret,
   UnlockInput,
   VaultFailure,
   VaultResult,
@@ -21,7 +28,14 @@ export interface DataServiceCaller {
   ): Promise<MethodResult<M>>
 }
 
+/** Boîtes de dialogue du système : le renderer ne fournit jamais de chemin de fichier. */
+export interface VaultDialogs {
+  chooseDirectory(purpose: 'backup' | 'export'): Promise<string | null>
+  chooseBackupFile(): Promise<string | null>
+}
+
 const sessionUnavailable: VaultFailure = { ok: false, reason: 'session-unavailable' }
+const cancelled: VaultFailure = { ok: false, reason: 'cancelled' }
 
 /**
  * Orchestration du coffre côté process main. Le main ne manipule la clé de la base qu'en mode
@@ -34,6 +48,9 @@ export class VaultManager {
   constructor(
     private readonly service: DataServiceCaller,
     private readonly storage: SecureStorage,
+    private readonly dialogs: VaultDialogs,
+    /** Appelé après « Tout effacer » (journaux locaux). */
+    private readonly onErased: () => Promise<void> = () => Promise.resolve(),
   ) {}
 
   onStatusChange(listener: (status: VaultStatus) => void): () => void {
@@ -69,6 +86,7 @@ export class VaultManager {
       await this.service.call('create', { mode: 'password', password: input.password })
     }
     await this.publish()
+    this.runAutoBackup()
     return { ok: true }
   }
 
@@ -94,6 +112,7 @@ export class VaultManager {
       await this.enableSessionMode({})
     }
     await this.publish()
+    this.runAutoBackup()
     return { ok: true }
   }
 
@@ -147,6 +166,94 @@ export class VaultManager {
 
   async removeRecoveryCode(input: CurrentPasswordInput): Promise<VaultResult> {
     const result = await this.service.call('removeRecoveryCode', input)
+    await this.publish()
+    return result
+  }
+
+  // ——— Sauvegardes, restauration, export, effacement ——————————————————
+
+  /** Sauvegarde automatique si elle est due (sans bloquer l'appelant ; erreurs journalisées). */
+  runAutoBackup(): void {
+    this.service
+      .call('status')
+      .then((status) =>
+        status.state === 'unlocked' ? this.service.call('autoBackupIfDue') : false,
+      )
+      .catch((error: unknown) => logger.error('Sauvegarde automatique impossible', error))
+  }
+
+  backupNow(): Promise<BackupNowResult> {
+    return this.service.call('backupNow')
+  }
+
+  backupInfo(): Promise<BackupInfo> {
+    return this.service.call('backupInfo')
+  }
+
+  async chooseBackupDirectory(): Promise<BackupInfoResult> {
+    const directory = await this.dialogs.chooseDirectory('backup')
+    if (!directory) return cancelled
+    return { ok: true, info: await this.service.call('setBackupDirectory', { directory }) }
+  }
+
+  async resetBackupDirectory(): Promise<BackupInfoResult> {
+    return { ok: true, info: await this.service.call('setBackupDirectory', { directory: null }) }
+  }
+
+  setAutoBackup(enabled: boolean): Promise<BackupInfo> {
+    return this.service.call('setAutoBackup', { enabled })
+  }
+
+  async pickBackup(): Promise<PickBackupResult> {
+    const file = await this.dialogs.chooseBackupFile()
+    if (!file) return cancelled
+    return this.service.call('inspectBackup', { file })
+  }
+
+  async previewRestore(input: {
+    token: string
+    secret?: RestoreSecret
+  }): Promise<RestorePreviewResult> {
+    const result = await this.service.call('previewRestore', input)
+    if (!result.ok) await this.publish()
+    return result
+  }
+
+  /**
+   * Remplace la base par la sauvegarde. Restaurée depuis un coffre sans mot de passe utilisable,
+   * elle reprend le mode session si l'utilisateur l'avait choisi (ou s'il n'avait pas de coffre) ;
+   * sinon un nouveau mot de passe est demandé.
+   */
+  async confirmRestore(token: string): Promise<VaultResult> {
+    const before = await this.service.call('status')
+    const result = await this.service.call('confirmRestore', { token })
+    if (result.ok) {
+      const after = await this.service.call('status')
+      const preferSession = before.mode === 'session' || before.state === 'absent'
+      if (after.needsNewPassword && preferSession && !this.storage.unavailableReason()) {
+        await this.enableSessionMode({})
+      }
+    }
+    await this.publish()
+    return result
+  }
+
+  cancelRestore(): Promise<void> {
+    return this.service.call('cancelRestore')
+  }
+
+  async exportData(): Promise<ExportResult> {
+    const directory = await this.dialogs.chooseDirectory('export')
+    if (!directory) return cancelled
+    return this.service.call('exportData', { directory })
+  }
+
+  async eraseAll(input: CurrentPasswordInput): Promise<VaultResult> {
+    const result = await this.service.call('eraseAll', input)
+    if (result.ok) {
+      await this.onErased()
+      logger.info('Coffre effacé.')
+    }
     await this.publish()
     return result
   }

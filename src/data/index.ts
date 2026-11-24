@@ -11,7 +11,11 @@ import { resolveVaultPaths, Vault } from './vault'
 function isInit(value: unknown): value is ServiceInit {
   if (typeof value !== 'object' || value === null) return false
   const candidate = value as Record<string, unknown>
-  return candidate.kind === 'init' && typeof candidate.vaultDirectory === 'string'
+  return (
+    candidate.kind === 'init' &&
+    typeof candidate.vaultDirectory === 'string' &&
+    typeof candidate.appVersion === 'string'
+  )
 }
 
 process.parentPort.once('message', (event) => {
@@ -20,7 +24,9 @@ process.parentPort.once('message', (event) => {
     process.exit(1)
   }
   const log = createPortLogger(port)
-  Vault.open(resolveVaultPaths(event.data.vaultDirectory), log)
+  Vault.open(resolveVaultPaths(event.data.vaultDirectory), log, {
+    appVersion: event.data.appVersion,
+  })
     .then((vault) => {
       serveMethods(port, createMethods(vault), log)
       process.on('exit', () => vault.lock())

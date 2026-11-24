@@ -284,9 +284,10 @@ describe('Vault — schéma et migrations', () => {
     expect(schemaVersion(second.database())).toBe(2)
     const backups = readdirSync(join(directory, 'backups'))
     expect(backups).toHaveLength(1)
-    expect(backups[0]).toMatch(/^pre-migration-v1-.*\.db$/)
-    const header = (await readFile(join(directory, 'backups', backups[0] ?? ''))).subarray(0, 15)
-    expect(header.toString('latin1')).not.toBe('SQLite format 3')
+    expect(backups[0]).toMatch(/^Fluxo-.*-pre-migration\.fluxo-backup$/)
+    const bytes = await readFile(join(directory, 'backups', backups[0] ?? ''))
+    expect(bytes.subarray(0, 8).toString('latin1')).toBe('FLUXOBK1')
+    expect(bytes.includes(Buffer.from('SQLite format 3'))).toBe(false)
     expect(listAudit(second.database()).at(-1)).toMatchObject({
       action: 'migrate',
       after: { version: 2 },

@@ -52,10 +52,10 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 
 ### Lot 4 — Sauvegarde, restauration, export
 
-- [ ] Sauvegarde chiffrée (`VACUUM INTO` + manifeste + empreinte SHA-256), manuelle et automatique, rotation (7 quotidiennes, 4 hebdomadaires, 12 mensuelles), dossier au choix. `Proposition`
-- [ ] Restauration avec vérification d'intégrité et aperçu (date, nombre d'opérations). `Proposition`
-- [ ] Export complet JSON et CSV par entité. `Proposition`
-- [ ] « Tout effacer » : base, sauvegardes locales, journaux, avec confirmation forte. `Proposition`
+- [x] Sauvegarde chiffrée (`VACUUM INTO` + manifeste + empreinte SHA-256) en un fichier `.fluxo-backup`, manuelle et automatique (au déverrouillage puis toutes les 24 h), rotation (7 quotidiennes, 4 hebdomadaires, 12 mensuelles), dossier au choix par boîte de dialogue ([ADR-030](../architecture/decisions.md#adr-030--sauvegardes--un-fichier-chiffré-portable-restauration-vérifiée-en-trois-temps)). `Proposition`
+- [x] Restauration en trois temps : empreinte et `integrity_check` complet, aperçu (date, comptes, opérations, période), confirmation ; sauvegarde « avant restauration » ; restaurable sur un autre ordinateur avec le mot de passe ou le code de récupération. `Proposition`
+- [x] Export complet JSON et CSV par table, non chiffré (avertissement), formules neutralisées dans les CSV. `Proposition`
+- [x] « Tout effacer » : base, enveloppe, sauvegardes, journaux ; mot de confirmation et mot de passe actuel exigés. `Proposition`
 
 ### Lot 5 — Démo & outillage
 

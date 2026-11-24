@@ -158,8 +158,20 @@ Dossier `vault/` du dossier de données de l'application (droits limités à l'u
 | `fluxo.db` (+ `-wal`, `-shm`) | Base SQLite chiffrée au format SQLCipher 4, clé brute de 256 bits                                                                                                                                                                                 |
 | `keystore.json`               | Enveloppe de la clé : format, version, identifiant du coffre (UUID), date de création, mode (`session` ou `password`), enveloppe de session (`safeStorage`), enveloppe mot de passe et enveloppe du code de récupération (Argon2id + AES-256-GCM) |
 | `lockout.json`                | Compteur d'échecs de déverrouillage et date du dernier échec (absent après un succès)                                                                                                                                                             |
+| `backups/`                    | Sauvegardes `Fluxo-<date>-<type>.fluxo-backup` (dossier par défaut ; un autre dossier peut être choisi)                                                                                                                                           |
+| `restore.tmp.db`              | Copie extraite d'une sauvegarde le temps de l'aperçu d'une restauration (supprimée à l'annulation ou au verrouillage)                                                                                                                             |
 
 Une base sans enveloppe (création interrompue) est renommée en `*.orphan-<horodatage>` à la création suivante, jamais supprimée.
+
+Clés de la table `meta` : `vault_id`, `created_at`, `backup_directory` (dossier choisi, absent = dossier par défaut), `backup_auto` (`0` pour désactiver la sauvegarde automatique).
+
+### Sauvegarde (`.fluxo-backup`)
+
+`FLUXOBK1` (8 octets) · longueur du manifeste (uint32 gros-boutiste) · manifeste JSON · base SQLCipher. Manifeste : `format`, `version`, `kind` (`manual`, `automatic`, `pre-migration`, `pre-restore`), `createdAt`, `appVersion`, `vaultId`, `schemaVersion`, `database` (`size`, `sha256`), `keys` (`password`, `recovery` : enveloppes Argon2id + AES-256-GCM, ou `null`). Aucune donnée personnelle dans le manifeste ([ADR-030](decisions.md#adr-030--sauvegardes--un-fichier-chiffré-portable-restauration-vérifiée-en-trois-temps)).
+
+### Export
+
+Dossier `Fluxo-export-<date>/` : `fluxo.json` (`format: fluxo-export`, `version`, `exportedAt`, `schemaVersion`, toutes les tables telles que stockées — montants en centimes) et un fichier CSV par table (RFC 4180, formules neutralisées). Non chiffré.
 
 ## Données dérivées
 

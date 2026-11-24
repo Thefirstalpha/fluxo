@@ -26,7 +26,10 @@ export class DataServiceClient {
   private readonly pending = new Map<number, Pending>()
   private readonly exitListeners = new Set<() => void>()
 
-  constructor(private readonly vaultDirectory: string) {}
+  constructor(
+    private readonly vaultDirectory: string,
+    private readonly appVersion: string,
+  ) {}
 
   call<M extends DataServiceMethod>(
     method: M,
@@ -73,7 +76,11 @@ export class DataServiceClient {
       stdio: 'ignore',
     })
     const { port1, port2 } = new MessageChannelMain()
-    const init: ServiceInit = { kind: 'init', vaultDirectory: this.vaultDirectory }
+    const init: ServiceInit = {
+      kind: 'init',
+      vaultDirectory: this.vaultDirectory,
+      appVersion: this.appVersion,
+    }
     child.postMessage(init, [port2])
 
     port1.on('message', (event) => this.onMessage(event.data))

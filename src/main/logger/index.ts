@@ -1,4 +1,11 @@
-import { createWriteStream, mkdirSync, renameSync, statSync, type WriteStream } from 'node:fs'
+import {
+  createWriteStream,
+  mkdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+  type WriteStream,
+} from 'node:fs'
 import { join } from 'node:path'
 import { format } from 'node:util'
 import { redact } from './redact'
@@ -10,6 +17,7 @@ const MAX_LOG_BYTES = 1_000_000
 let stream: WriteStream | null = null
 let minLevel: Level = 'info'
 let homeDir: string | undefined
+let logDirectory: string | undefined
 
 export interface FileLoggingOptions {
   homeDir?: string
@@ -19,6 +27,7 @@ export interface FileLoggingOptions {
 /** Journal local (dossier de données de l'app), une rotation simple à 1 Mo. Rien n'est envoyé en ligne. */
 export function initFileLogging(directory: string, options: FileLoggingOptions = {}): void {
   homeDir = options.homeDir
+  logDirectory = directory
   minLevel = options.debug ? 'debug' : 'info'
   mkdirSync(directory, { recursive: true })
   const file = join(directory, 'fluxo.log')
@@ -43,4 +52,18 @@ export const logger = {
   info: (...args: unknown[]): void => write('info', args),
   warn: (...args: unknown[]): void => write('warn', args),
   error: (...args: unknown[]): void => write('error', args),
+}
+
+/** « Tout effacer » : supprime les journaux puis repart d'un journal vide. */
+export async function clearLogs(): Promise<void> {
+  const directory = logDirectory
+  if (!directory) return
+  const current = stream
+  stream = null
+  await new Promise<void>((resolve) => {
+    if (current) current.end(resolve)
+    else resolve()
+  })
+  for (const name of ['fluxo.log', 'fluxo.1.log']) rmSync(join(directory, name), { force: true })
+  stream = createWriteStream(join(directory, 'fluxo.log'), { flags: 'a', mode: 0o600 })
 }

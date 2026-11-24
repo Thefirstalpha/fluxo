@@ -14,6 +14,12 @@ export interface Formatters {
   percent: (value: number, options?: { signed?: boolean; digits?: number }) => string
   /** « 2026-11 » → « novembre 2026 » (long) ou « nov. 26 » (short). */
   month: (month: string, style?: 'long' | 'short') => string
+  /** Horodatage ISO → date et heure locales (« 24 nov. 2026, 10:05 »). */
+  dateTime: (iso: string) => string
+  /** Date calendaire `AAAA-MM-JJ` → « 24 nov. 2026 » (sans fuseau horaire). */
+  date: (isoDate: string) => string
+  /** Nombre entier localisé (« 1 250 »). */
+  count: (value: number) => string
 }
 
 export function capitalize(text: string): string {
@@ -35,6 +41,9 @@ export function createFormatters({
     year: '2-digit',
     timeZone: 'UTC',
   })
+  const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' })
+  const calendarDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' })
+  const integer = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
   return {
     money: (amount, { signed = false, compact = false } = {}) =>
       hideAmounts
@@ -54,6 +63,9 @@ export function createFormatters({
       }).format(value),
     month: (month, style = 'long') =>
       (style === 'long' ? longMonth : shortMonth).format(monthToUtcDate(month)),
+    dateTime: (iso) => dateTime.format(new Date(iso)),
+    date: (isoDate) => calendarDate.format(new Date(`${isoDate}T00:00:00Z`)),
+    count: (value) => integer.format(value),
   }
 }
 

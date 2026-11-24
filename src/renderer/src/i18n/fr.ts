@@ -187,6 +187,38 @@ export const fr = {
         'Vous avez ouvert le coffre avec le code de récupération. Définissez un nouveau mot de passe maître pour continuer.',
       save: 'Enregistrer le mot de passe',
     },
+    restore: {
+      title: 'Restaurer une sauvegarde',
+      description:
+        'Choisissez un fichier « .fluxo-backup ». Rien n’est remplacé avant votre confirmation.',
+      choose: 'Choisir le fichier…',
+      backupOf: (date: string) => `Sauvegarde du ${date}`,
+      kinds: {
+        manual: 'manuelle',
+        automatic: 'automatique',
+        'pre-migration': 'avant mise à jour',
+        'pre-restore': 'avant restauration',
+      },
+      secretTitle: 'Cette sauvegarde vient d’un autre coffre',
+      secretDescription:
+        'Saisissez le mot de passe maître ou le code de récupération qui protégeait ce coffre.',
+      usePassword: 'Mot de passe',
+      useRecovery: 'Code de récupération',
+      check: 'Vérifier la sauvegarde',
+      previewTitle: 'Contenu de la sauvegarde',
+      accounts: 'Comptes',
+      transactions: 'Opérations',
+      period: 'Période',
+      periodValue: (from: string, to: string) => `du ${from} au ${to}`,
+      empty: 'aucune opération',
+      replaceWarning:
+        'Les données actuelles de ce coffre seront remplacées. Une sauvegarde « avant restauration » en est faite juste avant.',
+      confirm: 'Restaurer',
+      cancel: 'Annuler',
+      done: 'Sauvegarde restaurée.',
+    },
+    setupRestore: 'J’ai déjà une sauvegarde Fluxo : la restaurer',
+    setupBack: 'Créer un nouveau coffre plutôt',
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
     errors: {
@@ -201,6 +233,11 @@ export const fr = {
         'La base est endommagée et ne peut pas être ouverte. Elle n’a pas été modifiée ; une sauvegarde pourra la remplacer.',
       tooNew:
         'Ce coffre a été enregistré par une version plus récente de Fluxo. Mettez Fluxo à jour pour l’ouvrir (il n’a pas été modifié).',
+      invalidBackup:
+        'Ce fichier n’est pas une sauvegarde Fluxo valide (endommagé, tronqué ou modifié). Rien n’a été remplacé.',
+      notPortable:
+        'Cette sauvegarde vient d’un coffre ouvert par sa session, sans code de récupération : elle ne peut être restaurée que dans ce même coffre.',
+      cancelled: 'Opération annulée.',
       generic: 'L’opération a échoué. Le détail est consigné dans le journal local.',
     },
   },
@@ -225,6 +262,37 @@ export const fr = {
       contentProtection: 'Bloquer les captures d’écran',
       contentProtectionHint:
         'Exclut la fenêtre des captures et des partages d’écran (Windows et macOS).',
+    },
+    data: {
+      title: 'Sauvegardes et données',
+      description:
+        'Les sauvegardes sont chiffrées comme la base. Gardez-en une copie hors de cet ordinateur (clé USB, disque externe).',
+      auto: 'Sauvegarde automatique quotidienne',
+      autoHint:
+        'Au déverrouillage, puis toutes les 24 h. Conservation : 7 jours, 4 semaines, 12 mois.',
+      lastAutomatic: (date: string) => `Dernière sauvegarde automatique : ${date}`,
+      noAutomatic: 'Aucune sauvegarde automatique pour le moment.',
+      count: (count: number) => `${count} sauvegarde(s) dans le dossier`,
+      folder: 'Dossier',
+      folderDefault: 'dossier par défaut',
+      backupNow: 'Sauvegarder maintenant',
+      backupDone: (date: string) => `Sauvegarde créée (${date}).`,
+      chooseFolder: 'Choisir un dossier…',
+      defaultFolder: 'Revenir au dossier par défaut',
+      notPortable:
+        'Ces sauvegardes ne pourront être restaurées que dans ce coffre : créez un code de récupération pour pouvoir les restaurer sur un autre ordinateur.',
+      restore: 'Restaurer une sauvegarde…',
+      export: 'Exporter mes données…',
+      exportHint:
+        'JSON et CSV (un fichier par table), lisibles par un tableur. Attention : ces fichiers ne sont pas chiffrés.',
+      exportDone: (folder: string, rows: number) => `Export « ${folder} » créé (${rows} lignes).`,
+      eraseTitle: 'Tout effacer',
+      eraseDescription:
+        'Supprime la base, l’enveloppe de clé, les sauvegardes et les journaux de Fluxo sur cet ordinateur. Irréversible.',
+      erase: 'Tout effacer…',
+      eraseConfirmWord: 'EFFACER',
+      eraseConfirmLabel: (word: string) => `Pour confirmer, saisissez ${word}`,
+      eraseButton: 'Effacer définitivement',
     },
     security: {
       title: 'Sécurité du coffre',

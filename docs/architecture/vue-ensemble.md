@@ -80,7 +80,8 @@ fluxo/
 │  │  ├─ data/         Client du service de données (utilityProcess, MessagePort)
 │  │  ├─ window-state/ Taille et position de la fenêtre (adaptées aux écrans branchés)
 │  │  └─ fs/           Écriture atomique de petits fichiers
-│  ├─ data/            Service de données (utilityProcess) : RPC, base SQLCipher, coffre
+│  ├─ data/            Service de données (utilityProcess) : RPC, base SQLCipher, coffre,
+│  │                   schéma et migrations, sauvegardes (backup/), export
 │  ├─ preload/         Pont contextBridge (window.fluxo) et ses types
 │  ├─ renderer/        Interface React
 │  │  └─ src/

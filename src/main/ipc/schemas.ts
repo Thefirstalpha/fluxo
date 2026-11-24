@@ -41,3 +41,11 @@ export const changePasswordSchema = z.strictObject({
   currentPassword: password.optional(),
   newPassword: password,
 }) satisfies z.ZodType<ChangePasswordInput>
+
+/** Jeton de restauration émis par le service (le renderer ne voit jamais le chemin du fichier). */
+export const restoreTokenSchema = z.string().regex(/^[0-9a-f]{32}$/)
+
+export const previewRestoreSchema = z.strictObject({
+  token: restoreTokenSchema,
+  secret: z.strictObject({ method: z.enum(['password', 'recovery']), value: password }).optional(),
+})

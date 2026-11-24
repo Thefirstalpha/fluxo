@@ -41,6 +41,9 @@ export type VaultFailureReason =
   | 'session-unavailable'
   | 'vault-corrupt'
   | 'vault-too-new'
+  | 'invalid-backup'
+  | 'cancelled'
+  | 'not-allowed'
 
 export interface VaultFailure {
   ok: false
@@ -62,6 +65,58 @@ export interface CurrentPasswordInput {
 export interface ChangePasswordInput extends CurrentPasswordInput {
   newPassword: string
 }
+
+// ——— Sauvegardes, restauration, export ——————————————————————————————
+
+export type BackupKind = 'manual' | 'automatic' | 'pre-migration' | 'pre-restore'
+
+export interface BackupInfo {
+  /** Dossier des sauvegardes (affichage seulement : le renderer ne fournit jamais de chemin). */
+  directory: string
+  isDefault: boolean
+  /** Sauvegarde automatique quotidienne (au déverrouillage, puis toutes les 24 h). */
+  auto: boolean
+  lastAutomaticAt: string | null
+  count: number
+  /**
+   * Restaurable sur un autre ordinateur : il faut une enveloppe mot de passe ou un code de
+   * récupération (l'enveloppe de session est liée à ce poste).
+   */
+  portable: boolean
+}
+
+export type BackupNowResult = { ok: true; createdAt: string } | VaultFailure
+
+export type BackupInfoResult = { ok: true; info: BackupInfo } | VaultFailure
+
+/** Sauvegarde choisie pour une restauration (seul un jeton la désigne côté renderer). */
+export interface BackupSummary {
+  createdAt: string
+  kind: BackupKind
+  appVersion: string
+  /** Sauvegarde du coffre ouvert : aucune saisie n'est nécessaire. */
+  sameVault: boolean
+  methods: ('password' | 'recovery')[]
+}
+
+export type PickBackupResult = { ok: true; token: string; summary: BackupSummary } | VaultFailure
+
+export interface RestoreSecret {
+  method: 'password' | 'recovery'
+  value: string
+}
+
+export interface RestorePreview {
+  createdAt: string
+  accounts: number
+  transactions: number
+  firstDate: string | null
+  lastDate: string | null
+}
+
+export type RestorePreviewResult = { ok: true; preview: RestorePreview } | VaultFailure
+
+export type ExportResult = { ok: true; folderName: string; rows: number } | VaultFailure
 
 // ——— Règles de mot de passe ————————————————————————————————————————
 

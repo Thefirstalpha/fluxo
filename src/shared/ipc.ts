@@ -1,9 +1,16 @@
 import type { Settings, SettingsPatch } from './settings'
 import type {
+  BackupInfo,
+  BackupInfoResult,
+  BackupNowResult,
   ChangePasswordInput,
   CreateVaultInput,
   CurrentPasswordInput,
+  ExportResult,
+  PickBackupResult,
   RecoveryCodeResult,
+  RestorePreviewResult,
+  RestoreSecret,
   UnlockInput,
   VaultResult,
   VaultStatus,
@@ -29,6 +36,17 @@ export const IPC_CHANNELS = {
   vaultEnableSession: 'fluxo:vault:enable-session',
   vaultCreateRecovery: 'fluxo:vault:create-recovery',
   vaultRemoveRecovery: 'fluxo:vault:remove-recovery',
+  vaultBackupNow: 'fluxo:vault:backup-now',
+  vaultBackupInfo: 'fluxo:vault:backup-info',
+  vaultChooseBackupDirectory: 'fluxo:vault:choose-backup-directory',
+  vaultResetBackupDirectory: 'fluxo:vault:reset-backup-directory',
+  vaultSetAutoBackup: 'fluxo:vault:set-auto-backup',
+  vaultPickBackup: 'fluxo:vault:pick-backup',
+  vaultPreviewRestore: 'fluxo:vault:preview-restore',
+  vaultConfirmRestore: 'fluxo:vault:confirm-restore',
+  vaultCancelRestore: 'fluxo:vault:cancel-restore',
+  vaultExport: 'fluxo:vault:export',
+  vaultEraseAll: 'fluxo:vault:erase-all',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -91,5 +109,19 @@ export interface FluxoApi {
     enableSessionMode(input: CurrentPasswordInput): Promise<VaultResult>
     createRecoveryCode(input: CurrentPasswordInput): Promise<RecoveryCodeResult>
     removeRecoveryCode(input: CurrentPasswordInput): Promise<VaultResult>
+    backupNow(): Promise<BackupNowResult>
+    backupInfo(): Promise<BackupInfo>
+    /** Ouvre une boîte de dialogue du système : le renderer ne fournit jamais de chemin. */
+    chooseBackupDirectory(): Promise<BackupInfoResult>
+    resetBackupDirectory(): Promise<BackupInfoResult>
+    setAutoBackup(enabled: boolean): Promise<BackupInfo>
+    /** Boîte de dialogue, puis lecture du manifeste ; la sauvegarde est désignée par un jeton. */
+    pickBackup(): Promise<PickBackupResult>
+    previewRestore(input: { token: string; secret?: RestoreSecret }): Promise<RestorePreviewResult>
+    confirmRestore(token: string): Promise<VaultResult>
+    cancelRestore(): Promise<void>
+    /** Export en clair (JSON, CSV) dans un dossier choisi par boîte de dialogue. */
+    exportData(): Promise<ExportResult>
+    eraseAll(input: CurrentPasswordInput): Promise<VaultResult>
   }
 }

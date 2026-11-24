@@ -14,6 +14,8 @@ import {
   createVaultSchema,
   currentPasswordSchema,
   errorReportSchema,
+  previewRestoreSchema,
+  restoreTokenSchema,
   unlockSchema,
 } from './schemas'
 
@@ -74,4 +76,21 @@ export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDep
   handle(IPC_CHANNELS.vaultRemoveRecovery, currentPasswordSchema, (input) =>
     vault.removeRecoveryCode(input),
   )
+
+  // Sauvegardes, restauration, export, effacement : les chemins viennent des boîtes de dialogue.
+  handle(IPC_CHANNELS.vaultBackupNow, noInput, () => vault.backupNow())
+  handle(IPC_CHANNELS.vaultBackupInfo, noInput, () => vault.backupInfo())
+  handle(IPC_CHANNELS.vaultChooseBackupDirectory, noInput, () => vault.chooseBackupDirectory())
+  handle(IPC_CHANNELS.vaultResetBackupDirectory, noInput, () => vault.resetBackupDirectory())
+  handle(IPC_CHANNELS.vaultSetAutoBackup, z.boolean(), (enabled) => vault.setAutoBackup(enabled))
+  handle(IPC_CHANNELS.vaultPickBackup, noInput, () => vault.pickBackup())
+  handle(IPC_CHANNELS.vaultPreviewRestore, previewRestoreSchema, (input) =>
+    vault.previewRestore(input),
+  )
+  handle(IPC_CHANNELS.vaultConfirmRestore, restoreTokenSchema, (token) =>
+    vault.confirmRestore(token),
+  )
+  handle(IPC_CHANNELS.vaultCancelRestore, noInput, () => vault.cancelRestore())
+  handle(IPC_CHANNELS.vaultExport, noInput, () => vault.exportData())
+  handle(IPC_CHANNELS.vaultEraseAll, currentPasswordSchema, (input) => vault.eraseAll(input))
 }

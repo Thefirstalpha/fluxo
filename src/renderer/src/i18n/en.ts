@@ -184,6 +184,37 @@ export const en: Dictionary = {
         'You opened the vault with the recovery code. Set a new master password to continue.',
       save: 'Save the password',
     },
+    restore: {
+      title: 'Restore a backup',
+      description: 'Choose a “.fluxo-backup” file. Nothing is replaced before you confirm.',
+      choose: 'Choose the file…',
+      backupOf: (date: string) => `Backup from ${date}`,
+      kinds: {
+        manual: 'manual',
+        automatic: 'automatic',
+        'pre-migration': 'before update',
+        'pre-restore': 'before restore',
+      },
+      secretTitle: 'This backup comes from another vault',
+      secretDescription:
+        'Enter the master password or the recovery code that protected that vault.',
+      usePassword: 'Password',
+      useRecovery: 'Recovery code',
+      check: 'Check the backup',
+      previewTitle: 'Backup contents',
+      accounts: 'Accounts',
+      transactions: 'Transactions',
+      period: 'Period',
+      periodValue: (from: string, to: string) => `from ${from} to ${to}`,
+      empty: 'no transactions',
+      replaceWarning:
+        'The current data of this vault will be replaced. A “before restore” backup is made just before.',
+      confirm: 'Restore',
+      cancel: 'Cancel',
+      done: 'Backup restored.',
+    },
+    setupRestore: 'I already have a Fluxo backup: restore it',
+    setupBack: 'Create a new vault instead',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
     errors: {
@@ -198,6 +229,11 @@ export const en: Dictionary = {
         'The database is damaged and cannot be opened. It has not been modified; a backup will be able to replace it.',
       tooNew:
         'This vault was saved by a newer version of Fluxo. Update Fluxo to open it (it has not been modified).',
+      invalidBackup:
+        'This file is not a valid Fluxo backup (damaged, truncated or modified). Nothing was replaced.',
+      notPortable:
+        'This backup comes from a vault opened by its session, without a recovery code: it can only be restored into that same vault.',
+      cancelled: 'Operation cancelled.',
       generic: 'The operation failed. Details are recorded in the local log.',
     },
   },
@@ -222,6 +258,36 @@ export const en: Dictionary = {
       contentProtection: 'Block screenshots',
       contentProtectionHint:
         'Excludes the window from screenshots and screen sharing (Windows and macOS).',
+    },
+    data: {
+      title: 'Backups and data',
+      description:
+        'Backups are encrypted like the database. Keep a copy away from this computer (USB stick, external drive).',
+      auto: 'Daily automatic backup',
+      autoHint: 'When unlocking, then every 24 h. Kept: 7 days, 4 weeks, 12 months.',
+      lastAutomatic: (date: string) => `Last automatic backup: ${date}`,
+      noAutomatic: 'No automatic backup yet.',
+      count: (count: number) => `${count} backup(s) in the folder`,
+      folder: 'Folder',
+      folderDefault: 'default folder',
+      backupNow: 'Back up now',
+      backupDone: (date: string) => `Backup created (${date}).`,
+      chooseFolder: 'Choose a folder…',
+      defaultFolder: 'Back to the default folder',
+      notPortable:
+        'These backups can only be restored into this vault: create a recovery code to be able to restore them on another computer.',
+      restore: 'Restore a backup…',
+      export: 'Export my data…',
+      exportHint:
+        'JSON and CSV (one file per table), readable by a spreadsheet. Warning: these files are not encrypted.',
+      exportDone: (folder: string, rows: number) => `Export “${folder}” created (${rows} rows).`,
+      eraseTitle: 'Erase everything',
+      eraseDescription:
+        'Deletes Fluxo’s database, key envelope, backups and logs on this computer. Cannot be undone.',
+      erase: 'Erase everything…',
+      eraseConfirmWord: 'ERASE',
+      eraseConfirmLabel: (word: string) => `To confirm, type ${word}`,
+      eraseButton: 'Erase permanently',
     },
     security: {
       title: 'Vault security',

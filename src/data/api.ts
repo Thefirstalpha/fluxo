@@ -4,9 +4,15 @@
  * Ce module ne contient que des types : il est importé par le main et par le service.
  */
 import type {
+  BackupInfo,
+  BackupNowResult,
   ChangePasswordInput,
   CurrentPasswordInput,
+  ExportResult,
+  PickBackupResult,
   RecoveryCodeResult,
+  RestorePreviewResult,
+  RestoreSecret,
   VaultFailure,
   VaultMode,
   VaultResult,
@@ -48,6 +54,19 @@ export interface DataServiceApi {
   setSessionMode(params: { sessionBlob: string }): Promise<VaultResult>
   createRecoveryCode(params: CurrentPasswordInput): Promise<RecoveryCodeResult>
   removeRecoveryCode(params: CurrentPasswordInput): Promise<VaultResult>
+  backupNow(): Promise<BackupNowResult>
+  /** Sauvegarde automatique si la dernière a plus de 24 h ; `true` si une sauvegarde a été faite. */
+  autoBackupIfDue(): Promise<boolean>
+  backupInfo(): Promise<BackupInfo>
+  /** `null` : dossier par défaut. Le chemin vient d'une boîte de dialogue du main. */
+  setBackupDirectory(params: { directory: string | null }): Promise<BackupInfo>
+  setAutoBackup(params: { enabled: boolean }): Promise<BackupInfo>
+  inspectBackup(params: { file: string }): Promise<PickBackupResult>
+  previewRestore(params: { token: string; secret?: RestoreSecret }): Promise<RestorePreviewResult>
+  confirmRestore(params: { token: string }): Promise<VaultResult>
+  cancelRestore(): void
+  exportData(params: { directory: string }): ExportResult
+  eraseAll(params: CurrentPasswordInput): Promise<VaultResult>
 }
 
 export type DataServiceMethod = keyof DataServiceApi
@@ -59,4 +78,5 @@ export interface ServiceInit {
   kind: 'init'
   /** Dossier du coffre (base, enveloppe de clé, sauvegardes par défaut). */
   vaultDirectory: string
+  appVersion: string
 }

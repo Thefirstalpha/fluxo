@@ -11,6 +11,7 @@ import { LOCALE_LABELS, useT } from '../../i18n'
 import { getApi } from '../../lib/api'
 import { useSettingsStore } from '../../stores/settings'
 import { ThemePicker } from './ThemePicker'
+import { DataSettings } from './DataSettings'
 import { VaultSettings } from './VaultSettings'
 
 function SelectField<T extends string>({
@@ -111,6 +112,8 @@ export default function SettingsPage() {
         </Card>
 
         <VaultSettings />
+
+        <DataSettings />
 
         <Card title={t.settings.privacy.title}>
           <div className="divide-y divide-border">

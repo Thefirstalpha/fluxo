@@ -28,6 +28,8 @@ Jalons [M0 — Fondations](docs/planning/M0-fondations.md) (socle applicatif, in
 
 - **Coffre chiffré** (M1) : au premier lancement, création d'une base chiffrée sur l'ordinateur, ouverte par la session du système (sans mot de passe) ou par un mot de passe maître ; code de récupération facultatif, affiché une seule fois ; changement de mot de passe et de mode dans les paramètres ; verrouillage depuis la barre de titre, à l'inactivité, au verrouillage de la session et à la mise en veille.
 
+- **Sauvegardes** (M1) : sauvegarde chiffrée automatique (quotidienne, conservée 7 jours, 4 semaines et 12 mois) et à la demande, dans le dossier de votre choix ; restauration vérifiée avec aperçu, y compris sur un autre ordinateur (mot de passe ou code de récupération) ; export complet en JSON et CSV ; « Tout effacer ».
+
 ### Sécurité
 
 - Renderer isolé : `sandbox`, `contextIsolation`, pas de Node.js, balise `<webview>` désactivée, bac à sable activé pour toute l'application.
