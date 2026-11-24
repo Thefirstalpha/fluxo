@@ -1,6 +1,6 @@
 # M0 — Fondations
 
-> **Statut : 🟡 Poussé sur GitHub, vérifications finales en cours** — tout le travail réalisable sur le poste est livré et vérifié (24/11/2026, Windows 11), et le dépôt `Thefirstalpha/fluxo` est créé et poussé. Restent les **réglages sur GitHub** (lot A), puis constater la CI verte et le packaging sur les trois systèmes (lots B et C). Le jalon sera clos à ce moment-là.
+> **Statut : ✅ Livré et vérifié** — tout le socle local et la CI multi-OS (Ubuntu, macOS, Windows : qualité, tests unitaires, E2E, packaging et CodeQL) sont au vert (24/11/2026). _(Note : le workflow `Scorecard` échoue pour l'instant côté registre sur `ghcr.io/ossf/scorecard-action:v2.6.0`.)_
 > Taille : M · Dépend de : — · Version : 0.1
 
 ## Objectif
@@ -133,7 +133,7 @@ Points d'attention :
 ### Lot C — Packaging & finitions
 
 - [x] Valider `npm run package` sous **Windows** (24/11/2026) : l'application packagée démarre avec les fuses actifs (lus dans `Fluxo.exe` : `RunAsNode`, `NODE_OPTIONS` et `--inspect` coupés ; intégrité ASAR et chargement depuis l'ASAR seul actifs) et sert l'interface par `app://`. `Socle`
-- [ ] Valider `npm run package` sous **macOS et Linux** : étape `npm run package` de la matrice CI (lot B), à constater au premier passage de la CI. `Socle`
+- [x] Valider `npm run package` sous **macOS et Linux** : étape `npm run package` de la matrice CI (lot B), constatée au vert sur le run `45448897969` (24/11/2026). `Socle`
 - [x] Mémoriser la taille, la position et la maximisation de la fenêtre (`window-state.json`, validé par schéma) ; une position hors des écrans actuels (écran débranché) est recentrée. `Proposition`
 - [x] Gestion des erreurs de l'interface : `ErrorBoundary` global et par page (la navigation reste utilisable), écran d'erreur traduit, remontée des erreurs de rendu, exceptions et promesses rejetées vers le journal local — canal IPC dédié, schéma strict, champs bornés, 20 rapports par minute au plus, contenu expurgé par le journal. `Socle`
 - [x] Polices : seuls les sous-ensembles latin et latin-ext d'Inter et de Bebas Neue sont déclarés, en WOFF2 uniquement (−101 Ko de polices dans le paquet ; CSS 26 → 25 Ko). `Proposition`
@@ -143,9 +143,9 @@ Points d'attention :
 - [x] L'application démarre en développement et en build de production ; thème appliqué sans flash.
 - [x] Renderer isolé, CSP stricte, IPC validé — vérifiés par les tests E2E.
 - [x] Tests unitaires et E2E verts ; types et lint sans erreur.
-- [ ] CI verte sur Windows, macOS et Linux.
+- [x] CI verte sur Windows, macOS et Linux.
 - [x] Dépôt public prêt : licence, fichiers communautaires, valeurs provisoires remplacées, dépôt GitHub créé et poussé.
-- [ ] Packaging vérifié sur les trois systèmes (Windows ✅ ; macOS et Linux par la CI).
+- [x] Packaging vérifié sur les trois systèmes (Windows, macOS et Linux par la CI).
 
 ## Risques & questions
 

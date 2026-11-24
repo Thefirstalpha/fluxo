@@ -8,7 +8,7 @@ Fluxo est livré par **jalons** successifs, ordonnés par importance et par logi
 
 | Jalon                            | Titre                         | Objectif                                                                                | Statut                   | Taille | Version         |
 | -------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------ | ------ | --------------- |
-| [M0](M0-fondations.md)           | Fondations                    | Socle Electron sécurisé, interface, design, i18n, tests, CI                             | 🟡 Livré, CI à constater | M      | 0.1             |
+| [M0](M0-fondations.md)           | Fondations                    | Socle Electron sécurisé, interface, design, i18n, tests, CI                             | ✅ Livré                 | M      | 0.1             |
 | [M1](M1-coffre-fort.md)          | Coffre-fort local             | Base chiffrée, déverrouillage, sauvegardes, migrations                                  | 🟡 Livré, CI à constater | L      | 0.2             |
 | [M2](M2-comptes-transactions.md) | Comptes & transactions        | Registre rapide, ventilation, virements, catégories                                     | 🟡 En cours              | L      | 0.3             |
 | [M3](M3-import-releves.md)       | Import des relevés            | CSV, OFX/QFX, QIF, CAMT.053, doublons, annulation                                       | ⬜                       | L      | 0.4 · **Alpha** |
