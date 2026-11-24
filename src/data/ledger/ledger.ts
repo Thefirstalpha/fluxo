@@ -19,9 +19,12 @@ import {
   mergeCategory,
   updateCategory,
 } from './categories'
-import { auditChanges, ChangeSet } from './changes'
-import { databaseRuleError, LedgerFailure } from './failure'
+import { auditChanges, ChangeSet, TRACKED_TABLES } from './changes'
+import { getDashboardSummary } from './dashboard'
+import { databaseRuleError, fail, LedgerFailure } from './failure'
+import { HISTORY_LIMIT, listAuditEntries, statusOfHistory, type HistoryEntry } from './history'
 import { getTransactionDetail, listTransactions, summarizeTransactions } from './queries'
+import { deleteSavedFilter, listSavedFilters, saveSavedFilter } from './saved-filters'
 import { createTag, deleteTag, listPayees, listTags, updateTag } from './tags'
 import {
   categorizeTransactions,
@@ -43,6 +46,8 @@ type Handlers = { [M in LedgerMethod]: (input: ParsedLedgerInputs[M]) => LedgerO
  */
 export class Ledger {
   private readonly handlers: Handlers
+  private readonly undoStack: HistoryEntry[] = []
+  private readonly redoStack: HistoryEntry[] = []
 
   constructor(
     readonly db: Db,
@@ -108,6 +113,18 @@ export class Ledger {
         write('category-archive', (changes) => archiveCategory(changes, input, this.now())),
       categoryDelete: (input) =>
         write('category-delete', (changes) => deleteCategory(changes, input, this.now())),
+
+      savedFiltersList: () => listSavedFilters(db),
+      savedFilterSave: (input) =>
+        write('saved-filter-save', (changes) => saveSavedFilter(changes, input, this.now())),
+      savedFilterDelete: (input) =>
+        write('saved-filter-delete', (changes) => deleteSavedFilter(changes, input)),
+
+      auditList: (input) => listAuditEntries(db, input),
+      ledgerHistoryStatus: () => statusOfHistory(this.undoStack, this.redoStack),
+      ledgerUndo: () => this.applyHistory('undo'),
+      ledgerRedo: () => this.applyHistory('redo'),
+      dashboardSummary: (input) => getDashboardSummary(db, input, this.now()),
     }
   }
 
@@ -130,8 +147,41 @@ export class Ledger {
     return this.db.transaction(() => {
       const changes = new ChangeSet(this.db)
       const result = apply(changes)
-      auditChanges(this.db, changes.changes, { origin: 'user', action, now: this.now() })
+      const now = this.now()
+      auditChanges(this.db, changes.changes, { origin: 'user', action, now })
+      if (changes.changes.some((change) => TRACKED_TABLES[change.table].entity !== null)) {
+        this.pushHistory(this.undoStack, { action, changes: changes.changes })
+        this.redoStack.length = 0
+      }
       return result
     })()
+  }
+
+  private applyHistory(direction: 'undo' | 'redo'): { action: string } {
+    const source = direction === 'undo' ? this.undoStack : this.redoStack
+    const target = direction === 'undo' ? this.redoStack : this.undoStack
+    const entry = source.at(-1)
+    if (!entry) fail('nothing-to-undo')
+
+    const inverse = this.db.transaction(() => {
+      const changes = new ChangeSet(this.db)
+      if (!changes.revert(entry.changes)) fail('conflict')
+      auditChanges(this.db, changes.changes, {
+        origin: 'user',
+        action: `${direction}:${entry.action}`,
+        now: this.now(),
+        auditAction: 'revert',
+      })
+      return changes.changes
+    })()
+
+    source.pop()
+    this.pushHistory(target, { action: entry.action, changes: inverse })
+    return { action: entry.action }
+  }
+
+  private pushHistory(stack: HistoryEntry[], entry: HistoryEntry): void {
+    stack.push(entry)
+    if (stack.length > HISTORY_LIMIT) stack.shift()
   }
 }

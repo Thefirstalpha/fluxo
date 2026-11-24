@@ -8,6 +8,7 @@ import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
 import {
   ACCOUNT_TYPES,
+  AUDIT_ENTITIES,
   CATEGORY_KINDS,
   LEDGER_ICONS,
   PALETTE,
@@ -211,6 +212,30 @@ export const LEDGER_INPUTS = {
     reassignTo: idSchema.nullable().optional(),
   }),
   categoryDelete: byId,
+
+  savedFiltersList: z.strictObject({}),
+  savedFilterSave: z.strictObject({
+    id: idSchema.optional(),
+    name: requiredText(100),
+    filter: filterSchema,
+  }),
+  savedFilterDelete: byId,
+  auditList: z.strictObject({
+    entity: z.enum(AUDIT_ENTITIES).optional(),
+    entityId: idSchema.optional(),
+    limit: z.int().min(1).max(200).optional(),
+  }),
+  ledgerHistoryStatus: z.strictObject({}),
+  ledgerUndo: z.strictObject({}),
+  ledgerRedo: z.strictObject({}),
+  dashboardSummary: z.strictObject({
+    currency: currencySchema,
+    months: z.int().min(1).max(36).optional(),
+    endMonth: z
+      .string()
+      .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+      .optional(),
+  }),
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

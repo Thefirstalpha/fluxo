@@ -1,6 +1,6 @@
 # M2 — Comptes & transactions
 
-> **Statut : 🟡 En cours** (démarré le 24/11/2026 — lots 1 à 3 livrés ; l'interface des opérations du lot 2 arrive au lot 4) · Taille : L · Dépend de : M1 · Version : 0.3
+> **Statut : 🟢 Implémenté** (démarré et achevé le 24/11/2026 ; validation CI multi-OS prévue lors du push avec M3) · Taille : L · Dépend de : M1 · Version : 0.3
 
 ## Objectif
 
@@ -43,8 +43,8 @@ Le registre de toutes les opérations : **rapide, fiable, agréable au clavier**
 - [x] **Virement vers un compte d'épargne classé comme épargne** (catégorie de type `épargne`, pas `transfert`) : visible dans le taux d'épargne de la synthèse mensuelle (M5), distingué d'un virement neutre entre deux comptes courants. `Besoin`
 - [x] Statuts : en attente, pointée, rapprochée (y compris en masse). `Proposition`
 - [x] **Étiquettes multiples par ventilation** (une part peut porter plusieurs étiquettes, indépendamment de sa catégorie), notes, favoris ; tiers créés à la volée. `Proposition`
-- [ ] Vue **Étiquettes** : liste des étiquettes avec total et nombre d'opérations, filtre transverse aux catégories (ex. toutes les dépenses « Abonnement téléphonique »). Liste, totaux, création, renommage et suppression livrés (page « Catégories », onglet « Étiquettes ») ; le filtre du registre arrive au lot 4. `Proposition`
-- [ ] Multi-devises : montant d'origine + montant converti (taux saisi) ; synthèses dans la devise de référence. Stockage prêt (montant dans la devise du compte, contre-valeur facultative) ; saisie du taux au lot 4, synthèses au M5. `Proposition`
+- [x] Vue **Étiquettes** : liste des étiquettes avec total et nombre d'opérations, filtre transverse aux catégories (ex. toutes les dépenses « Abonnement téléphonique »). Liste, totaux, création, renommage, suppression (page « Catégories », onglet « Étiquettes ») et navigation vers le registre filtré livrés. `Proposition`
+- [x] Multi-devises : montant d'origine + montant converti (taux saisi) ; synthèses dans la devise de référence. Stockage, saisie du taux / contre-valeur dans la saisie rapide et le panneau de détail, et agrégation du tableau de bord via la contre-valeur livrés (synthèses détaillées multi-périodes au M5). `Proposition`
 
 ### Lot 3 — Catégories
 
@@ -53,18 +53,18 @@ Le registre de toutes les opérations : **rapide, fiable, agréable au clavier**
 
 ### Lot 4 — Interface
 
-- [ ] Tableau **virtualisé** (TanStack Table + Virtual) : 50 000 lignes fluides, colonnes configurables, tri, regroupement par jour ou par mois. `Besoin`
-- [ ] Filtres combinables et recherche plein texte (FTS5) ; filtres enregistrés. `Besoin`
-- [ ] Saisie rapide (Ctrl/⌘ N) sur les comptes en saisie manuelle, édition en ligne des annotations, édition en masse (catégorie, étiquettes). `Besoin`
-- [ ] **Palette de commandes** (Ctrl/⌘ K) : navigation, actions, recherche d'opérations. `Proposition`
-- [ ] Raccourcis clavier et aide intégrée (touche `?`). `Proposition`
-- [ ] Panneau de détail latéral (historique, ventilation). `Proposition`
+- [x] Tableau **virtualisé** (TanStack Table + Virtual) : 50 000 lignes fluides, colonnes configurables, tri, regroupement par jour ou par mois. `Besoin`
+- [x] Filtres combinables et recherche plein texte (FTS5) ; filtres enregistrés. `Besoin`
+- [x] Saisie rapide (Ctrl/⌘ N) sur les comptes en saisie manuelle, édition en ligne des annotations, édition en masse (catégorie, étiquettes). `Besoin`
+- [x] **Palette de commandes** (Ctrl/⌘ K) : navigation, actions, recherche d'opérations. `Proposition`
+- [x] Raccourcis clavier et aide intégrée (touche `?`). `Proposition`
+- [x] Panneau de détail latéral (historique, ventilation). `Proposition`
 
 ### Lot 5 — Fiabilité & intégration
 
-- [ ] Journal d'audit et annuler/rétablir (Ctrl/⌘ Z, Ctrl/⌘ Maj Z). `Proposition`
+- [x] Journal d'audit et annuler/rétablir (Ctrl/⌘ Z, Ctrl/⌘ Maj Z). `Proposition`
 - [x] Couche de données du renderer avec TanStack Query (cache, invalidation après écriture, vidé au verrouillage) ; toute écriture passe par l'API validée du service de données — mise en place dès le lot 1 ([ADR-032](../architecture/decisions.md#adr-032--registre--api-de-domaine-écritures-tracées-recherche-plein-texte)). `Socle`
-- [ ] Tableau de bord branché sur les vraies données, mode démo conservé. `Socle`
+- [x] Tableau de bord branché sur les vraies données, mode démo conservé. `Socle`
 
 ## Sécurité & confidentialité
 

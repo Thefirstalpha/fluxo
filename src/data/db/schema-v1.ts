@@ -17,6 +17,7 @@
  */
 import {
   ACCOUNT_TYPES,
+  AUDIT_ENTITIES,
   CATEGORY_KINDS,
   TRACKING_MODES,
   TRANSACTION_NATURES,
@@ -38,20 +39,16 @@ const text = (column: string, max: number, required = true) =>
 const color = (column = 'color') =>
   `${column} TEXT CHECK (${column} IS NULL OR ${column} GLOB '#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]')`
 
-export { ACCOUNT_TYPES, CATEGORY_KINDS, TRACKING_MODES, TRANSACTION_NATURES, TRANSACTION_STATUSES }
+export {
+  ACCOUNT_TYPES,
+  AUDIT_ENTITIES,
+  CATEGORY_KINDS,
+  TRACKING_MODES,
+  TRANSACTION_NATURES,
+  TRANSACTION_STATUSES,
+}
 export const IMPORT_FORMATS = ['csv', 'ofx', 'qfx', 'qif', 'camt053', 'demo'] as const
 export const IMPORT_STATES = ['pending', 'committed', 'reverted'] as const
-export const AUDIT_ENTITIES = [
-  'vault',
-  'account',
-  'category',
-  'payee',
-  'tag',
-  'transaction',
-  'split',
-  'import_batch',
-  'rule',
-] as const
 export const AUDIT_ACTIONS = [
   'create',
   'update',

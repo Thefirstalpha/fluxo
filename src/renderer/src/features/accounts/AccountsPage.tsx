@@ -1,5 +1,6 @@
-import { Archive, ArchiveRestore, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, ArrowLeftRight, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useLocation } from 'wouter'
 import type { AccountSummary } from '@shared/ledger/model'
 import { LedgerBadge } from '../../components/LedgerVisual'
 import { Badge } from '../../components/ui/Badge'
@@ -12,6 +13,7 @@ import { useT } from '../../i18n'
 import { todayIso } from '../../lib/dates'
 import { useFormatters } from '../../lib/format'
 import { callLedger, ledgerErrorCode, useLedgerMutation, useLedgerQuery } from '../../lib/ledger'
+import { useRegisterStore } from '../../stores/register'
 import { useSettingsStore } from '../../stores/settings'
 import { accountTotals, DEFAULT_ACCOUNT_ICON, groupAccounts } from './account-groups'
 import { AccountForm } from './AccountForm'
@@ -22,6 +24,8 @@ type Editing = { kind: 'create' } | { kind: 'edit'; account: AccountSummary } | 
 export default function AccountsPage() {
   const t = useT()
   const fmt = useFormatters()
+  const [, navigate] = useLocation()
+  const openRegister = useRegisterStore((state) => state.openRegister)
   const currency = useSettingsStore((state) => state.settings.currency)
   const accounts = useLedgerQuery('accountsList', { includeArchived: true })
   const archive = useLedgerMutation('accountSetArchived')
@@ -49,6 +53,10 @@ export default function AccountsPage() {
   }
 
   const handlers: RowHandlers = {
+    viewTransactions: (account) => {
+      openRegister({ accountIds: [account.id] })
+      navigate('/transactions')
+    },
     edit: (account) => setEditing({ kind: 'edit', account }),
     archive: (account) =>
       void act(
@@ -171,6 +179,7 @@ export default function AccountsPage() {
 }
 
 interface RowHandlers {
+  viewTransactions: (account: AccountSummary) => void
   edit: (account: AccountSummary) => void
   archive: (account: AccountSummary) => void
   remove: (account: AccountSummary) => void
@@ -225,6 +234,17 @@ function AccountList({
               </p>
             </div>
             <div className="flex items-center gap-0.5">
+              {account.trackingMode !== 'valuation' && account.transactionCount > 0 ? (
+                <Button
+                  variant="ghost"
+                  iconOnly
+                  aria-label={t.accounts.viewTransactions(account.name)}
+                  title={t.accounts.viewTransactions(account.name)}
+                  onClick={() => handlers.viewTransactions(account)}
+                >
+                  <ArrowLeftRight size={15} aria-hidden />
+                </Button>
+              ) : null}
               {account.ibanMasked ? (
                 <Button
                   variant="ghost"

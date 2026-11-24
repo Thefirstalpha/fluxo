@@ -4,7 +4,7 @@ Ajouts suggérés au-delà des besoins fondateurs, **à valider** avant d'entrer
 
 - **Priorité** : ⭐⭐⭐ forte valeur · ⭐⭐ utile · ⭐ bonus.
 - **Effort** : S · M · L · XL.
-- **État** : ✅ déjà prototypé dans M0 · ⬜ à valider.
+- **État** : ✅ implémenté (ou prototypé dès M0) · ⬜ à valider.
 
 ## 1. Propositions de fonctionnalités
 
@@ -18,14 +18,14 @@ Ajouts suggérés au-delà des besoins fondateurs, **à valider** avant d'entrer
 | P-04 | **Code de récupération** imprimable          | Sans lui, un mot de passe oublié = données perdues.            | M1      | ⭐⭐     | S      | ⬜   |
 | P-05 | **Sauvegardes chiffrées automatiques** — B04 | La perte de données est le premier risque d'une app locale.    | M1      | ⭐⭐⭐   | M      | ⬜   |
 | P-06 | **Export complet & « tout effacer »** — B05  | Réversibilité, maîtrise totale de ses données.                 | M1 → M9 | ⭐⭐     | S      | ⬜   |
-| P-07 | **Historique & annulation** — B07            | Confiance : toute erreur se rattrape.                          | M2      | ⭐⭐     | M      | ⬜   |
+| P-07 | **Historique & annulation** — B07            | Confiance : toute erreur se rattrape.                          | M2      | ⭐⭐     | M      | ✅   |
 
 ### Productivité
 
 | ID   | Proposition                             | Pourquoi                                                                     | Jalon   | Priorité | Effort | État |
 | ---- | --------------------------------------- | ---------------------------------------------------------------------------- | ------- | -------- | ------ | ---- |
-| P-08 | **Palette de commandes** Ctrl/⌘ K — A07 | Cohérent avec l'esprit « éditeur de code » ; tout faire au clavier.          | M2      | ⭐⭐⭐   | M      | ⬜   |
-| P-09 | **Raccourcis clavier** documentés — A08 | Saisie et validation rapides.                                                | M2      | ⭐⭐     | S      | ⬜   |
+| P-08 | **Palette de commandes** Ctrl/⌘ K — A07 | Cohérent avec l'esprit « éditeur de code » ; tout faire au clavier.          | M2      | ⭐⭐⭐   | M      | ✅   |
+| P-09 | **Raccourcis clavier** documentés — A08 | Saisie et validation rapides.                                                | M2      | ⭐⭐     | S      | ✅   |
 | P-10 | **Mode démo** — A09                     | Découvrir sans risque, captures d'écran, contributeurs sans données réelles. | M0 → M1 | ⭐⭐⭐   | S      | ✅   |
 
 Retirées lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)) : P-11 (saisie en langage naturel, remplacée par l'écriture d'ajustement, voir « Imports & catégorisation ») et P-12 (justificatifs attachés : Fluxo ne stocke aucun fichier).
@@ -87,7 +87,7 @@ Retirée lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisio
 
 | ID   | Proposition                                        | Pourquoi                                                                                                      | Jalon | Priorité | Effort | État |
 | ---- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----- | -------- | ------ | ---- |
-| P-38 | **Multi-devises** (frontaliers EUR/CHF…) — C08     | Comptes dans plusieurs devises, synthèses dans une devise de référence.                                       | M2    | ⭐⭐     | M      | ⬜   |
+| P-38 | **Multi-devises** (frontaliers EUR/CHF…) — C08     | Comptes dans plusieurs devises, synthèses dans une devise de référence.                                       | M2    | ⭐⭐     | M      | ✅   |
 | P-39 | **Packs pays** — K03                               | Ouvrir Fluxo à la Suisse, la Belgique, le Luxembourg, le Québec.                                              | M10   | ⭐⭐     | L      | ⬜   |
 | P-40 | **Synchronisation chiffrée** — K01                 | Plusieurs ordinateurs, sans cloud qui lit les données.                                                        | M10   | ⭐⭐     | XL     | ⬜   |
 | P-42 | **Patrimoine & crédits** — I07, I08, I09, I10, I11 | Vision globale : épargne, placements, crédits, patrimoine net. Retenue : voir [M8](M8-patrimoine-budgets.md). | M8    | ⭐⭐⭐   | L      | ⬜   |
@@ -97,7 +97,7 @@ Retirée lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisio
 
 | ID   | Proposition                                                                                                     | Pourquoi                                                              | Jalon | Priorité | Effort | État |
 | ---- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ----- | -------- | ------ | ---- |
-| P-48 | **Vue Étiquettes** transverse aux catégories — C06, E09                                                         | Corréler des dépenses au-delà des catégories (abonnements, « pro »…). | M2    | ⭐⭐⭐   | S      | ⬜   |
+| P-48 | **Vue Étiquettes** transverse aux catégories — C06, E09                                                         | Corréler des dépenses au-delà des catégories (abonnements, « pro »…). | M2    | ⭐⭐⭐   | S      | ✅   |
 | P-49 | **Simulateur de remboursement anticipé** — I10                                                                  | Évaluer l'effet d'un versement exceptionnel sur un crédit.            | M8    | ⭐⭐     | M      | ⬜   |
 | P-50 | **Assistant de migration** depuis d'autres applications (Bankin, Linxo, YNAB, tableur)                          | Faciliter l'arrivée de nouveaux utilisateurs avec leur historique.    | M3    | ⭐⭐     | M      | ⬜   |
 | P-51 | **Déverrouillage biométrique** (Windows Hello, Touch ID, empreinte Linux) — B02                                 | Plus rapide qu'un mot de passe maître, sans l'affaiblir (facultatif). | M1    | ⭐⭐     | S      | ⬜   |

@@ -16,6 +16,8 @@ export interface AutoLockOptions {
   settings: () => { autoLockMinutes: AutoLockMinutes; lockOnSystemLock: boolean }
   lock: (reason: string) => Promise<void>
   onError: (error: unknown) => void
+  /** Horodatage du dernier déverrouillage (évite de re-verrouiller 15 s après l'ouverture). */
+  unlockedSinceMs?: () => number
   /** Fréquence de vérification de l'inactivité. */
   intervalMs?: number
 }
@@ -30,6 +32,7 @@ export function startAutoLock({
   settings,
   lock,
   onError,
+  unlockedSinceMs,
   intervalMs = 15_000,
 }: AutoLockOptions): () => void {
   const run = (reason: string): void => {
@@ -41,7 +44,13 @@ export function startAutoLock({
   power.on('lock-screen', onSystemLock)
   power.on('suspend', onSystemLock)
   const timer = setInterval(() => {
-    if (idleLockDue(power.getSystemIdleTime(), settings().autoLockMinutes)) run('inactivité')
+    const idleSeconds = power.getSystemIdleTime()
+    const sinceUnlock = unlockedSinceMs
+      ? Math.max(0, (Date.now() - unlockedSinceMs()) / 1000)
+      : idleSeconds
+    if (idleLockDue(Math.min(idleSeconds, sinceUnlock), settings().autoLockMinutes)) {
+      run('inactivité')
+    }
   }, intervalMs)
   timer.unref?.()
   return () => {

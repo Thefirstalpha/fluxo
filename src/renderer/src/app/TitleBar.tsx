@@ -4,6 +4,7 @@ import { LogoMark, Wordmark } from '../components/Logo'
 import { Button } from '../components/ui/Button'
 import { useT } from '../i18n'
 import { getApi } from '../lib/api'
+import { useRegisterStore } from '../stores/register'
 import { useSettingsStore } from '../stores/settings'
 
 const NEXT_THEME: Record<ThemePreference, ThemePreference> = {
@@ -32,13 +33,13 @@ export function TitleBar() {
       <div className="flex min-w-0 flex-1 justify-center">
         <button
           type="button"
-          disabled
           title={t.titleBar.searchSoon}
-          className="fx-no-drag flex h-7 w-full max-w-md items-center gap-2 rounded-md border border-border bg-surface-2 px-2.5 text-xs text-muted"
+          onClick={() => useRegisterStore.getState().setCommandPaletteOpen(true)}
+          className="fx-no-drag flex h-7 w-full max-w-md items-center gap-2 rounded-md border border-border bg-surface-2 px-2.5 text-xs text-fg-2 transition-colors hover:border-border-strong hover:text-fg"
         >
-          <Search size={14} aria-hidden />
+          <Search size={14} aria-hidden className="text-muted" />
           <span className="flex-1 text-left">{t.titleBar.search}</span>
-          <kbd className="rounded border border-border px-1.5 font-sans text-[10px]">
+          <kbd className="rounded border border-border px-1.5 font-sans text-[10px] text-muted">
             {shortcut}
           </kbd>
         </button>

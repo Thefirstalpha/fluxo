@@ -1,5 +1,6 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeftRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { useLocation } from 'wouter'
 import type { PaletteColor, TagSummary } from '@shared/ledger/model'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -11,11 +12,14 @@ import { useT } from '../../i18n'
 import { useFormatters } from '../../lib/format'
 import { ledgerErrorCode, useLedgerMutation, useLedgerQuery } from '../../lib/ledger'
 import { paletteVar } from '../../lib/ledger-visual'
+import { useRegisterStore } from '../../stores/register'
 
 /** Étiquettes : total et nombre d'opérations, quelle que soit la catégorie. */
 export function TagsView() {
   const t = useT()
   const fmt = useFormatters()
+  const [, navigate] = useLocation()
+  const openRegister = useRegisterStore((state) => state.openRegister)
   const tags = useLedgerQuery('tagsList', {})
   const create = useLedgerMutation('tagCreate')
   const remove = useLedgerMutation('tagDelete')
@@ -89,7 +93,21 @@ export function TagsView() {
                     <p className="text-xs text-muted">{t.tags.usage(tag.transactionCount)}</p>
                   </div>
                   {tag.transactionCount > 0 ? (
-                    <span className="text-sm text-fg-2 tabular-nums">{fmt.money(tag.total)}</span>
+                    <>
+                      <span className="text-sm text-fg-2 tabular-nums">{fmt.money(tag.total)}</span>
+                      <Button
+                        variant="ghost"
+                        iconOnly
+                        aria-label={t.tags.viewTransactions(tag.name)}
+                        title={t.tags.viewTransactions(tag.name)}
+                        onClick={() => {
+                          openRegister({ tagIds: [tag.id] })
+                          navigate('/transactions')
+                        }}
+                      >
+                        <ArrowLeftRight size={15} aria-hidden />
+                      </Button>
+                    </>
                   ) : null}
                   <Button
                     variant="ghost"

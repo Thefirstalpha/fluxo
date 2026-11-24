@@ -117,7 +117,9 @@ async function start(): Promise<void> {
     electronVaultDialogs(() => DIALOG_LABELS[settings.get().locale]),
     clearLogs,
   )
+  let unlockedAt = Date.now()
   vault.onStatusChange((status) => {
+    if (status.state === 'unlocked') unlockedAt = Date.now()
     for (const window of BrowserWindow.getAllWindows()) {
       window.webContents.send(IPC_CHANNELS.vaultStatusChanged, status)
     }
@@ -131,6 +133,7 @@ async function start(): Promise<void> {
     power: powerMonitor,
     settings: () => settings.get(),
     lock: (reason) => vault.lock(reason),
+    unlockedSinceMs: () => unlockedAt,
     onError: (error) => logger.error('Verrouillage automatique impossible', error),
   })
   // Sauvegarde automatique : au déverrouillage, puis vérification toutes les heures.

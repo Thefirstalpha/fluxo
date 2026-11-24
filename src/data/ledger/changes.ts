@@ -160,7 +160,12 @@ function auditImage(table: TrackedTable, row: Row | null): Row | undefined {
 export function auditChanges(
   db: Db,
   changes: readonly RowChange[],
-  { origin, action, now }: { origin: AuditInput['origin']; action: string; now: Date },
+  {
+    origin,
+    action,
+    now,
+    auditAction,
+  }: { origin: AuditInput['origin']; action: string; now: Date; auditAction?: 'revert' },
 ): void {
   const audited = changes.filter((change) => TRACKED_TABLES[change.table].entity !== null)
   if (audited.length === 0) return
@@ -172,7 +177,7 @@ export function auditChanges(
       {
         entity: entity ?? 'vault',
         entityId: null,
-        action: 'update',
+        action: auditAction ?? 'update',
         origin,
         after: { action, rows: audited.length },
       },
@@ -189,7 +194,9 @@ export function auditChanges(
       {
         entity,
         entityId: typeof entityId === 'string' ? entityId : null,
-        action: change.before === null ? 'create' : change.after === null ? 'delete' : 'update',
+        action:
+          auditAction ??
+          (change.before === null ? 'create' : change.after === null ? 'delete' : 'update'),
         origin,
         before: auditImage(change.table, change.before),
         after: auditImage(change.table, change.after),

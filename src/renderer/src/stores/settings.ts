@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@shared/settings'
+import { loadLocale } from '../i18n'
 import { getApi } from '../lib/api'
 
 interface SettingsState {
@@ -14,9 +15,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   ready: false,
   update: async (patch) => {
     const previous = get().settings
+    if (patch.locale) await loadLocale(patch.locale)
     set({ settings: { ...previous, ...patch } })
     try {
-      set({ settings: await getApi().settings.update(patch) })
+      const saved = await getApi().settings.update(patch)
+      await loadLocale(saved.locale)
+      set({ settings: saved })
     } catch (error) {
       set({ settings: previous })
       console.error('Mise à jour des préférences refusée', error)
@@ -30,7 +34,10 @@ let unsubscribe: (() => void) | undefined
 export async function initSettings(): Promise<void> {
   const api = getApi()
   const settings = await api.settings.get()
+  await loadLocale(settings.locale)
   useSettingsStore.setState({ settings, ready: true })
   unsubscribe?.()
-  unsubscribe = api.settings.onChange((next) => useSettingsStore.setState({ settings: next }))
+  unsubscribe = api.settings.onChange((next) => {
+    void loadLocale(next.locale).then(() => useSettingsStore.setState({ settings: next }))
+  })
 }

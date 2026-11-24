@@ -256,6 +256,66 @@ export interface PayeeSummary {
   transactionCount: number
 }
 
+export interface SavedFilter {
+  id: string
+  name: string
+  filter: TransactionFilter
+  sortOrder: number
+}
+
+export const AUDIT_ENTITIES = [
+  'vault',
+  'account',
+  'category',
+  'payee',
+  'tag',
+  'transaction',
+  'split',
+  'import_batch',
+  'rule',
+] as const
+export type AuditEntity = (typeof AUDIT_ENTITIES)[number]
+
+export interface AuditEntrySummary {
+  id: string
+  at: string
+  entity: AuditEntity
+  entityId: string | null
+  action: string
+  origin: string
+  before: unknown
+  after: unknown
+}
+
+export interface HistoryStatus {
+  canUndo: boolean
+  canRedo: boolean
+  undoAction: string | null
+  redoAction: string | null
+}
+
+export interface DashboardCategoryTotal {
+  id: string | null
+  name: string | null
+  color: PaletteColor | null
+  amount: MinorUnits
+}
+
+export interface DashboardMonthSummary {
+  month: string
+  income: MinorUnits
+  expenses: MinorUnits
+  savings: MinorUnits
+  categories: DashboardCategoryTotal[]
+}
+
+export interface DashboardSummary {
+  currency: string
+  hasTransactions: boolean
+  otherCurrencies: string[]
+  months: DashboardMonthSummary[]
+}
+
 // ——— Résultats ———————————————————————————————————————————————————————————
 
 /** Échecs attendus d'une requête du registre (les erreurs inattendues restent des exceptions). */

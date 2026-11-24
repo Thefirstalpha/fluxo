@@ -1,6 +1,6 @@
 import { ChartColumn, Table2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { MonthlySummary } from '@shared/demo/demo-data'
+import type { MinorUnits } from '@shared/money'
 import { Card } from '../../components/ui/Card'
 import { SegmentedControl } from '../../components/ui/SegmentedControl'
 import { useT } from '../../i18n'
@@ -18,7 +18,7 @@ export function CashflowCard({
   selectedMonth,
   onSelectMonth,
 }: {
-  months: readonly MonthlySummary[]
+  months: readonly { month: string; income: MinorUnits; expenses: MinorUnits }[]
   selectedMonth: string
   onSelectMonth: (month: string) => void
 }) {

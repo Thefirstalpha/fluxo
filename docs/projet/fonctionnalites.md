@@ -15,8 +15,8 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 | A04 | Interface en français et en anglais (dictionnaires typés), architecture extensible à d'autres packs de langue   | Socle       | M0 → M9 | 🟡     |
 | A05 | Masquage des montants (bouton œil, partage d'écran)                                                             | Proposition | M0      | ✅     |
 | A06 | Exclusion de la fenêtre des captures d'écran                                                                    | Proposition | M0      | ✅     |
-| A07 | Palette de commandes (Ctrl/⌘ K) et recherche universelle                                                        | Proposition | M2      | ⬜     |
-| A08 | Raccourcis clavier documentés                                                                                   | Proposition | M2      | ⬜     |
+| A07 | Palette de commandes (Ctrl/⌘ K) et recherche universelle                                                        | Proposition | M2      | ✅     |
+| A08 | Raccourcis clavier documentés                                                                                   | Proposition | M2      | ✅     |
 | A09 | Mode démonstration (données fictives déterministes)                                                             | Proposition | M0 → M1 | ✅     |
 | A10 | Accessibilité WCAG 2.2 AA (clavier, lecteurs d'écran, contrastes, mouvement réduit)                             | Socle       | M0 → M9 | 🟡     |
 | A11 | Assistant de premier lancement (langue, devise, sécurité, démo ou départ vierge)                                | Proposition | M9      | ⬜     |
@@ -31,22 +31,22 @@ Référentiel unique des fonctionnalités de Fluxo. Chaque ligne a un identifian
 | B04 | Sauvegardes chiffrées automatiques, restauration                      | Proposition | M1      | ✅     |
 | B05 | Export complet des données (JSON, CSV) et suppression totale          | Proposition | M1 → M9 | ✅     |
 | B06 | Aucune télémétrie ; journaux locaux expurgés des données personnelles | Besoin      | M0      | ✅     |
-| B07 | Historique des modifications et annulation                            | Proposition | M2      | ⬜     |
+| B07 | Historique des modifications et annulation                            | Proposition | M2      | ✅     |
 
 ## C. Comptes & transactions
 
 | ID  | Fonctionnalité                                                                                                                                                                                                                                                        | Origine     | Jalon | Statut |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
-| C01 | Comptes multiples (courant, épargne, carte, espèces, titres-restaurant…)                                                                                                                                                                                              | Besoin      | M2    | 🟡     |
-| C02 | Saisie d'opérations sur les comptes sans relevé (espèces, titres-restaurant) ; annotation des opérations importées, jamais de saisie libre sur un compte bancaire ([ADR-026](../architecture/decisions.md#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé)) | Besoin      | M2    | 🟡     |
-| C03 | Ventilation d'une transaction sur plusieurs catégories                                                                                                                                                                                                                | Besoin      | M2    | 🟡     |
-| C04 | Virements internes exclus des dépenses                                                                                                                                                                                                                                | Socle       | M2    | 🟡     |
+| C01 | Comptes multiples (courant, épargne, carte, espèces, titres-restaurant…)                                                                                                                                                                                              | Besoin      | M2    | ✅     |
+| C02 | Saisie d'opérations sur les comptes sans relevé (espèces, titres-restaurant) ; annotation des opérations importées, jamais de saisie libre sur un compte bancaire ([ADR-026](../architecture/decisions.md#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé)) | Besoin      | M2    | ✅     |
+| C03 | Ventilation d'une transaction sur plusieurs catégories                                                                                                                                                                                                                | Besoin      | M2    | ✅     |
+| C04 | Virements internes exclus des dépenses                                                                                                                                                                                                                                | Socle       | M2    | ✅     |
 | C05 | Catégories hiérarchiques personnalisables (pack France par défaut)                                                                                                                                                                                                    | Besoin      | M2    | ✅     |
-| C06 | Étiquettes multiples par ventilation, indépendantes des catégories, pour une corrélation transverse (ex. tous les abonnements téléphoniques)                                                                                                                          | Proposition | M2    | 🟡     |
-| C07 | Recherche instantanée, filtres, tri, édition en masse                                                                                                                                                                                                                 | Besoin      | M2    | ⬜     |
+| C06 | Étiquettes multiples par ventilation, indépendantes des catégories, pour une corrélation transverse (ex. tous les abonnements téléphoniques)                                                                                                                          | Proposition | M2    | ✅     |
+| C07 | Recherche instantanée, filtres, tri, édition en masse                                                                                                                                                                                                                 | Besoin      | M2    | ✅     |
 | C08 | Multi-devises (EUR, CHF…) avec devise de référence                                                                                                                                                                                                                    | Proposition | M2    | 🟡     |
-| C10 | Comptes d'épargne multiples et comptes externes à valorisation manuelle (livret, PEA, assurance-vie, immobilier)                                                                                                                                                      | Besoin      | M2    | 🟡     |
-| C11 | Virement vers un compte d'épargne classé comme épargne (ni dépense, ni simple virement neutre)                                                                                                                                                                        | Besoin      | M2    | 🟡     |
+| C10 | Comptes d'épargne multiples et comptes externes à valorisation manuelle (livret, PEA, assurance-vie, immobilier)                                                                                                                                                      | Besoin      | M2    | ✅     |
+| C11 | Virement vers un compte d'épargne classé comme épargne (ni dépense, ni simple virement neutre)                                                                                                                                                                        | Besoin      | M2    | ✅     |
 
 C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)). Les identifiants retirés ne sont pas réattribués.
 
@@ -151,7 +151,7 @@ G05 (congés payés et RTT) a été retiré, jugé inutile ([ADR-025](../archite
 
 | ID  | Fonctionnalité                                           | Origine | Jalon | Statut |
 | --- | -------------------------------------------------------- | ------- | ----- | ------ |
-| J01 | Intégration continue (qualité, sécurité, build multi-OS) | Besoin  | M0    | 🟡     |
+| J01 | Intégration continue (qualité, sécurité, build multi-OS) | Besoin  | M0    | ✅     |
 | J02 | Installeurs signés Windows, macOS, Linux                 | Socle   | M9    | 🟡     |
 | J03 | Mises à jour automatiques vérifiées                      | Socle   | M9    | ⬜     |
 | J04 | Documentation utilisateur en ligne                       | Socle   | M9    | ⬜     |

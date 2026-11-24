@@ -4,9 +4,13 @@
  */
 import type {
   AccountSummary,
+  AuditEntrySummary,
   CategorySummary,
+  DashboardSummary,
+  HistoryStatus,
   LedgerResult,
   PayeeSummary,
+  SavedFilter,
   TagSummary,
   TransactionDetail,
   TransactionPage,
@@ -51,6 +55,14 @@ export interface LedgerOutputs {
   categoryMerge: { reassigned: number }
   categoryArchive: { reassigned: number }
   categoryDelete: null
+  savedFiltersList: SavedFilter[]
+  savedFilterSave: { id: string }
+  savedFilterDelete: null
+  auditList: AuditEntrySummary[]
+  ledgerHistoryStatus: HistoryStatus
+  ledgerUndo: { action: string }
+  ledgerRedo: { action: string }
+  dashboardSummary: DashboardSummary
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -91,6 +103,14 @@ export const LEDGER_METHODS = [
   'categoryMerge',
   'categoryArchive',
   'categoryDelete',
+  'savedFiltersList',
+  'savedFilterSave',
+  'savedFilterDelete',
+  'auditList',
+  'ledgerHistoryStatus',
+  'ledgerUndo',
+  'ledgerRedo',
+  'dashboardSummary',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -108,6 +128,10 @@ export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'tagsList',
   'payeesList',
   'categoriesList',
+  'savedFiltersList',
+  'auditList',
+  'ledgerHistoryStatus',
+  'dashboardSummary',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

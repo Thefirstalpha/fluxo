@@ -96,6 +96,14 @@ const LEDGER_DEFAULTS: { [M in LedgerMethod]: LedgerOutput<M> } = {
   categoryMerge: { reassigned: 0 },
   categoryArchive: { reassigned: 0 },
   categoryDelete: null,
+  savedFiltersList: [],
+  savedFilterSave: { id: '0192f0c8-0000-7000-8000-000000000007' },
+  savedFilterDelete: null,
+  auditList: [],
+  ledgerHistoryStatus: { canUndo: false, canRedo: false, undoAction: null, redoAction: null },
+  ledgerUndo: { action: 'transaction-update' },
+  ledgerRedo: { action: 'transaction-update' },
+  dashboardSummary: { currency: 'EUR', hasTransactions: false, otherCurrencies: [], months: [] },
 }
 
 export type FakeLedger = {

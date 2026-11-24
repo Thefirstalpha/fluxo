@@ -1,14 +1,22 @@
 import { ChevronLeft, ChevronRight, Info, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { MonthlySummary } from '@shared/demo/demo-data'
+import { useLocation } from 'wouter'
+import { EXPENSE_CATEGORY_IDS } from '@shared/categories'
+import type { DashboardMonthSummary } from '@shared/ledger/model'
+import { addMonths, monthOf } from '@shared/months'
+import { LedgerBadge } from '../../components/LedgerVisual'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Card } from '../../components/ui/Card'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { SegmentedControl } from '../../components/ui/SegmentedControl'
 import { StatTile, type StatDelta } from '../../components/ui/StatTile'
 import { useT } from '../../i18n'
 import { capitalize, useFormatters, type Formatters } from '../../lib/format'
+import { useLedgerQuery } from '../../lib/ledger'
 import { useSettingsStore } from '../../stores/settings'
+import { useVaultStore } from '../../stores/vault'
+import { DEFAULT_ACCOUNT_ICON } from '../accounts/account-groups'
 import { CashflowCard } from './CashflowCard'
 import { CategoryCard } from './CategoryCard'
 import { getDemoMonths, relativeChange } from './demo-months'
@@ -46,15 +54,54 @@ function percentDelta(
   }
 }
 
-function savingsRate(month: MonthlySummary): number | null {
+function savingsRate(month: DashboardMonthSummary): number | null {
   return month.income > 0 ? (month.income - month.expenses) / month.income : null
+}
+
+function emptyMonths(count = 18): DashboardMonthSummary[] {
+  const end = monthOf(new Date())
+  const start = addMonths(end, -(count - 1))
+  return Array.from({ length: count }, (_, i) => ({
+    month: addMonths(start, i),
+    income: 0,
+    expenses: 0,
+    savings: 0,
+    categories: [],
+  }))
 }
 
 export default function DashboardPage() {
   const t = useT()
   const fmt = useFormatters()
+  const [, navigate] = useLocation()
   const locale = useSettingsStore((state) => state.settings.locale)
-  const months = getDemoMonths()
+  const currency = useSettingsStore((state) => state.settings.currency)
+  const demo = useVaultStore((state) => state.status?.demo ?? false)
+
+  const summary = useLedgerQuery('dashboardSummary', { currency, months: 18 })
+  const accounts = useLedgerQuery('accountsList', { includeArchived: false })
+  const demoMonths = getDemoMonths()
+
+  const months = useMemo<DashboardMonthSummary[]>(() => {
+    const fromDb = summary.data?.months ?? []
+    if (fromDb.length > 0) return fromDb
+    if (demo) {
+      return demoMonths.map((m) => ({
+        month: m.month,
+        income: m.income,
+        expenses: m.expenses,
+        savings: 20_000,
+        categories: EXPENSE_CATEGORY_IDS.map((id) => ({
+          id,
+          name: t.categories[id],
+          color: null,
+          amount: m.byCategory[id],
+        })).sort((a, b) => b.amount - a.amount),
+      }))
+    }
+    return emptyMonths(18)
+  }, [summary.data?.months, demo, demoMonths, t.categories])
+
   const [period, setPeriod] = useState<Period>(12)
   const [selectedMonth, setSelectedMonth] = useState(() => months[months.length - 1]?.month ?? '')
 
@@ -89,26 +136,60 @@ export default function DashboardPage() {
     signDisplay: 'exceptZero',
   })
 
+  const demoPayslip = demo
+    ? (demoMonths.find((m) => m.month === current.month)?.payslip ??
+      demoMonths[demoMonths.length - 1]?.payslip)
+    : undefined
+
+  const activeAccounts = (accounts.data ?? []).filter((a) => !a.archived)
+  const showEmptyRealNotice = !demo && summary.data !== undefined && !summary.data.hasTransactions
+
   return (
     <>
       <PageHeader
         title={t.dashboard.title}
         subtitle={t.dashboard.subtitle(monthTitle)}
         actions={
-          <Badge tone="accent">
-            <Sparkles size={12} aria-hidden />
-            {t.common.demo}
-          </Badge>
+          demo ? (
+            <Badge tone="accent">
+              <Sparkles size={12} aria-hidden />
+              {t.common.demo}
+            </Badge>
+          ) : null
         }
       />
 
-      <p
-        role="note"
-        className="mb-5 flex items-start gap-2.5 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-fg-2"
-      >
-        <Info size={16} aria-hidden className="mt-0.5 shrink-0 text-teal" />
-        {t.dashboard.demoNotice}
-      </p>
+      {demo ? (
+        <p
+          role="note"
+          className="mb-5 flex items-start gap-2.5 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-fg-2"
+        >
+          <Info size={16} aria-hidden className="mt-0.5 shrink-0 text-teal" />
+          {t.dashboard.demoNotice}
+        </p>
+      ) : showEmptyRealNotice ? (
+        <div
+          role="note"
+          className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-fg-2"
+        >
+          <span className="flex items-start gap-2.5">
+            <Info size={16} aria-hidden className="mt-0.5 shrink-0 text-teal" />
+            {t.dashboard.emptyRealNotice}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => navigate('/accounts')}>{t.dashboard.emptyActionAccounts}</Button>
+            <Button variant="primary" onClick={() => navigate('/transactions')}>
+              {t.dashboard.emptyActionTransactions}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {summary.data && summary.data.otherCurrencies.length > 0 ? (
+        <p className="mb-4 text-xs text-muted">
+          {t.dashboard.otherCurrencies(summary.data.otherCurrencies.join(', '))}
+        </p>
+      ) : null}
 
       {/* Filtres : une seule rangée, au-dessus de tout ce qu'ils pilotent. */}
       <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -170,7 +251,10 @@ export default function DashboardPage() {
             previousNet === undefined
               ? undefined
               : {
-                  text: fmt.money(net - previousNet, { signed: true }),
+                  text:
+                    current.savings > 0
+                      ? t.dashboard.kpi.savingsPlaced(fmt.money(current.savings))
+                      : fmt.money(net - previousNet, { signed: true }),
                   direction: direction(net - previousNet),
                   tone: tone(net - previousNet, true),
                   caption,
@@ -201,7 +285,48 @@ export default function DashboardPage() {
         />
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <CategoryCard current={current} previous={previous} />
-          <PayslipCard payslip={current.payslip} />
+          {demo && demoPayslip ? (
+            <PayslipCard payslip={demoPayslip} />
+          ) : (
+            <Card
+              accent
+              title={t.dashboard.accountsCard.title}
+              subtitle={t.dashboard.accountsCard.subtitle}
+              actions={
+                <Button variant="ghost" onClick={() => navigate('/accounts')}>
+                  {t.dashboard.accountsCard.manage}
+                </Button>
+              }
+            >
+              {activeAccounts.length === 0 ? (
+                <p className="py-10 text-center text-sm text-muted">
+                  {t.dashboard.accountsCard.empty}
+                </p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {activeAccounts.slice(0, 6).map((account) => (
+                    <li
+                      key={account.id}
+                      className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+                    >
+                      <LedgerBadge
+                        icon={account.icon}
+                        color={account.color}
+                        fallback={DEFAULT_ACCOUNT_ICON[account.type]}
+                        size={28}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">
+                        {account.name}
+                      </span>
+                      <span className="text-sm font-semibold text-fg tabular-nums">
+                        {fmt.money(account.balance, { currency: account.currency })}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          )}
         </div>
       </div>
     </>

@@ -1,7 +1,6 @@
 import { ChartColumn, Table2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { EXPENSE_CATEGORY_IDS } from '@shared/categories'
-import type { MonthlySummary } from '@shared/demo/demo-data'
+import type { DashboardMonthSummary } from '@shared/ledger/model'
 import { ratio } from '@shared/money'
 import { Card } from '../../components/ui/Card'
 import { SegmentedControl } from '../../components/ui/SegmentedControl'
@@ -19,8 +18,8 @@ export function CategoryCard({
   current,
   previous,
 }: {
-  current: MonthlySummary
-  previous: MonthlySummary | undefined
+  current: DashboardMonthSummary
+  previous: DashboardMonthSummary | undefined
 }) {
   const t = useT()
   const fmt = useFormatters()
@@ -29,17 +28,19 @@ export function CategoryCard({
   const [view, setView] = useState<View>('chart')
   const monthTitle = capitalize(fmt.month(current.month))
 
-  const points = useMemo<CategoryPoint[]>(
-    () =>
-      EXPENSE_CATEGORY_IDS.map((id) => ({
-        id,
-        label: t.categories[id],
-        amount: current.byCategory[id],
-        share: ratio(current.byCategory[id], current.expenses),
-        change: relativeChange(current.byCategory[id], previous?.byCategory[id]),
-      })).sort((a, b) => b.amount - a.amount),
-    [current, previous, t],
-  )
+  const points = useMemo<CategoryPoint[]>(() => {
+    const prevById = new Map((previous?.categories ?? []).map((item) => [item.id, item.amount]))
+    return current.categories
+      .filter((item) => item.amount > 0)
+      .map((item) => ({
+        id: item.id ?? '__uncategorized__',
+        label: item.name ?? t.dashboard.uncategorized,
+        amount: item.amount,
+        share: ratio(item.amount, current.expenses),
+        change: relativeChange(item.amount, prevById.get(item.id)),
+      }))
+      .sort((a, b) => b.amount - a.amount)
+  }, [current, previous, t.dashboard.uncategorized])
 
   const option = useMemo(
     () =>
@@ -75,7 +76,9 @@ export function CategoryCard({
         />
       }
     >
-      {view === 'chart' ? (
+      {points.length === 0 ? (
+        <p className="py-12 text-center text-sm text-muted">{t.transactions.emptyTitle}</p>
+      ) : view === 'chart' ? (
         <EChart option={option} height={300} ariaLabel={t.dashboard.categories.aria(monthTitle)} />
       ) : (
         <table className="w-full text-sm">
