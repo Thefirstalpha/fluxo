@@ -1,6 +1,6 @@
 # M3 — Import des relevés bancaires
 
-> **Statut : ⬜ À venir** · Taille : L · Dépend de : M2 · Version : 0.4 — **Alpha**
+> **Statut : 🟢 Implémenté** (achevé le 24/11/2026 ; validation CI multi-OS en attente au push) · Taille : L · Dépend de : M2 · Version : 0.4 — **Alpha**
 
 ## Objectif
 
@@ -28,31 +28,31 @@ Importer les relevés de **n'importe quelle banque** sans ressaisie, en sécurit
 
 ### Lot 1 — Pipeline
 
-- [ ] Sélection par boîte de dialogue du process main ou glisser-déposer (chemin obtenu dans le preload via `webUtils.getPathForFile`, revalidé côté main : extension, taille, existence). `Socle`
-- [ ] Analyse dans un **processus isolé sans réseau** : limites (20 Mo, 200 000 lignes, délai maximal), détection d'encodage (UTF-8, Windows-1252, ISO-8859-1) et du séparateur. `Socle`
-- [ ] Étapes : lecture → normalisation (dates, montants, sens) → déduplication → aperçu → validation → écriture en **lot d'import**. `Besoin`
-- [ ] Annulation d'un lot complet, tracée dans l'historique. `Besoin`
+- [x] Sélection par boîte de dialogue du process main ou glisser-déposer (chemin obtenu dans le preload via `webUtils.getPathForFile`, revalidé côté main : extension, taille, existence). `Socle`
+- [x] Analyse dans un **processus isolé sans réseau** : limites (20 Mo, 200 000 lignes, délai maximal), détection d'encodage (UTF-8, Windows-1252, ISO-8859-1) et du séparateur. `Socle`
+- [x] Étapes : lecture → normalisation (dates, montants, sens) → déduplication → aperçu → validation → écriture en **lot d'import**. `Besoin`
+- [x] Annulation d'un lot complet, tracée dans l'historique. `Besoin`
 
 ### Lot 2 — Formats
 
-- [ ] **CSV** : assistant de correspondance (date, libellé, montant ou débit/crédit, solde), formats de date, lignes à ignorer ; profils enregistrables et partageables (JSON validé par schéma). `Besoin`
-- [ ] Bibliothèque de **profils communautaires** (grandes banques françaises), enrichie par pull request avec un fichier d'exemple anonymisé. `Proposition`
-- [ ] **OFX/QFX** (SGML 1.x et XML 2.x). `Besoin`
-- [ ] **QIF**. `Besoin`
-- [ ] **CAMT.053** (ISO 20022) : soldes d'ouverture et de clôture, références de bout en bout, devises. `Besoin`
-- [ ] **MT940** (SWIFT). `Proposition`
+- [x] **CSV** : assistant de correspondance (date, libellé, montant ou débit/crédit, solde), formats de date, lignes à ignorer ; profils enregistrables et partageables (JSON validé par schéma). `Besoin`
+- [x] Bibliothèque de **profils communautaires** (grandes banques françaises), enrichie par pull request avec un fichier d'exemple anonymisé. `Proposition`
+- [x] **OFX/QFX** (SGML 1.x et XML 2.x). `Besoin`
+- [x] **QIF**. `Besoin`
+- [x] **CAMT.053** (ISO 20022) : soldes d'ouverture et de clôture, références de bout en bout, devises. `Besoin`
+- [x] **MT940** (SWIFT). `Proposition`
 
 ### Lot 3 — Qualité des données
 
-- [ ] Doublons : empreinte exacte (compte + date + montant + libellé normalisé) et correspondance approchée (± 3 jours, libellé proche) → choix « ignorer / importer quand même ». `Besoin`
-- [ ] **Rapprochement des soldes** : solde calculé = solde de clôture du relevé (CAMT, OFX), sinon alerte expliquée. `Proposition`
-- [ ] **Écriture d'ajustement** (mode rattrapage, D11) : depuis un écart détecté, créer une opération de nature « ajustement » du montant de l'écart, note obligatoire, comptée dans le solde mais exclue par défaut des revenus et dépenses ; proposée à la suppression si un import ultérieur couvre la période ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)). `Proposition`
-- [ ] Opérations en attente et cartes à débit différé. `Socle`
+- [x] Doublons : empreinte exacte (compte + date + montant + libellé normalisé) et correspondance approchée (± 3 jours, libellé proche) → choix « ignorer / importer quand même ». `Besoin`
+- [x] **Rapprochement des soldes** : solde calculé = solde de clôture du relevé (CAMT, OFX), sinon alerte expliquée. `Proposition`
+- [x] **Écriture d'ajustement** (mode rattrapage, D11) : depuis un écart détecté, créer une opération de nature « ajustement » du montant de l'écart, note obligatoire, comptée dans le solde mais exclue par défaut des revenus et dépenses ; proposée à la suppression si un import ultérieur couvre la période ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)). `Proposition`
+- [x] Opérations en attente et cartes à débit différé. `Socle`
 
 ### Lot 4 — Interface
 
-- [ ] Assistant en 3 étapes (fichier → correspondance et aperçu → résultat) : nouvelles, doublons, erreurs, déjà catégorisées. `Besoin`
-- [ ] Historique des imports (date, fichier, banque, volume, annulation). `Besoin`
+- [x] Assistant en 3 étapes (fichier → correspondance et aperçu → résultat) : nouvelles, doublons, erreurs, déjà catégorisées. `Besoin`
+- [x] Historique des imports (date, fichier, banque, volume, annulation). `Besoin`
 
 ## Sécurité & confidentialité
 

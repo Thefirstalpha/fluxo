@@ -91,6 +91,7 @@ describe('migrate', () => {
       'account',
       'audit_entry',
       'category',
+      'csv_profile',
       'import_batch',
       'meta',
       'payee',
@@ -143,6 +144,41 @@ describe('migrate', () => {
     expect(beforeMigrating).toHaveBeenCalledTimes(1)
     expect(afterEach).toHaveBeenCalledWith(next)
     expect(schemaVersion(db)).toBe(LATEST_SCHEMA_VERSION + 1)
+  })
+
+  it('migre une base v2 existante vers v3 en conservant les lots et transactions liés', () => {
+    migrate(db, { migrations: MIGRATIONS.slice(0, 2) })
+    expect(schemaVersion(db)).toBe(2)
+
+    const accountId = insertAccount('statement')
+    const batchId = insertBatch(accountId)
+    const txId = insertTransaction(accountId, { batch: batchId, amount: -2500 })
+
+    const beforeMigrating = vi.fn()
+    const result = migrate(db, { beforeMigrating })
+    expect(result).toEqual({ from: 2, to: LATEST_SCHEMA_VERSION })
+    expect(beforeMigrating).toHaveBeenCalledWith(2)
+    expect(schemaVersion(db)).toBe(LATEST_SCHEMA_VERSION)
+
+    // Les lignes existantes sont préservées et les clés étrangères restent actives.
+    expect(
+      db.prepare('SELECT id, format FROM import_batch WHERE id = ?').get(batchId),
+    ).toMatchObject({ id: batchId, format: 'csv' })
+    expect(
+      db.prepare('SELECT import_batch_id FROM transactions WHERE id = ?').pluck().get(txId),
+    ).toBe(batchId)
+    expect(() => insertTransaction(accountId, { batch: uuidv7() })).toThrow(/FOREIGN KEY/)
+
+    // Le format mt940 et les profils CSV sont désormais acceptés.
+    const mtBatch = uuidv7()
+    expect(() =>
+      db
+        .prepare(
+          `INSERT INTO import_batch (id, account_id, file_name, file_hash, format, state, created_at)
+           VALUES (?, ?, 'releve.mt940', ?, 'mt940', 'committed', ?)`,
+        )
+        .run(mtBatch, accountId, 'b'.repeat(64), now()),
+    ).not.toThrow()
   })
 })
 

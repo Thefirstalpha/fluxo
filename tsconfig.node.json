@@ -26,6 +26,7 @@
     "vitest.config.mts",
     "src/main/**/*",
     "src/data/**/*",
+    "src/imports/**/*",
     "src/preload/**/*",
     "src/shared/**/*"
   ]

@@ -2,7 +2,7 @@
 
 Fluxo est livré par **jalons** successifs, ordonnés par importance et par logique d'implémentation : chaque jalon s'appuie sur les précédents et produit une application utilisable.
 
-> Dernière mise à jour : 24 novembre 2026 — M0 et M1 livrés et vérifiés en CI multi-OS ; **M2 implémenté** (en attente de validation CI multi-OS) ; démarrage de **M3**.
+> Dernière mise à jour : 24 novembre 2026 — M0 et M1 livrés et vérifiés en CI multi-OS ; **M2 et M3 implémentés** (validation CI multi-OS en attente au push).
 
 ## Vue d'ensemble
 
@@ -11,7 +11,7 @@ Fluxo est livré par **jalons** successifs, ordonnés par importance et par logi
 | [M0](M0-fondations.md)           | Fondations                    | Socle Electron sécurisé, interface, design, i18n, tests, CI                             | ✅ Livré       | M      | 0.1             |
 | [M1](M1-coffre-fort.md)          | Coffre-fort local             | Base chiffrée, déverrouillage, sauvegardes, migrations                                  | ✅ Livré       | L      | 0.2             |
 | [M2](M2-comptes-transactions.md) | Comptes & transactions        | Registre rapide, ventilation, virements, catégories                                     | 🟢 Implémenté  | L      | 0.3             |
-| [M3](M3-import-releves.md)       | Import des relevés            | CSV, OFX/QFX, QIF, CAMT.053, doublons, annulation                                       | 🟡 En cours    | L      | 0.4 · **Alpha** |
+| [M3](M3-import-releves.md)       | Import des relevés            | CSV, OFX/QFX, QIF, CAMT.053, MT940, doublons, annulation                                | 🟢 Implémenté  | L      | 0.4 · **Alpha** |
 | [M4](M4-categorisation.md)       | Catégorisation automatique    | Règles, apprentissage local, abonnements                                                | ⬜             | L      | 0.5             |
 | [M5](M5-analyses.md)             | Analyses & synthèses          | Filtres globaux, synthèse mensuelle, exploration                                        | ⬜ (aperçu 🟡) | L      | 0.6 · **Bêta**  |
 | [M6](M6-salaires.md)             | Salaires & bulletins          | Bulletin détaillé, du brut au net, tableau de bord salaire                              | ⬜ (aperçu 🟡) | XL     | 0.7             |

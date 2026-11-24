@@ -3,6 +3,15 @@
  * Chaque méthode est validée côté service par un schéma (voir `methods.ts`).
  * Ce module ne contient que des types : il est importé par le main et par le service.
  */
+import type {
+  CsvProfile,
+  CsvProfileConfig,
+  ImportBatchSummary,
+  ImportCommitInput,
+  ImportCommitResult,
+  ImportPreview,
+  ParsedStatement,
+} from '@shared/imports/model'
 import type { LedgerMethod } from '@shared/ledger/api'
 import type { LedgerResult } from '@shared/ledger/model'
 import type { Locale } from '@shared/settings'
@@ -81,6 +90,27 @@ export interface DataServiceApi {
   exitDemo(): ServiceStatus
   /** Registre (comptes, opérations…) du coffre ouvert — réel ou de démonstration. */
   ledger(params: LedgerRequest): LedgerResult<unknown>
+  importPreview(params: {
+    accountId: string
+    fileName: string
+    fileHash: string
+    profile: string | null
+    statement: ParsedStatement
+  }): LedgerResult<ImportPreview>
+  importCommit(params: ImportCommitInput): LedgerResult<ImportCommitResult>
+  importBatchesList(params: {
+    accountId?: string
+    limit?: number
+  }): LedgerResult<ImportBatchSummary[]>
+  importRevert(params: { batchId: string }): LedgerResult<{ batchId: string; removedCount: number }>
+  csvProfilesList(): LedgerResult<CsvProfile[]>
+  csvProfileSave(params: {
+    id?: string
+    name: string
+    bank: string | null
+    config: CsvProfileConfig
+  }): LedgerResult<CsvProfile>
+  csvProfileDelete(params: { id: string }): LedgerResult<{ deleted: true }>
 }
 
 /** Requête du registre : méthode et entrée, revalidées par le service (`LEDGER_INPUTS`). */

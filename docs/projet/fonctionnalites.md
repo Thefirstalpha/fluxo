@@ -54,17 +54,17 @@ C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([
 
 | ID  | Fonctionnalité                                                                                                       | Origine     | Jalon | Statut |
 | --- | -------------------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
-| D01 | Import CSV avec assistant de correspondance et profils par banque                                                    | Besoin      | M3    | ⬜     |
-| D02 | Import OFX / QFX                                                                                                     | Besoin      | M3    | ⬜     |
-| D03 | Import QIF                                                                                                           | Besoin      | M3    | ⬜     |
-| D04 | Import CAMT.053 (ISO 20022)                                                                                          | Besoin      | M3    | ⬜     |
-| D05 | Import MT940                                                                                                         | Proposition | M3    | ⬜     |
-| D06 | Détection des doublons (exacte et approchée)                                                                         | Besoin      | M3    | ⬜     |
-| D07 | Aperçu avant import et annulation d'un import                                                                        | Besoin      | M3    | ⬜     |
-| D08 | Contrôle des soldes de début et de fin de relevé                                                                     | Proposition | M3    | ⬜     |
+| D01 | Import CSV avec assistant de correspondance et profils par banque                                                    | Besoin      | M3    | ✅     |
+| D02 | Import OFX / QFX                                                                                                     | Besoin      | M3    | ✅     |
+| D03 | Import QIF                                                                                                           | Besoin      | M3    | ✅     |
+| D04 | Import CAMT.053 (ISO 20022)                                                                                          | Besoin      | M3    | ✅     |
+| D05 | Import MT940                                                                                                         | Proposition | M3    | ✅     |
+| D06 | Détection des doublons (exacte et approchée)                                                                         | Besoin      | M3    | ✅     |
+| D07 | Aperçu avant import et annulation d'un import                                                                        | Besoin      | M3    | ✅     |
+| D08 | Contrôle des soldes de début et de fin de relevé                                                                     | Proposition | M3    | ✅     |
 | D09 | Relevés PDF (via le pipeline documents)                                                                              | Besoin      | M7    | ⬜     |
 | D10 | Analyse robuste des montants (formats FR/EN/CH, notation comptable)                                                  | Socle       | M0    | ✅     |
-| D11 | Écriture d'ajustement (rattrapage) d'un écart de solde détecté, annotée, remplaçable par l'import du relevé manquant | Proposition | M3    | ⬜     |
+| D11 | Écriture d'ajustement (rattrapage) d'un écart de solde détecté, annotée, remplaçable par l'import du relevé manquant | Proposition | M3    | ✅     |
 
 ## E. Catégorisation automatique
 

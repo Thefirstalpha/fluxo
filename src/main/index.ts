@@ -4,6 +4,8 @@ import { app, BrowserWindow, nativeTheme, powerMonitor, session } from 'electron
 import { DIALOG_LABELS } from '@shared/i18n/dialogs'
 import { IPC_CHANNELS } from '@shared/ipc'
 import { DataServiceClient } from './data/data-service'
+import { ImportManager } from './imports/import-manager'
+import { ImportParserHost } from './imports/parser-host'
 import { registerIpcHandlers } from './ipc/register'
 import { clearLogs, initFileLogging, logger } from './logger'
 import { installApplicationMenu } from './menu'
@@ -93,13 +95,15 @@ async function start(): Promise<void> {
     )
   }
 
-  // Service de données (base chiffrée) dans un processus utilitaire dédié.
+  // Service de données (base chiffrée) et analyseur de relevés dans des processus dédiés.
   const dataService = new DataServiceClient(
     join(app.getPath('userData'), 'vault'),
     app.getVersion(),
   )
+  const importParser = new ImportParserHost()
   app.on('will-quit', (event) => {
     event.preventDefault()
+    importParser.dispose()
     dataService
       .stop()
       .catch((error: unknown) => logger.error('Arrêt du service de données', error))
@@ -145,7 +149,13 @@ async function start(): Promise<void> {
     logger.error('Service de données indisponible', error)
   }
 
-  registerIpcHandlers({ settings, vault, isTrustedSender: isTrustedUrl })
+  const imports = new ImportManager(
+    vault,
+    dataService,
+    importParser,
+    () => DIALOG_LABELS[settings.get().locale],
+  )
+  registerIpcHandlers({ settings, vault, imports, isTrustedSender: isTrustedUrl })
 
   settings.onChange((next) => {
     applyThemePreference(next.theme)

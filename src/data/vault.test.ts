@@ -269,8 +269,7 @@ describe('Vault — schéma et migrations', () => {
       keystore.vaultId,
     )
     expect(listAudit(db).map((entry) => entry.action)).toEqual([
-      'migrate',
-      'migrate',
+      ...MIGRATIONS.map(() => 'migrate'),
       'seed',
       'create',
     ])

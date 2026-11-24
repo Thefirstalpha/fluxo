@@ -1,4 +1,13 @@
 import { z } from 'zod'
+import { CSV_DELIMITERS, STATEMENT_FORMATS } from '@shared/imports/model'
+import {
+  csvProfileConfigSchema,
+  csvProfileDeleteSchema,
+  csvProfileSaveSchema,
+  importBatchesListSchema,
+  importCommitSchema,
+  importRevertSchema,
+} from '@shared/imports/schemas'
 import { LEDGER_METHODS } from '@shared/ledger/api'
 import { LOCALES } from '@shared/settings'
 import { PASSWORD_MAX_LENGTH } from '@shared/vault'
@@ -59,6 +68,13 @@ export function createMethods(
     enterDemo: (params) => host.enterDemo(params),
     exitDemo: () => host.exitDemo(),
     ledger: ({ method, input }) => host.active().ledger().run(method, input),
+    importPreview: (params) => host.active().importPreview(params),
+    importCommit: (params) => host.active().importCommit(params),
+    importBatchesList: (params) => host.active().importBatchesList(params),
+    importRevert: (params) => host.active().importRevert(params),
+    csvProfilesList: () => host.active().csvProfilesList(),
+    csvProfileSave: (params) => host.active().csvProfileSave(params),
+    csvProfileDelete: (params) => host.active().csvProfileDelete(params),
   }
   return {
     status: defineMethod(noParams, () => api.status()),
@@ -126,6 +142,80 @@ export function createMethods(
     ledger: defineMethod(
       z.strictObject({ method: z.enum(LEDGER_METHODS), input: z.unknown() }),
       (params) => api.ledger(params),
+    ),
+    importPreview: defineMethod(
+      z.strictObject({
+        accountId: z.string().regex(/^[0-9a-f-]{36}$/),
+        fileName: z.string().min(1).max(260),
+        fileHash: z.string().regex(/^[0-9a-f]{64}$/),
+        profile: z.string().max(80).nullable(),
+        statement: z.strictObject({
+          format: z.enum(STATEMENT_FORMATS),
+          encoding: z.enum(['utf-8', 'windows-1252', 'iso-8859-1']),
+          currency: z.string().nullable(),
+          accountHint: z.string().nullable(),
+          accountTypeHint: z.enum(['checking', 'savings', 'deferred_card']).nullable(),
+          periodStart: z.string().nullable(),
+          periodEnd: z.string().nullable(),
+          openingBalance: z.number().int().nullable(),
+          closingBalance: z.number().int().nullable(),
+          rows: z
+            .array(
+              z.strictObject({
+                index: z.number().int().min(0),
+                bookingDate: z.string(),
+                valueDate: z.string().nullable(),
+                amount: z.number().int(),
+                currency: z.string().nullable(),
+                labelRaw: z.string(),
+                payee: z.string().nullable(),
+                note: z.string().nullable(),
+                status: z.enum(['pending', 'cleared', 'reconciled']),
+                externalId: z.string().nullable(),
+                runningBalance: z.number().int().nullable(),
+              }),
+            )
+            .max(200_000),
+          skippedLines: z.number().int().min(0),
+          warnings: z.array(
+            z.strictObject({
+              line: z.number().int().optional(),
+              code: z.enum([
+                'skipped-line',
+                'currency-mismatch',
+                'encoding-fallback',
+                'date-ambiguous',
+                'unsettled-card-notice',
+              ]),
+              detail: z.string().optional(),
+            }),
+          ),
+          csvInspection: z
+            .strictObject({
+              delimiter: z.enum(CSV_DELIMITERS),
+              skipRows: z.number().int().min(0),
+              hasHeader: z.boolean(),
+              headers: z.array(z.string()),
+              sampleRows: z.array(z.array(z.string())),
+              suggestedProfileId: z.string().nullable(),
+              suggestedConfig: csvProfileConfigSchema,
+            })
+            .optional(),
+        }),
+      }),
+      (params) => api.importPreview(params),
+    ),
+    importCommit: defineMethod(importCommitSchema, (params) => host.active().importCommit(params)),
+    importBatchesList: defineMethod(importBatchesListSchema, (params) =>
+      host.active().importBatchesList(params),
+    ),
+    importRevert: defineMethod(importRevertSchema, (params) => host.active().importRevert(params)),
+    csvProfilesList: defineMethod(noParams, () => host.active().csvProfilesList()),
+    csvProfileSave: defineMethod(csvProfileSaveSchema, (params) =>
+      host.active().csvProfileSave(params),
+    ),
+    csvProfileDelete: defineMethod(csvProfileDeleteSchema, (params) =>
+      host.active().csvProfileDelete(params),
     ),
   }
 }

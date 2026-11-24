@@ -1,0 +1,4 @@
+dateOp;dateVal;label;category;categoryParent;supplierFound;amount;comment;accountNum;accountLabel;accountbalance
+2026-11-18;2026-11-18;VIR SEPA EMPLOYEUR;Salaires;Revenus;ACME SAS;2450,00;;00040123456;Compte Bancaire;3650,50
+2026-11-17;2026-11-17;CARTE 16/11 BOULANGERIE DUPONT;Alimentation;Vie courante;BOULANGERIE DUPONT;-4,80;;00040123456;Compte Bancaire;1200,50
+2026-11-15;2026-11-15;PRLV SEPA FOURNISSEUR ENERGIE;Logement;Maison;ENERGIE FR;-78,90;Mensualité novembre;00040123456;Compte Bancaire;1205,30

@@ -3,8 +3,18 @@ import { z } from 'zod'
 import { EXTERNAL_LINK_HOSTS } from '@shared/app-meta'
 import { ERROR_REPORT_LIMITS, IPC_CHANNELS, type AppInfo } from '@shared/ipc'
 import { LEDGER_METHODS, ledgerChannel } from '@shared/ledger/api'
+import {
+  csvProfileDeleteSchema,
+  csvProfileSaveSchema,
+  importBatchesListSchema,
+  importCommitSchema,
+  importInspectSchema,
+  importParseRequestSchema,
+  importRevertSchema,
+} from '@shared/imports/schemas'
 import { LEDGER_INPUTS } from '@shared/ledger/schemas'
 import { settingsPatchSchema } from '@shared/settings-schema'
+import type { ImportManager } from '../imports/import-manager'
 import { logger } from '../logger'
 import { isAllowedExternalUrl } from '../security/url'
 import type { SettingsStore } from '../settings/settings-store'
@@ -24,12 +34,18 @@ import {
 interface IpcDependencies {
   settings: SettingsStore
   vault: VaultManager
+  imports: ImportManager
   isTrustedSender: TrustedSenderCheck
 }
 
 const noInput = z.undefined()
 
-export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDependencies): void {
+export function registerIpcHandlers({
+  settings,
+  vault,
+  imports,
+  isTrustedSender,
+}: IpcDependencies): void {
   const handle = createHandleFactory(isTrustedSender)
 
   handle(IPC_CHANNELS.settingsGet, noInput, () => settings.get())
@@ -106,4 +122,24 @@ export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDep
   // Démonstration : coffre séparé, libellés dans la langue de l'interface.
   handle(IPC_CHANNELS.vaultEnterDemo, noInput, () => vault.enterDemo(settings.get().locale))
   handle(IPC_CHANNELS.vaultExitDemo, noInput, () => vault.exitDemo())
+
+  // Import de relevés : boîtes de dialogue et analyseur isolé.
+  handle(IPC_CHANNELS.importsPickFile, noInput, () => imports.pickFile())
+  handle(IPC_CHANNELS.importsStagePath, z.string().min(1).max(4096), (path) =>
+    imports.stagePath(path),
+  )
+  handle(IPC_CHANNELS.importsInspect, importInspectSchema, (input) => imports.inspect(input))
+  handle(IPC_CHANNELS.importsPreview, importParseRequestSchema, (input) => imports.preview(input))
+  handle(IPC_CHANNELS.importsCommit, importCommitSchema, (input) => imports.commit(input))
+  handle(IPC_CHANNELS.importsBatchesList, importBatchesListSchema, (input) =>
+    imports.batchesList(input),
+  )
+  handle(IPC_CHANNELS.importsRevert, importRevertSchema, (input) => imports.revert(input))
+  handle(IPC_CHANNELS.importsProfilesList, noInput, () => imports.profilesList())
+  handle(IPC_CHANNELS.importsProfileSave, csvProfileSaveSchema, (input) =>
+    imports.profileSave(input),
+  )
+  handle(IPC_CHANNELS.importsProfileDelete, csvProfileDeleteSchema, (input) =>
+    imports.profileDelete(input),
+  )
 }

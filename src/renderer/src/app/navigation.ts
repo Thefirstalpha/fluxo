@@ -35,7 +35,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'accounts', path: '/accounts', icon: Landmark },
   { key: 'transactions', path: '/transactions', icon: ArrowLeftRight },
   { key: 'categories', path: '/categories', icon: Tags },
-  { key: 'imports', path: '/imports', icon: Upload, milestone: 'M3' },
+  { key: 'imports', path: '/imports', icon: Upload },
   { key: 'analytics', path: '/analytics', icon: ChartNoAxesCombined, milestone: 'M5' },
   { key: 'payslips', path: '/payslips', icon: Wallet, milestone: 'M6' },
   { key: 'documents', path: '/documents', icon: FileScan, milestone: 'M7' },

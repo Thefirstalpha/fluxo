@@ -1,18 +1,27 @@
 import type { Db } from './connection'
 import { SCHEMA_V1 } from './schema-v1'
 import { SCHEMA_V2 } from './schema-v2'
+import { SCHEMA_V3 } from './schema-v3'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
   version: number
   name: string
   up: string
+  /** Nécessaire quand la migration reconstruit une table référencée par d'autres tables. */
+  rebuildForeignKeys?: boolean
 }
 
 /** Migrations du coffre, dans l'ordre. Une migration publiée ne se modifie plus : on en ajoute une. */
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'schéma initial', up: SCHEMA_V1 },
   { version: 2, name: 'registre (comptes, recherche, filtres)', up: SCHEMA_V2 },
+  {
+    version: 3,
+    name: 'imports (MT940, soldes de rapprochement, profils CSV)',
+    up: SCHEMA_V3,
+    rebuildForeignKeys: true,
+  },
 ]
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.at(-1)?.version ?? 0
@@ -55,11 +64,21 @@ export function migrate(db: Db, options: MigrationOptions = {}): { from: number;
   if (pending.length === 0) return { from, to: from }
 
   if (from > 0) options.beforeMigrating?.(from)
+  const fkEnabled = Boolean(db.pragma('foreign_keys', { simple: true }))
   for (const migration of pending) {
-    db.transaction(() => {
-      db.exec(migration.up)
-      db.pragma(`user_version = ${migration.version}`)
-    }).immediate()
+    if (migration.rebuildForeignKeys && fkEnabled) db.pragma('foreign_keys = OFF')
+    try {
+      db.transaction(() => {
+        db.exec(migration.up)
+        if (migration.rebuildForeignKeys && fkEnabled) {
+          const violations = db.pragma('foreign_key_check') as unknown[]
+          if (violations.length > 0) throw new Error('Intégrité des clés étrangères rompue')
+        }
+        db.pragma(`user_version = ${migration.version}`)
+      }).immediate()
+    } finally {
+      if (migration.rebuildForeignKeys && fkEnabled) db.pragma('foreign_keys = ON')
+    }
     options.afterEach?.(migration)
   }
   return { from, to: latest }

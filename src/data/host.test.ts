@@ -83,6 +83,7 @@ describe('coffre de démonstration', () => {
     expect(listAudit(db).map((entry) => entry.action)).toEqual([
       'migrate',
       'migrate',
+      'migrate',
       'seed',
       'create',
       'seed',

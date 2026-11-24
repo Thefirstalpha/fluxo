@@ -18,12 +18,13 @@ export default defineConfig({
     resolve: { alias: sharedAlias },
     build: {
       emptyOutDir: true,
-      // Deux points d'entrée : le process main et le service de données (utilityProcess).
+      // Trois points d'entrée : le main, le service de données et l'analyseur d'imports (utilityProcess).
       // Non minifiés : des traces d'erreur lisibles dans les journaux valent plus que quelques Ko.
       rolldownOptions: {
         input: {
           index: resolve('src/main/index.ts'),
           'data-service': resolve('src/data/index.ts'),
+          'import-parser': resolve('src/imports/index.ts'),
         },
       },
     },

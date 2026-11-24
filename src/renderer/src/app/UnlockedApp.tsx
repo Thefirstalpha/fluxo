@@ -15,6 +15,7 @@ const SettingsPage = lazy(() => import('../features/settings/SettingsPage'))
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'))
 const CategoriesPage = lazy(() => import('../features/categories/CategoriesPage'))
 const TransactionsPage = lazy(() => import('../features/transactions/TransactionsPage'))
+const ImportsPage = lazy(() => import('../features/imports/ImportsPage'))
 
 // Verrouillage, démonstration ouverte ou fermée : les données en cache sont celles d'un autre
 // coffre (ou d'un coffre fermé) ; on les oublie.
@@ -61,7 +62,7 @@ export default function UnlockedApp() {
                   <TransactionsPage />
                 </Route>
                 <Route path="/imports">
-                  <ComingSoonPage section="imports" />
+                  <ImportsPage />
                 </Route>
                 <Route path="/analytics">
                   <ComingSoonPage section="analytics" />

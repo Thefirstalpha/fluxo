@@ -138,6 +138,15 @@ Conventions du registre (M2, service `src/data/ledger/`) :
 - **Catégories** : deux niveaux, type hérité du parent, noms uniques entre sœurs ; fusion et archivage avec réaffectation des parts, suppression seulement si inutilisée ([ADR-034](decisions.md#adr-034--catégories--deux-niveaux-réorganisation-sans-perte)).
 - **Opération importée** : seules les annotations changent (libellé personnalisé, tiers, note, statut, favori, contre-valeur, ventilation, étiquettes, lien de virement).
 
+## Schéma v3 (M3)
+
+Migration `src/data/db/schema-v3.ts` ([ADR-035](decisions.md#adr-035--import-de-relevés--analyseur-isolé-profils-csv-et-schéma-v3)) :
+
+| Élément        | Détail                                                                                                                                                                            |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `import_batch` | ajout de `mt940` aux formats autorisés et des colonnes `opening_balance`, `closing_balance`, `balance_discrepancy` (centimes, `INTEGER` ou `NULL`)                                |
+| `csv_profile`  | profils CSV personnalisés enregistrés (`id`, `name`, `bank`, `config` JSON validé par `csvProfileConfigSchema`, `created_at`, `updated_at`) ; table incluse dans l'export complet |
+
 ## Bulletin de paie (France)
 
 | Section              | Champs                                                                                                                                              | Contrôles                                       |

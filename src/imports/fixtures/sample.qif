@@ -1,0 +1,11 @@
+!Type:Bank
+D05/11/2026
+T-18,50
+PLibrairie du Parc
+MAchat livre
+^
+D14/11/2026
+T+120,00
+PRemboursement ami
+CX
+^

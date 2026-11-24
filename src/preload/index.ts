@@ -1,6 +1,15 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
+import type {
+  CsvProfile,
+  ImportBatchSummary,
+  ImportCommitResult,
+  ImportPreviewOutcome,
+  ParseInspectResult,
+  StageImportFileResult,
+} from '@shared/imports/model'
 import { IPC_CHANNELS, type AppInfo, type FluxoApi } from '@shared/ipc'
 import { LEDGER_METHODS, ledgerChannel, type LedgerClient } from '@shared/ledger/api'
+import type { LedgerResult } from '@shared/ledger/model'
 import type { Settings } from '@shared/settings'
 import type {
   BackupInfo,
@@ -28,6 +37,45 @@ const ledger = Object.freeze(
     ]),
   ),
 ) as LedgerClient
+
+const rawImports: FluxoApi['imports'] = {
+  pickFile: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsPickFile) as Promise<StageImportFileResult>,
+  registerDroppedFile: (file: File) => {
+    const filePath = webUtils.getPathForFile(file)
+    if (!filePath) return Promise.resolve({ ok: false as const, reason: 'invalid-file' as const })
+    return ipcRenderer.invoke(
+      IPC_CHANNELS.importsStagePath,
+      filePath,
+    ) as Promise<StageImportFileResult>
+  },
+  inspect: (input) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsInspect, input) as Promise<ParseInspectResult>,
+  preview: (input) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsPreview, input) as Promise<ImportPreviewOutcome>,
+  commit: (input) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsCommit, input) as Promise<
+      LedgerResult<ImportCommitResult>
+    >,
+  batchesList: (input) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsBatchesList, input) as Promise<
+      LedgerResult<ImportBatchSummary[]>
+    >,
+  revert: (batchId) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsRevert, { batchId }) as Promise<
+      LedgerResult<{ batchId: string; removedCount: number }>
+    >,
+  profilesList: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsProfilesList) as Promise<LedgerResult<CsvProfile[]>>,
+  profileSave: (input) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsProfileSave, input) as Promise<LedgerResult<CsvProfile>>,
+  profileDelete: (id) =>
+    ipcRenderer.invoke(IPC_CHANNELS.importsProfileDelete, { id }) as Promise<
+      LedgerResult<{ deleted: true }>
+    >,
+}
+
+const imports = Object.freeze(rawImports)
 
 const api: FluxoApi = {
   platform: process.platform,
@@ -90,6 +138,7 @@ const api: FluxoApi = {
     exitDemo: () => ipcRenderer.invoke(IPC_CHANNELS.vaultExitDemo) as Promise<void>,
   },
   ledger,
+  imports,
 }
 
 contextBridge.exposeInMainWorld('fluxo', api)

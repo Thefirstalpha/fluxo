@@ -1,4 +1,16 @@
+import type {
+  CsvProfile,
+  CsvProfileConfig,
+  ImportBatchSummary,
+  ImportCommitInput,
+  ImportCommitResult,
+  ImportPreviewOutcome,
+  ParseInspectResult,
+  StageImportFileResult,
+  StatementFormat,
+} from './imports/model'
 import type { LedgerClient } from './ledger/api'
+import type { LedgerResult } from './ledger/model'
 import type { Settings, SettingsPatch } from './settings'
 import type {
   BackupInfo,
@@ -50,6 +62,16 @@ export const IPC_CHANNELS = {
   vaultEraseAll: 'fluxo:vault:erase-all',
   vaultEnterDemo: 'fluxo:vault:enter-demo',
   vaultExitDemo: 'fluxo:vault:exit-demo',
+  importsPickFile: 'fluxo:imports:pick-file',
+  importsStagePath: 'fluxo:imports:stage-path',
+  importsInspect: 'fluxo:imports:inspect',
+  importsPreview: 'fluxo:imports:preview',
+  importsCommit: 'fluxo:imports:commit',
+  importsBatchesList: 'fluxo:imports:batches-list',
+  importsRevert: 'fluxo:imports:revert',
+  importsProfilesList: 'fluxo:imports:profiles-list',
+  importsProfileSave: 'fluxo:imports:profile-save',
+  importsProfileDelete: 'fluxo:imports:profile-delete',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -132,4 +154,31 @@ export interface FluxoApi {
   }
   /** Registre (comptes, opérations, catégories…) : une fonction par méthode, entrée validée. */
   readonly ledger: LedgerClient
+  /** Import de relevés bancaires : analyse isolée et écriture par lot. */
+  readonly imports: {
+    pickFile(): Promise<StageImportFileResult>
+    registerDroppedFile(file: File): Promise<StageImportFileResult>
+    inspect(input: { token: string; csvConfig?: CsvProfileConfig }): Promise<ParseInspectResult>
+    preview(input: {
+      token: string
+      accountId: string
+      csvConfig?: CsvProfileConfig
+      profileName?: string | null
+      forcedFormat?: StatementFormat
+    }): Promise<ImportPreviewOutcome>
+    commit(input: ImportCommitInput): Promise<LedgerResult<ImportCommitResult>>
+    batchesList(input: {
+      accountId?: string
+      limit?: number
+    }): Promise<LedgerResult<ImportBatchSummary[]>>
+    revert(batchId: string): Promise<LedgerResult<{ batchId: string; removedCount: number }>>
+    profilesList(): Promise<LedgerResult<CsvProfile[]>>
+    profileSave(input: {
+      id?: string
+      name: string
+      bank: string | null
+      config: CsvProfileConfig
+    }): Promise<LedgerResult<CsvProfile>>
+    profileDelete(id: string): Promise<LedgerResult<{ deleted: true }>>
+  }
 }

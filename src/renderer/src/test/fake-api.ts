@@ -197,6 +197,38 @@ export function createFakeApi() {
       exitDemo: vi.fn(() => Promise.resolve()),
     },
     ledger: createFakeLedger(),
+    imports: {
+      pickFile: vi.fn((): ReturnType<FluxoApi['imports']['pickFile']> =>
+        Promise.resolve({ ok: false, reason: 'cancelled' }),
+      ),
+      registerDroppedFile: vi.fn((): ReturnType<FluxoApi['imports']['registerDroppedFile']> =>
+        Promise.resolve({ ok: false, reason: 'invalid-file' }),
+      ),
+      inspect: vi.fn((): ReturnType<FluxoApi['imports']['inspect']> =>
+        Promise.resolve({ ok: true, format: 'csv', encoding: 'utf-8', warnings: [] }),
+      ),
+      preview: vi.fn((): ReturnType<FluxoApi['imports']['preview']> =>
+        Promise.resolve({ ok: false, reason: 'not-found' }),
+      ),
+      commit: vi.fn((): ReturnType<FluxoApi['imports']['commit']> =>
+        Promise.resolve({ ok: false, error: 'not-found' }),
+      ),
+      batchesList: vi.fn((): ReturnType<FluxoApi['imports']['batchesList']> =>
+        Promise.resolve({ ok: true, value: [] }),
+      ),
+      revert: vi.fn((): ReturnType<FluxoApi['imports']['revert']> =>
+        Promise.resolve({ ok: false, error: 'not-found' }),
+      ),
+      profilesList: vi.fn((): ReturnType<FluxoApi['imports']['profilesList']> =>
+        Promise.resolve({ ok: true, value: [] }),
+      ),
+      profileSave: vi.fn((): ReturnType<FluxoApi['imports']['profileSave']> =>
+        Promise.resolve({ ok: false, error: 'invalid' }),
+      ),
+      profileDelete: vi.fn((): ReturnType<FluxoApi['imports']['profileDelete']> =>
+        Promise.resolve({ ok: false, error: 'invalid' }),
+      ),
+    },
   } satisfies FluxoApi
   return api
 }

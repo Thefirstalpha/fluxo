@@ -15,6 +15,7 @@ export const EXPORTED_TABLES = [
   'payee',
   'tag',
   'import_batch',
+  'csv_profile',
   'transactions',
   'split',
   'split_tag',

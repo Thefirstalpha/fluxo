@@ -17,7 +17,12 @@ export default defineConfig({
         test: {
           name: 'node',
           environment: 'node',
-          include: ['src/main/**/*.test.ts', 'src/data/**/*.test.ts', 'src/shared/**/*.test.ts'],
+          include: [
+            'src/main/**/*.test.ts',
+            'src/data/**/*.test.ts',
+            'src/imports/**/*.test.ts',
+            'src/shared/**/*.test.ts',
+          ],
           exclude: ['src/**/*.perf.test.ts'],
         },
       },

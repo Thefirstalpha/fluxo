@@ -288,3 +288,14 @@ Chaque décision structurante est consignée ici : contexte, choix, conséquence
   - **Archivage** plutôt que suppression : une catégorie archivée (avec ses sous-catégories) reste sur les opérations passées mais ne se choisit plus ; une réaffectation facultative déplace d'abord ses parts. **Suppression** réservée à une catégorie sans part ni sous-catégorie.
   - Chaque réorganisation est une écriture tracée (audit, annulation au lot 5) ; un test vérifie que **la somme des parts catégorisées est inchangée** après fusion ou archivage avec réaffectation.
 - **Conséquences** : pas d'arbre profond (les besoins plus fins passent par les étiquettes, [ADR-013](#adr-013--étiquettes-posées-sur-la-ventilation-split-pas-sur-la-transaction)) ; une fusion est définitive en dehors de l'annulation.
+
+### ADR-035 — Import de relevés : analyseur isolé, profils CSV et schéma v3
+
+- **Statut** : acceptée (2026-11-24, M3).
+- **Contexte** : tout fichier déposé par l'utilisateur (CSV, OFX/QFX, QIF, CAMT.053, MT940) doit être traité comme une entrée non fiable et ne jamais exposer de chemin disque au renderer ni toucher le réseau ou le coffre directement.
+- **Décisions** :
+  - **Isolation et bornes strictes** : le process main valide le fichier (dialogue natif ou `webUtils.getPathForFile` : extension autorisée, fichier régulier, lecture bornée à 20 Mio et 200 000 lignes) et délivre un jeton opaque au renderer. La lecture et la normalisation s'exécutent dans un processus utilitaire Electron dédié (`src/imports/index.ts`, sans accès réseau, sans clé ni accès SQLite), tué au-delà d'un délai de 15 s.
+  - **Analyseur XML sans dépendance externe** (`src/imports/xml.ts`) : rejette explicitement `<!DOCTYPE`, `<!ENTITY` et toute entité hors des 5 prédéfinies XML et références numériques valides, et borne profondeur et nombre de nœuds (protection XXE et « billion laughs »).
+  - **Aperçu mémorisé côté service de données** (`PendingImportStore`) : l'aperçu est calculé et gardé en mémoire par le service (vidé au verrouillage) pour que la validation (`importCommit`) s'appuie sur les opérations authentiquement analysées plutôt que sur une charge utile modifiable par le renderer.
+  - **Schéma v3** (`src/data/db/schema-v3.ts`) : reconstruit `import_batch` (reconstruction sûre des clés étrangères) pour autoriser le format `mt940` et enregistrer `opening_balance`, `closing_balance` et `balance_discrepancy`, et ajoute la table `csv_profile` (JSON validé par schéma zod, partageable en `fluxo-csv-profile-v1`).
+- **Conséquences** : les formats additionnels ou parseurs futurs (ex. extraction PDF au M7) réutilisent ce sas isolé par jetons ; la tolérance aux doublons exacts/approchés (y compris achats identiques le même jour et dénouement des opérations en attente) reste auditable et réversible par lot entier (`importRevert`).

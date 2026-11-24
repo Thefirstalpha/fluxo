@@ -70,8 +70,27 @@ import {
   schemaVersion,
   type Migration,
 } from './db/migrations'
+import {
+  type CsvProfile,
+  type CsvProfileConfig,
+  type ImportBatchSummary,
+  type ImportCommitInput,
+  type ImportCommitResult,
+  type ImportPreview,
+  type ParsedStatement,
+} from '@shared/imports/model'
+import type { LedgerResult } from '@shared/ledger/model'
+import {
+  commitImport,
+  listImportBatches,
+  PendingImportStore,
+  previewImport,
+  revertImportBatch,
+} from './imports/engine'
+import { deleteCsvProfile, listCsvProfiles, saveCsvProfile } from './imports/profiles'
 import { exportDatabase } from './export'
 import { seedCategoryPack } from './ledger/category-seed'
+import { databaseRuleError, LedgerFailure } from './ledger/failure'
 import { Ledger } from './ledger/ledger'
 import { Lockout } from './lockout'
 import { ServiceError } from './rpc'
@@ -162,6 +181,7 @@ export class Vault {
   private readonly migrations: readonly Migration[]
   private readonly appVersion: string
   private pendingRestore: PendingRestore | null = null
+  private readonly pendingImports = new PendingImportStore()
   private ledgerInstance: Ledger | null = null
 
   private constructor(
@@ -215,6 +235,62 @@ export class Vault {
     const db = this.database()
     if (this.ledgerInstance?.db !== db) this.ledgerInstance = new Ledger(db, this.now)
     return this.ledgerInstance
+  }
+
+  private runImportOp<T>(fn: (db: Db) => T): LedgerResult<T> {
+    const db = this.database()
+    try {
+      return { ok: true, value: fn(db) }
+    } catch (error) {
+      if (error instanceof LedgerFailure) return { ok: false, error: error.error }
+      const rule = databaseRuleError(error)
+      if (rule) return { ok: false, error: rule }
+      throw error
+    }
+  }
+
+  importPreview(params: {
+    accountId: string
+    fileName: string
+    fileHash: string
+    profile: string | null
+    statement: ParsedStatement
+  }): LedgerResult<ImportPreview> {
+    return this.runImportOp((db) => previewImport(db, this.pendingImports, params))
+  }
+
+  importCommit(params: ImportCommitInput): LedgerResult<ImportCommitResult> {
+    return this.runImportOp((db) => commitImport(db, this.pendingImports, params))
+  }
+
+  importBatchesList(params: {
+    accountId?: string
+    limit?: number
+  }): LedgerResult<ImportBatchSummary[]> {
+    return this.runImportOp((db) => listImportBatches(db, params))
+  }
+
+  importRevert(params: {
+    batchId: string
+  }): LedgerResult<{ batchId: string; removedCount: number }> {
+    return this.runImportOp((db) => revertImportBatch(db, params.batchId))
+  }
+
+  csvProfilesList(): LedgerResult<CsvProfile[]> {
+    return this.runImportOp((db) => listCsvProfiles(db))
+  }
+
+  csvProfileSave(params: {
+    id?: string
+    name: string
+    bank: string | null
+    config: CsvProfileConfig
+  }): LedgerResult<CsvProfile> {
+    return this.runImportOp((db) => saveCsvProfile(db, params))
+  }
+
+  csvProfileDelete(params: { id: string }): LedgerResult<{ deleted: true }> {
+    return this.runImportOp((db) => deleteCsvProfile(db, params.id))
   }
 
   // ——— Création —————————————————————————————————————————————————————
@@ -428,6 +504,7 @@ export class Vault {
     this.ledgerInstance = null
     this.viaRecovery = false
     this.sessionExportPending = false
+    this.pendingImports.clear()
     this.clearPendingRestore()
     return this.status()
   }
