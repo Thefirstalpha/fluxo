@@ -1,6 +1,6 @@
 # M0 — Fondations
 
-> **Statut : 🟡 Livré en local, en attente de publication** — tout le travail réalisable sur le poste est livré et vérifié (24/11/2026, Windows 11). Restent des **actions sur GitHub** : créer le dépôt, le régler (lot A), puis constater la CI verte et le packaging sur les trois systèmes (lots B et C). Le jalon sera clos à ce moment-là.
+> **Statut : 🟡 Poussé sur GitHub, vérifications finales en cours** — tout le travail réalisable sur le poste est livré et vérifié (24/11/2026, Windows 11), et le dépôt `Thefirstalpha/fluxo` est créé et poussé. Restent les **réglages sur GitHub** (lot A), puis constater la CI verte et le packaging sur les trois systèmes (lots B et C). Le jalon sera clos à ce moment-là.
 > Taille : M · Dépend de : — · Version : 0.1
 
 ## Objectif
@@ -82,7 +82,7 @@ Poser un socle **sûr, léger et testable** que les jalons suivants pourront enr
 ### Lot A — Dépôt public
 
 - [x] Initialiser Git (`main`) et premier commit. `Socle`
-- [ ] Créer le dépôt GitHub `Thefirstalpha/fluxo` et y pousser `main` — **action manuelle**. `Socle`
+- [x] Créer le dépôt GitHub `Thefirstalpha/fluxo` et y pousser `main` — **action manuelle**. `Socle`
 - [x] Licence tranchée : MIT ([ADR-015](../architecture/decisions.md#adr-015--licence-mit)), fichier [`LICENSE`](../../LICENSE) ajouté.
 - [x] [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md), établi à partir des cartes de sources de la build (seul ce qui est réellement embarqué) ; copié avec la licence dans `resources/` de l'application packagée. `Socle`
 - [x] Valeurs provisoires remplacées : propriétaire `Thefirstalpha`, `appId` `app.fluxo.desktop` confirmé ([ADR-021](../architecture/decisions.md#adr-021--nom-fluxo-confirmé-malgré-une-homonymie-btp)), contact `maintainer` Linux renvoyant aux tickets GitHub (aucune adresse e-mail publiée). `Socle`
@@ -144,7 +144,7 @@ Points d'attention :
 - [x] Renderer isolé, CSP stricte, IPC validé — vérifiés par les tests E2E.
 - [x] Tests unitaires et E2E verts ; types et lint sans erreur.
 - [ ] CI verte sur Windows, macOS et Linux.
-- [x] Dépôt public prêt : licence, fichiers communautaires, valeurs provisoires remplacées (le dépôt GitHub lui-même reste à créer).
+- [x] Dépôt public prêt : licence, fichiers communautaires, valeurs provisoires remplacées, dépôt GitHub créé et poussé.
 - [ ] Packaging vérifié sur les trois systèmes (Windows ✅ ; macOS et Linux par la CI).
 
 ## Risques & questions
