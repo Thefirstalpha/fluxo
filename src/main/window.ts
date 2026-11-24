@@ -9,12 +9,18 @@ interface MainWindowOptions {
   theme: ResolvedTheme
   contentProtection: boolean
   bounds: InitialBounds
+  /**
+   * Tests E2E : la fenêtre n'est jamais affichée (rendu et minuteurs non ralentis), pour ne pas
+   * prendre le focus ni s'afficher sur le poste de la personne qui lance les tests.
+   */
+  hidden?: boolean
 }
 
 export function createMainWindow({
   theme,
   contentProtection,
   bounds,
+  hidden = false,
 }: MainWindowOptions): BrowserWindow {
   const chrome = WINDOW_CHROME[theme]
   const isMac = process.platform === 'darwin'
@@ -25,6 +31,7 @@ export function createMainWindow({
     minWidth: MIN_WINDOW_SIZE.width,
     minHeight: MIN_WINDOW_SIZE.height,
     show: false,
+    ...(hidden ? { skipTaskbar: true } : {}),
     title: APP_NAME,
     // En développement, electron.exe générique n'a pas l'icône de Fluxo : on la fournit
     // explicitement. Une fois packagée, l'icône vient de l'exécutable (electron-builder.yml).
@@ -56,11 +63,13 @@ export function createMainWindow({
       spellcheck: false,
       safeDialogs: true,
       devTools: !app.isPackaged,
+      ...(hidden ? { backgroundThrottling: false } : {}),
     },
   })
 
   window.setContentProtection(contentProtection)
   window.once('ready-to-show', () => {
+    if (hidden) return
     if (maximized) window.maximize()
     window.show()
   })

@@ -63,7 +63,12 @@ export class VaultHost {
     this.real.lock()
     rmSync(this.demoPaths.directory, { recursive: true, force: true })
     const demo = await Vault.open(this.demoPaths, this.log, this.options)
-    await demo.create({ mode: 'session', key: randomBytes(32), sessionBlob: DEMO_SESSION_BLOB })
+    await demo.create({
+      mode: 'session',
+      key: randomBytes(32),
+      sessionBlob: DEMO_SESSION_BLOB,
+      locale,
+    })
     const now = new Date()
     const ledger = generateDemoLedger({ endMonth: monthOf(now), count: 18 })
     const seeded = seedDemoVault(demo.database(), ledger, { locale, now })

@@ -1,3 +1,4 @@
+import type { LedgerClient } from './ledger/api'
 import type { Settings, SettingsPatch } from './settings'
 import type {
   BackupInfo,
@@ -129,4 +130,6 @@ export interface FluxoApi {
     enterDemo(): Promise<void>
     exitDemo(): Promise<void>
   }
+  /** Registre (comptes, opérations, catégories…) : une fonction par méthode, entrée validée. */
+  readonly ledger: LedgerClient
 }

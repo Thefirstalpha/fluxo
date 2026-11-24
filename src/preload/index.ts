@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import { IPC_CHANNELS, type AppInfo, type FluxoApi } from '@shared/ipc'
+import { LEDGER_METHODS, ledgerChannel, type LedgerClient } from '@shared/ledger/api'
 import type { Settings } from '@shared/settings'
 import type {
   BackupInfo,
@@ -18,6 +19,16 @@ import type {
  * Règles : pas d'accès générique à ipcRenderer, une fonction par besoin métier,
  * aucune API Node exposée. Toute entrée est revalidée côté main.
  */
+/** Une fonction par méthode du registre, chacune liée à son propre canal (liste fermée). */
+const ledger = Object.freeze(
+  Object.fromEntries(
+    LEDGER_METHODS.map((method) => [
+      method,
+      (input: unknown) => ipcRenderer.invoke(ledgerChannel(method), input),
+    ]),
+  ),
+) as LedgerClient
+
 const api: FluxoApi = {
   platform: process.platform,
   settings: {
@@ -78,6 +89,7 @@ const api: FluxoApi = {
     enterDemo: () => ipcRenderer.invoke(IPC_CHANNELS.vaultEnterDemo) as Promise<void>,
     exitDemo: () => ipcRenderer.invoke(IPC_CHANNELS.vaultExitDemo) as Promise<void>,
   },
+  ledger,
 }
 
 contextBridge.exposeInMainWorld('fluxo', api)

@@ -80,7 +80,13 @@ describe('coffre de démonstration', () => {
     expect(rows.map((row) => row.spent)).toEqual(
       EXPENSE_CATEGORY_IDS.map((id) => last.byCategory[id]),
     )
-    expect(listAudit(db).map((entry) => entry.action)).toEqual(['migrate', 'create', 'seed'])
+    expect(listAudit(db).map((entry) => entry.action)).toEqual([
+      'migrate',
+      'migrate',
+      'seed',
+      'create',
+      'seed',
+    ])
     // Les virements d'épargne sont reliés deux à deux.
     expect(
       db.prepare('SELECT count(*) FROM transactions WHERE transfer_id IS NOT NULL').pluck().get(),

@@ -16,8 +16,11 @@ import type {
   VaultResult,
   VaultStatus,
 } from '@shared/vault'
-import type { DataServiceMethod, MethodParams, MethodResult } from '../../data/api'
+import type { LedgerMethod, LedgerOutput } from '@shared/ledger/api'
+import type { LedgerResult } from '@shared/ledger/model'
 import type { Locale } from '@shared/settings'
+import type { DataServiceMethod, MethodParams, MethodResult } from '../../data/api'
+import { ServiceError } from '../../data/rpc'
 import { logger } from '../logger'
 import type { SecureStorage } from './secure-storage'
 
@@ -75,15 +78,15 @@ export class VaultManager {
     for (const listener of this.listeners) listener(status)
   }
 
-  async create(input: CreateVaultInput): Promise<VaultResult> {
+  async create(input: CreateVaultInput, locale: Locale): Promise<VaultResult> {
     if (input.mode === 'session') {
       if (this.storage.unavailableReason()) return sessionUnavailable
       const key = randomBytes(32)
       const sessionBlob = this.wrapForSession(key)
-      await this.service.call('create', { mode: 'session', key, sessionBlob })
+      await this.service.call('create', { mode: 'session', key, sessionBlob, locale })
       key.fill(0)
     } else {
-      await this.service.call('create', { mode: 'password', password: input.password })
+      await this.service.call('create', { mode: 'password', password: input.password, locale })
     }
     await this.publish()
     this.runAutoBackup()
@@ -168,6 +171,25 @@ export class VaultManager {
     const result = await this.service.call('removeRecoveryCode', input)
     await this.publish()
     return result
+  }
+
+  // ——— Registre ———————————————————————————————————————————————————————
+
+  /** Requête du registre (entrée déjà validée par le handler IPC, revalidée par le service). */
+  async ledger<M extends LedgerMethod>(
+    method: M,
+    input: unknown,
+  ): Promise<LedgerResult<LedgerOutput<M>>> {
+    try {
+      const result = await this.service.call('ledger', { method, input })
+      return result as LedgerResult<LedgerOutput<M>>
+    } catch (error) {
+      // Verrouillé entre-temps (délai d'inactivité, autre fenêtre) : résultat attendu.
+      if (error instanceof ServiceError && error.code === 'VAULT_LOCKED') {
+        return { ok: false, error: 'locked' }
+      }
+      throw error
+    }
   }
 
   // ——— Démonstration ——————————————————————————————————————————————————

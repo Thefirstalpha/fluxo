@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { PALETTE } from '@shared/ledger/model'
 import { WINDOW_CHROME } from '@shared/theme-chrome'
 import { CHART_THEMES } from '../lib/charts/chart-theme'
 
@@ -43,5 +44,12 @@ describe('tokens.css', () => {
     expect(tokens.get('--fx-grid')).toBe(chart.grid)
     expect(tokens.get('--fx-axis')).toBe(chart.axis)
     expect(tokens.get('--fx-text-muted')).toBe(chart.muted)
+  })
+
+  it('associe chaque couleur enregistrable (comptes, catégories) à un emplacement de la palette', () => {
+    const light = themes[0][1]
+    PALETTE.forEach((color, index) => {
+      expect(light.get(`--fx-series-${index + 1}`)).toBe(color)
+    })
   })
 })

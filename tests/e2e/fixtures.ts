@@ -32,7 +32,13 @@ export const test = base.extend<FluxoFixtures>({
       const { ELECTRON_RUN_AS_NODE: _ignored, ...env } = process.env
       const app = await electron.launch({
         args: ['.'],
-        env: { ...env, FLUXO_USER_DATA_DIR: userDataDir },
+        // Fenêtre jamais affichée : les tests ne prennent pas le focus du poste.
+        // `FLUXO_E2E_SHOW_WINDOW=1` pour la voir (mise au point d'un test).
+        env: {
+          ...env,
+          FLUXO_USER_DATA_DIR: userDataDir,
+          FLUXO_HIDDEN_WINDOW: process.env.FLUXO_E2E_SHOW_WINDOW === '1' ? '0' : '1',
+        },
         // Playwright émule « prefers-color-scheme: light » par défaut : on laisse Electron piloter le thème.
         colorScheme: null,
       })

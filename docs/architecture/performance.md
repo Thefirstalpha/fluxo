@@ -4,20 +4,20 @@ Electron embarque Chromium : la légèreté se gagne sur tout le reste — dépe
 
 ## Budgets
 
-| Indicateur                                      | Budget v1.0 | Mesure actuelle (M0)                          |
-| ----------------------------------------------- | ----------- | --------------------------------------------- |
-| Installeur Windows                              | < 120 Mo    | 114,5 Mo (NSIS x64, avec SQLCipher) ✅        |
-| Démarrage à froid → interface utilisable        | < 2 s       | à mesurer                                     |
-| Mémoire au repos (tous processus)               | < 300 Mo    | 283 Mo privés, 5 processus ⚠ proche du budget |
-| JS initial du renderer (minifié)                | ≤ 300 Ko    | 261 Ko ✅                                     |
-| Chunk le plus lourd (tableau de bord + ECharts) | ≤ 700 Ko    | 604 Ko ✅                                     |
-| CSS                                             | ≤ 40 Ko     | 25 Ko ✅                                      |
-| Process main / preload                          | —           | 184 Ko / 1,4 Ko                               |
-| Interaction (filtre, navigation)                | < 100 ms    | —                                             |
-| Ouverture du coffre (hors Argon2id), 50 000 op. | < 500 ms    | 309 ms ✅                                     |
-| Argon2id (déverrouillage par mot de passe)      | ≈ 250 ms    | 215 ms ✅                                     |
-| Requêtes courantes à 50 000 opérations          | < 20 ms     | 0,01 à 3,7 ms ✅                              |
-| Requête d'analyse à 50 000 opérations           | < 50 ms     | — (M5)                                        |
+| Indicateur                                      | Budget v1.0 | Mesure actuelle (M2, lot 1)                                                               |
+| ----------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------- |
+| Installeur Windows                              | < 120 Mo    | 114,5 Mo (NSIS x64, avec SQLCipher) ✅                                                    |
+| Démarrage à froid → interface utilisable        | < 2 s       | à mesurer                                                                                 |
+| Mémoire au repos (tous processus)               | < 300 Mo    | 283 Mo privés, 5 processus ⚠ proche du budget                                             |
+| JS initial du renderer (minifié)                | ≤ 300 Ko    | 291 Ko ✅ (écran du coffre seul : l'application déverrouillée est chargée à la demande)   |
+| Chunk le plus lourd (tableau de bord + ECharts) | ≤ 700 Ko    | 604 Ko ✅                                                                                 |
+| CSS                                             | ≤ 40 Ko     | 25 Ko ✅                                                                                  |
+| Process main / preload                          | —           | 184 Ko / 1,4 Ko                                                                           |
+| Interaction (filtre, navigation)                | < 100 ms    | —                                                                                         |
+| Ouverture du coffre (hors Argon2id), 50 000 op. | < 500 ms    | 455 ms ✅ (`quick_check` sur une base plus grande : index plein texte)                    |
+| Argon2id (déverrouillage par mot de passe)      | ≈ 250 ms    | 215 ms ✅                                                                                 |
+| Requêtes courantes à 50 000 opérations          | < 20 ms     | 0,02 à 7,4 ms ✅ (liste des comptes et soldes : 7,4 ms ; recherche plein texte : 0,07 ms) |
+| Requête d'analyse à 50 000 opérations           | < 50 ms     | — (M5)                                                                                    |
 
 ## Leviers en place
 
@@ -45,5 +45,6 @@ Electron embarque Chromium : la légèreté se gagne sur tout le reste — dépe
 
 - Poids : `npm run build` affiche la taille de chaque fichier produit ; `npm run size` vérifie les budgets.
 - Base de données : `npm run test:perf` crée un coffre de 50 000 opérations (générateur déterministe) et mesure l'ouverture et les requêtes courantes. Hors `npm run check` et de la CI : les durées dépendent de la machine.
+- À surveiller : l'ouverture approche son budget (le contrôle `quick_check` est proportionnel à la taille de la base) ; le JS initial aussi (les dictionnaires des deux langues y sont : charger seulement la langue active si la marge disparaît).
 - Démarrage et mémoire : `npm run package`, puis gestionnaire des tâches / Moniteur d'activité (mémoire **privée**, tous les processus Fluxo — le « working set » compte aussi la mémoire partagée de Chromium) ; à automatiser au M9.
 - Analyse de bundle : `npx electron-vite build --sourcemap`, puis lecture des `sources` des fichiers `.map`.

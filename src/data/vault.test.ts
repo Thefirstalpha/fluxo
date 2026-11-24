@@ -268,7 +268,12 @@ describe('Vault — schéma et migrations', () => {
     expect(db.prepare("SELECT value FROM meta WHERE key = 'vault_id'").pluck().get()).toBe(
       keystore.vaultId,
     )
-    expect(listAudit(db).map((entry) => entry.action)).toEqual(['migrate', 'create'])
+    expect(listAudit(db).map((entry) => entry.action)).toEqual([
+      'migrate',
+      'migrate',
+      'seed',
+      'create',
+    ])
   })
 
   it('sauvegarde la base (chiffrée) avant de la migrer, puis consigne la migration', async () => {
@@ -276,12 +281,13 @@ describe('Vault — schéma et migrations', () => {
     await first.create({ mode: 'password', password: PASSWORD })
     first.lock()
 
-    const next = { version: 2, name: 'test', up: 'CREATE TABLE ajout (id TEXT) STRICT;' }
+    const version = MIGRATIONS.length + 1
+    const next = { version, name: 'test', up: 'CREATE TABLE ajout (id TEXT) STRICT;' }
     const second = await openVault({ migrations: [...MIGRATIONS, next] })
     expect(await second.unlock({ method: 'password', password: PASSWORD })).toMatchObject({
       ok: true,
     })
-    expect(schemaVersion(second.database())).toBe(2)
+    expect(schemaVersion(second.database())).toBe(version)
     const backups = readdirSync(join(directory, 'backups'))
     expect(backups).toHaveLength(1)
     expect(backups[0]).toMatch(/^Fluxo-.*-pre-migration\.fluxo-backup$/)
@@ -290,7 +296,7 @@ describe('Vault — schéma et migrations', () => {
     expect(bytes.includes(Buffer.from('SQLite format 3'))).toBe(false)
     expect(listAudit(second.database()).at(-1)).toMatchObject({
       action: 'migrate',
-      after: { version: 2 },
+      after: { version },
     })
   })
 

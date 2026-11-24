@@ -32,6 +32,9 @@ Jalons [M0 — Fondations](docs/planning/M0-fondations.md) (socle applicatif, in
 
 - **Démonstration** (M1) : explorer Fluxo dans un coffre séparé rempli de données fictives, supprimé à la sortie, sans toucher à votre coffre.
 
+- **Comptes** (M2) : comptes courants, livrets, cartes à débit différé, espèces, titres-restaurant, placements et prêts, avec leur solde à date et leur part rapprochée ; IBAN contrôlé et affiché masqué ; archivage.
+- **Catégories par défaut** (M2) : pack France sur deux niveaux, créé avec chaque coffre dans la langue de l'interface.
+
 ### Sécurité
 
 - Renderer isolé : `sandbox`, `contextIsolation`, pas de Node.js, balise `<webview>` désactivée, bac à sable activé pour toute l'application.

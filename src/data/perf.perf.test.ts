@@ -6,11 +6,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { closeDatabase, openEncryptedDatabase, type Db } from './db/connection'
 import { migrate } from './db/migrations'
 import { seedLargeDataset } from './demo/large-dataset'
+import { Ledger } from './ledger/ledger'
 
 /**
- * Mesures du lot 5 du M1 (`npm run test:perf`, hors `npm run check` : dépend de la machine).
- * Budgets (docs/planning/M1-coffre-fort.md) : ouverture < 500 ms hors Argon2id,
- * requêtes courantes < 20 ms à 50 000 opérations.
+ * Mesures du coffre (`npm run test:perf`, hors `npm run check` : dépend de la machine).
+ * Budgets (docs/architecture/performance.md) : ouverture < 500 ms hors Argon2id,
+ * requêtes courantes < 20 ms à 50 000 opérations (M1), registre (M2) : filtrage < 100 ms.
  */
 const COUNT = 50_000
 
@@ -91,6 +92,15 @@ describe(`coffre à ${COUNT} opérations`, () => {
           .prepare('SELECT SUM(amount) FROM transactions WHERE account_id = ?')
           .pluck()
           .get(account),
+      'comptes et soldes (registre)': () => new Ledger(db).run('accountsList', {}),
+      'recherche plein texte (FTS5, préfixe)': () =>
+        db
+          .prepare(
+            `SELECT k.transaction_id FROM transactions_fts f
+             JOIN transaction_search_key k ON k.search_id = f.rowid
+             WHERE transactions_fts MATCH ? LIMIT 200`,
+          )
+          .all('"loy"*'),
       'recherche de doublon (empreinte)': () =>
         db
           .prepare('SELECT id FROM transactions WHERE account_id = ? AND dedup_hash = ?')

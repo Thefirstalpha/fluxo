@@ -70,6 +70,8 @@ import {
   type Migration,
 } from './db/migrations'
 import { exportDatabase } from './export'
+import { seedCategoryPack } from './ledger/category-seed'
+import { Ledger } from './ledger/ledger'
 import { Lockout } from './lockout'
 import { ServiceError } from './rpc'
 import type { ServiceLogger } from './server'
@@ -152,6 +154,7 @@ export class Vault {
   private readonly migrations: readonly Migration[]
   private readonly appVersion: string
   private pendingRestore: PendingRestore | null = null
+  private ledgerInstance: Ledger | null = null
 
   private constructor(
     readonly paths: VaultPaths,
@@ -199,6 +202,13 @@ export class Vault {
     return this.db
   }
 
+  /** Registre de la base ouverte (recréé après un verrouillage ou une restauration). */
+  ledger(): Ledger {
+    const db = this.database()
+    if (this.ledgerInstance?.db !== db) this.ledgerInstance = new Ledger(db, this.now)
+    return this.ledgerInstance
+  }
+
   // ——— Création —————————————————————————————————————————————————————
 
   async create(params: CreateParams): Promise<Omit<ServiceStatus, 'demo'>> {
@@ -235,6 +245,18 @@ export class Vault {
         const insert = db.prepare('INSERT INTO meta (key, value) VALUES (?, ?)')
         insert.run('vault_id', vaultId)
         insert.run('created_at', keystore.createdAt)
+        const categories = seedCategoryPack(db, params.locale ?? 'fr-FR', this.now())
+        recordAudit(
+          db,
+          {
+            entity: 'category',
+            entityId: null,
+            action: 'seed',
+            origin: 'system',
+            after: { pack: 'fr', categories: categories.size },
+          },
+          this.now(),
+        )
         recordAudit(
           db,
           {
@@ -371,6 +393,7 @@ export class Vault {
     }
     this.key?.fill(0)
     this.key = null
+    this.ledgerInstance = null
     this.viaRecovery = false
     this.sessionExportPending = false
     this.clearPendingRestore()

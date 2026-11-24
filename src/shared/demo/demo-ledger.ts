@@ -204,44 +204,9 @@ export function generateDemoLedger(options: DemoOptions): DemoLedger {
   return { accounts: DEMO_ACCOUNTS, months, transactions }
 }
 
-// ——— Libellés des comptes et catégories (pack France), par langue ———————————
+// ——— Libellés des comptes, par langue (catégories : pack France, `@shared/ledger/category-pack`) ———
 
 export const DEMO_ACCOUNT_NAMES: Readonly<Record<Locale, Record<DemoAccountKey, string>>> = {
   'fr-FR': { checking: 'Compte courant', savings: 'Livret A', cash: 'Espèces' },
   'en-US': { checking: 'Current account', savings: 'Savings account', cash: 'Cash' },
-}
-
-export const DEFAULT_CATEGORY_NAMES: Readonly<Record<Locale, Record<DemoCategoryId, string>>> = {
-  'fr-FR': {
-    housing: 'Logement',
-    groceries: 'Alimentation',
-    transport: 'Transport',
-    health: 'Santé',
-    leisure: 'Loisirs & sorties',
-    subscriptions: 'Abonnements',
-    shopping: 'Shopping',
-    other: 'Divers',
-    salary: 'Salaire',
-    refunds: 'Remboursements',
-    savings: 'Épargne',
-  },
-  'en-US': {
-    housing: 'Housing',
-    groceries: 'Groceries',
-    transport: 'Transport',
-    health: 'Health',
-    leisure: 'Leisure & outings',
-    subscriptions: 'Subscriptions',
-    shopping: 'Shopping',
-    other: 'Miscellaneous',
-    salary: 'Salary',
-    refunds: 'Refunds',
-    savings: 'Savings',
-  },
-}
-
-export function categoryKind(id: DemoCategoryId): 'expense' | 'income' | 'savings' {
-  if (id === 'salary' || id === 'refunds') return 'income'
-  if (id === 'savings') return 'savings'
-  return 'expense'
 }

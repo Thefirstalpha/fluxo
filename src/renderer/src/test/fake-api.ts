@@ -1,5 +1,7 @@
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 import type { AppInfo, FluxoApi } from '@shared/ipc'
+import type { LedgerInput, LedgerMethod, LedgerOutput } from '@shared/ledger/api'
+import type { LedgerResult } from '@shared/ledger/model'
 import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@shared/settings'
 import type { BackupInfo, PickBackupResult, VaultStatus } from '@shared/vault'
 
@@ -32,6 +34,29 @@ export const TEST_BACKUP_INFO: BackupInfo = {
   lastAutomaticAt: '2026-11-24T08:00:00.000Z',
   count: 4,
   portable: true,
+}
+
+/** Résultats par défaut du registre (coffre vide) ; chaque test peut les remplacer. */
+const LEDGER_DEFAULTS: { [M in LedgerMethod]: LedgerOutput<M> } = {
+  accountsList: [],
+  accountCreate: { id: '0192f0c8-0000-7000-8000-000000000001' },
+  accountUpdate: null,
+  accountSetArchived: null,
+  accountDelete: null,
+  accountRevealIban: null,
+  accountsReorder: null,
+}
+
+export type FakeLedger = {
+  [M in LedgerMethod]: Mock<(input: LedgerInput<M>) => Promise<LedgerResult<LedgerOutput<M>>>>
+}
+
+function createFakeLedger(): FakeLedger {
+  const entries = Object.entries(LEDGER_DEFAULTS).map(([method, value]) => [
+    method,
+    vi.fn(() => Promise.resolve({ ok: true, value })),
+  ])
+  return Object.fromEntries(entries) as FakeLedger
 }
 
 /** Double du preload : le renderer ne voit que cette API. Chaque fonction est espionnable. */
@@ -112,6 +137,7 @@ export function createFakeApi() {
       enterDemo: vi.fn(() => Promise.resolve()),
       exitDemo: vi.fn(() => Promise.resolve()),
     },
+    ledger: createFakeLedger(),
   } satisfies FluxoApi
   return api
 }

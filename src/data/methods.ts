@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LEDGER_METHODS } from '@shared/ledger/api'
 import { LOCALES } from '@shared/settings'
 import { PASSWORD_MAX_LENGTH } from '@shared/vault'
 import type { DataServiceApi, DataServiceMethod } from './api'
@@ -21,6 +22,7 @@ const currentPassword = z.strictObject({ currentPassword: secret.optional() })
 /** Chemin absolu fourni par une boîte de dialogue du main (vérifié aussi par le coffre). */
 const path = z.string().min(1).max(4096)
 const token = z.string().regex(/^[0-9a-f]{32}$/)
+const locale = z.enum(LOCALES)
 
 /** Table des méthodes exposées au process main, chacune avec son schéma d'entrée. */
 export function createMethods(
@@ -56,14 +58,19 @@ export function createMethods(
     eraseAll: (params) => real().eraseAll(params),
     enterDemo: (params) => host.enterDemo(params),
     exitDemo: () => host.exitDemo(),
+    ledger: ({ method, input }) => host.active().ledger().run(method, input),
   }
   return {
     status: defineMethod(noParams, () => api.status()),
     sessionBlob: defineMethod(noParams, () => api.sessionBlob()),
     create: defineMethod(
       z.discriminatedUnion('mode', [
-        z.strictObject({ mode: z.literal('session'), key, sessionBlob }),
-        z.strictObject({ mode: z.literal('password'), password: secret }),
+        z.strictObject({ mode: z.literal('session'), key, sessionBlob, locale: locale.optional() }),
+        z.strictObject({
+          mode: z.literal('password'),
+          password: secret,
+          locale: locale.optional(),
+        }),
       ]),
       (params) => api.create(params),
     ),
@@ -113,9 +120,12 @@ export function createMethods(
       api.exportData(params),
     ),
     eraseAll: defineMethod(currentPassword, (params) => api.eraseAll(params)),
-    enterDemo: defineMethod(z.strictObject({ locale: z.enum(LOCALES) }), (params) =>
-      api.enterDemo(params),
-    ),
+    enterDemo: defineMethod(z.strictObject({ locale }), (params) => api.enterDemo(params)),
     exitDemo: defineMethod(noParams, () => api.exitDemo()),
+    // L'entrée est revalidée par le registre avec le schéma de la méthode.
+    ledger: defineMethod(
+      z.strictObject({ method: z.enum(LEDGER_METHODS), input: z.unknown() }),
+      (params) => api.ledger(params),
+    ),
   }
 }

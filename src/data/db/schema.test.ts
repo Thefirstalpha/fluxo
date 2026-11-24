@@ -78,11 +78,13 @@ function insertTransaction(
 }
 
 describe('migrate', () => {
-  it('crée le schéma v1 sur une base neuve, puis ne fait plus rien', () => {
+  it('crée le dernier schéma sur une base neuve, puis ne fait plus rien', () => {
     expect(migrate(db)).toEqual({ from: 0, to: LATEST_SCHEMA_VERSION })
-    expect(schemaVersion(db)).toBe(1)
+    expect(schemaVersion(db)).toBe(LATEST_SCHEMA_VERSION)
     const tables = db
-      .prepare("SELECT name FROM sqlite_schema WHERE type = 'table' ORDER BY name")
+      .prepare(
+        "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'transactions_fts_%' ORDER BY name",
+      )
       .pluck()
       .all()
     expect(tables).toEqual([
@@ -93,12 +95,15 @@ describe('migrate', () => {
       'meta',
       'payee',
       'rule',
+      'saved_filter',
       'split',
       'split_tag',
       'tag',
+      'transaction_search_key',
       'transactions',
+      'transactions_fts',
     ])
-    expect(migrate(db)).toEqual({ from: 1, to: 1 })
+    expect(migrate(db)).toEqual({ from: LATEST_SCHEMA_VERSION, to: LATEST_SCHEMA_VERSION })
   })
 
   it('refuse une base écrite par une version plus récente', () => {
@@ -110,14 +115,14 @@ describe('migrate', () => {
   it('annule entièrement une migration en échec (base laissée à la version précédente)', () => {
     migrate(db)
     const broken: Migration = {
-      version: 2,
+      version: LATEST_SCHEMA_VERSION + 1,
       name: 'migration défectueuse',
       up: 'CREATE TABLE nouvelle (id TEXT); INSERT INTO table_inexistante VALUES (1);',
     }
     const beforeMigrating = vi.fn()
     expect(() => migrate(db, { migrations: [...MIGRATIONS, broken], beforeMigrating })).toThrow()
-    expect(beforeMigrating).toHaveBeenCalledWith(1)
-    expect(schemaVersion(db)).toBe(1)
+    expect(beforeMigrating).toHaveBeenCalledWith(LATEST_SCHEMA_VERSION)
+    expect(schemaVersion(db)).toBe(LATEST_SCHEMA_VERSION)
     expect(
       db.prepare("SELECT count(*) FROM sqlite_schema WHERE name = 'nouvelle'").pluck().get(),
     ).toBe(0)
@@ -129,7 +134,7 @@ describe('migrate', () => {
     expect(beforeMigrating).not.toHaveBeenCalled()
 
     const next: Migration = {
-      version: 2,
+      version: LATEST_SCHEMA_VERSION + 1,
       name: 'ajout',
       up: 'CREATE TABLE ajout (id TEXT) STRICT;',
     }
@@ -137,7 +142,7 @@ describe('migrate', () => {
     migrate(db, { migrations: [...MIGRATIONS, next], beforeMigrating, afterEach })
     expect(beforeMigrating).toHaveBeenCalledTimes(1)
     expect(afterEach).toHaveBeenCalledWith(next)
-    expect(schemaVersion(db)).toBe(2)
+    expect(schemaVersion(db)).toBe(LATEST_SCHEMA_VERSION + 1)
   })
 })
 

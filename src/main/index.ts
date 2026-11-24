@@ -33,6 +33,9 @@ const devServerUrl = app.isPackaged ? undefined : process.env.ELECTRON_RENDERER_
 const isolatedUserData = app.isPackaged ? undefined : process.env.FLUXO_USER_DATA_DIR
 if (isolatedUserData) app.setPath('userData', isolatedUserData)
 
+/** Tests E2E : fenêtre jamais affichée, sans focus (ignoré dans une app packagée). */
+const hiddenWindow = !app.isPackaged && process.env.FLUXO_HIDDEN_WINDOW === '1'
+
 // Une seule instance : évite deux processus écrivant les mêmes données.
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -158,6 +161,7 @@ async function start(): Promise<void> {
       theme: resolvedTheme(),
       contentProtection: settings.get().contentProtection,
       bounds: await readInitialBounds(windowStateFile),
+      hidden: hiddenWindow,
     })
     trackWindowState(window, windowStateFile)
     window.loadURL(devServerUrl ?? APP_ENTRY_URL).catch((error: unknown) => {

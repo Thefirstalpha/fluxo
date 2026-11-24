@@ -81,18 +81,20 @@ fluxo/
 │  │  ├─ window-state/ Taille et position de la fenêtre (adaptées aux écrans branchés)
 │  │  └─ fs/           Écriture atomique de petits fichiers
 │  ├─ data/            Service de données (utilityProcess) : RPC, base SQLCipher, coffre,
-│  │                   schéma et migrations, sauvegardes (backup/), export, démonstration (demo/)
+│  │                   schéma et migrations, sauvegardes (backup/), export, démonstration (demo/),
+│  │                   registre (ledger/ : comptes, écritures tracées, audit)
 │  ├─ preload/         Pont contextBridge (window.fluxo) et ses types
 │  ├─ renderer/        Interface React
 │  │  └─ src/
-│  │     ├─ app/       Coque : barre de titre, navigation, barre d'état
+│  │     ├─ app/       Coque : barre de titre, navigation, barre d'état ; UnlockedApp (chargée à la demande)
 │  │     ├─ components/ Composants d'interface réutilisables, logo, ErrorBoundary
-│  │     ├─ features/  Pages : tableau de bord, paramètres, coffre (création, déverrouillage), pages à venir
-│  │     ├─ lib/       API, formatage, thème, graphiques (ECharts)
+│  │     ├─ features/  Pages : tableau de bord, comptes, paramètres, coffre (création, déverrouillage), pages à venir
+│  │     ├─ lib/       API, cache du registre (TanStack Query), formatage, thème, graphiques (ECharts)
 │  │     ├─ i18n/      Dictionnaires typés FR/EN
 │  │     ├─ stores/    État (Zustand)
 │  │     └─ styles/    Tokens de design, styles globaux
-│  └─ shared/          TypeScript pur partagé : contrat IPC, préférences, montants, mois, bulletins, démo
+│  └─ shared/          TypeScript pur partagé : contrat IPC, registre (ledger/ : contrat, schémas, IBAN,
+│                      pack de catégories), préférences, montants, mois, bulletins, démo
 ├─ tests/e2e/          Tests Playwright sur la build de production
 ├─ build/              Ressources de packaging (icône, entitlements)
 ├─ scripts/            Outils (lanceur Vitest, génération d'icônes)
@@ -127,15 +129,15 @@ Règles de sécurité outillées : pas d'`innerHTML`/`outerHTML`/`insertAdjacent
 
 ## Scripts
 
-| Commande                             | Rôle                                                 |
-| ------------------------------------ | ---------------------------------------------------- |
-| `npm run dev`                        | Application en développement (rechargement à chaud)  |
-| `npm run build`                      | Build de production (`out/`)                         |
-| `npm start`                          | Lance la build de production                         |
-| `npm run check`                      | Types + lint + format + tests unitaires              |
-| `npm test` · `npm run test:coverage` | Tests unitaires (via `scripts/vitest.mjs`)           |
-| `npm run test:perf`                  | Mesures de performance du coffre (50 000 opérations) |
-| `npm run test:e2e`                   | Build + tests de bout en bout                        |
-| `npm run size`                       | Vérifie les budgets de poids de la build             |
-| `npm run icons`                      | Génère `build/icon.png` depuis `build/icon.svg`      |
-| `npm run package` · `npm run dist`   | Application non empaquetée · installeurs             |
+| Commande                             | Rôle                                                                                          |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `npm run dev`                        | Application en développement (rechargement à chaud)                                           |
+| `npm run build`                      | Build de production (`out/`)                                                                  |
+| `npm start`                          | Lance la build de production                                                                  |
+| `npm run check`                      | Types + lint + format + tests unitaires                                                       |
+| `npm test` · `npm run test:coverage` | Tests unitaires (via `scripts/vitest.mjs`)                                                    |
+| `npm run test:perf`                  | Mesures de performance du coffre (50 000 opérations)                                          |
+| `npm run test:e2e`                   | Build + tests de bout en bout (fenêtres invisibles ; `FLUXO_E2E_SHOW_WINDOW=1` pour les voir) |
+| `npm run size`                       | Vérifie les budgets de poids de la build                                                      |
+| `npm run icons`                      | Génère `build/icon.png` depuis `build/icon.svg`                                               |
+| `npm run package` · `npm run dist`   | Application non empaquetée · installeurs                                                      |

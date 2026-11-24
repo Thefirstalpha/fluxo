@@ -1,35 +1,45 @@
 import { createHash } from 'node:crypto'
 import {
-  categoryKind,
-  DEFAULT_CATEGORY_NAMES,
   DEMO_ACCOUNT_NAMES,
   type DemoAccountKey,
   type DemoCategoryId,
   type DemoLedger,
 } from '@shared/demo/demo-ledger'
+import { CATEGORY_PACK_FR } from '@shared/ledger/category-pack'
+import type { LedgerIcon, PaletteColor } from '@shared/ledger/model'
 import type { Locale } from '@shared/settings'
 import { uuidv7 } from '@shared/uuid'
 import { recordAudit } from '../db/audit'
 import type { Db } from '../db/connection'
 
-const CATEGORY_ORDER: readonly DemoCategoryId[] = [
-  'salary',
-  'refunds',
-  'housing',
-  'groceries',
-  'transport',
-  'health',
-  'leisure',
-  'subscriptions',
-  'shopping',
-  'other',
-  'savings',
-]
+const DEMO_ACCOUNT_LOOK: Readonly<
+  Record<DemoAccountKey, { color: PaletteColor; icon: LedgerIcon }>
+> = {
+  checking: { color: '#0977cb', icon: 'landmark' },
+  savings: { color: '#0e9b8f', icon: 'piggy-bank' },
+  cash: { color: '#dca81c', icon: 'banknote' },
+}
+
+function topLevelCategories(db: Db, locale: Locale): Map<DemoCategoryId, string> {
+  const rows = db.prepare('SELECT id, name FROM category WHERE parent_id IS NULL').all() as {
+    id: string
+    name: string
+  }[]
+  const byName = new Map(rows.map((row) => [row.name, row.id]))
+  const categories = new Map<DemoCategoryId, string>()
+  for (const category of CATEGORY_PACK_FR) {
+    const id = byName.get(category.names[locale])
+    if (id) categories.set(category.key as DemoCategoryId, id)
+  }
+  return categories
+}
 
 /**
  * Remplit un coffre (de démonstration uniquement) avec le grand livre déterministe : comptes,
- * catégories, lots « démo » pour les comptes à relevé (ADR-026), opérations ventilées, virements
- * d'épargne liés. Une seule entrée d'audit (`seed`) pour l'ensemble.
+ * lots « démo » pour les comptes à relevé (ADR-026), opérations ventilées, virements
+ * d'épargne liés. Les catégories sont celles du pack France, créé avec le coffre : une
+ * opération est classée dans la catégorie de premier niveau de même clé. Une seule entrée
+ * d'audit (`seed`) pour l'ensemble.
  */
 export function seedDemoVault(
   db: Db,
@@ -37,27 +47,16 @@ export function seedDemoVault(
   { locale, now }: { locale: Locale; now: Date },
 ): { accounts: number; transactions: number } {
   const stamp = now.toISOString()
-  const names = DEFAULT_CATEGORY_NAMES[locale]
   const firstDate = ledger.transactions[0]?.date ?? stamp.slice(0, 10)
   const lastDate = ledger.transactions.at(-1)?.date ?? firstDate
 
   db.transaction(() => {
-    const categories = new Map<DemoCategoryId, string>()
-    const insertCategory = db.prepare(
-      `INSERT INTO category (id, name, kind, sort_order, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    )
-    CATEGORY_ORDER.forEach((key, index) => {
-      const id = uuidv7()
-      categories.set(key, id)
-      insertCategory.run(id, names[key], categoryKind(key), index, stamp, stamp)
-    })
-
+    const categories = topLevelCategories(db, locale)
     const accounts = new Map<DemoAccountKey, { id: string; batch: string | null }>()
     const insertAccount = db.prepare(
       `INSERT INTO account (id, name, type, tracking_mode, currency, opening_balance, opening_date,
-         sort_order, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'EUR', ?, ?, ?, ?, ?)`,
+         color, icon, sort_order, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 'EUR', ?, ?, ?, ?, ?, ?, ?)`,
     )
     const insertBatch = db.prepare(
       `INSERT INTO import_batch (id, account_id, file_name, file_hash, format, period_start,
@@ -73,6 +72,8 @@ export function seedDemoVault(
         account.trackingMode,
         account.openingBalance,
         firstDate,
+        DEMO_ACCOUNT_LOOK[account.key].color,
+        DEMO_ACCOUNT_LOOK[account.key].icon,
         index,
         stamp,
         stamp,

@@ -1,5 +1,6 @@
 import type { Db } from './connection'
 import { SCHEMA_V1 } from './schema-v1'
+import { SCHEMA_V2 } from './schema-v2'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
@@ -11,6 +12,7 @@ export interface Migration {
 /** Migrations du coffre, dans l'ordre. Une migration publiée ne se modifie plus : on en ajoute une. */
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'schéma initial', up: SCHEMA_V1 },
+  { version: 2, name: 'registre (comptes, recherche, filtres)', up: SCHEMA_V2 },
 ]
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.at(-1)?.version ?? 0

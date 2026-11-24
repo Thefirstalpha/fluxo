@@ -2,6 +2,8 @@ import { app, shell } from 'electron'
 import { z } from 'zod'
 import { EXTERNAL_LINK_HOSTS } from '@shared/app-meta'
 import { ERROR_REPORT_LIMITS, IPC_CHANNELS, type AppInfo } from '@shared/ipc'
+import { LEDGER_METHODS, ledgerChannel } from '@shared/ledger/api'
+import { LEDGER_INPUTS } from '@shared/ledger/schemas'
 import { settingsPatchSchema } from '@shared/settings-schema'
 import { logger } from '../logger'
 import { isAllowedExternalUrl } from '../security/url'
@@ -61,7 +63,9 @@ export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDep
 
   // Coffre : les secrets saisis transitent vers le service de données, jamais vers le journal.
   handle(IPC_CHANNELS.vaultGetStatus, noInput, () => vault.status())
-  handle(IPC_CHANNELS.vaultCreate, createVaultSchema, (input) => vault.create(input))
+  handle(IPC_CHANNELS.vaultCreate, createVaultSchema, (input) =>
+    vault.create(input, settings.get().locale),
+  )
   handle(IPC_CHANNELS.vaultUnlock, unlockSchema, (input) => vault.unlock(input))
   handle(IPC_CHANNELS.vaultLock, noInput, () => vault.lock('demande de l’utilisateur'))
   handle(IPC_CHANNELS.vaultChangePassword, changePasswordSchema, (input) =>
@@ -93,6 +97,11 @@ export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDep
   handle(IPC_CHANNELS.vaultCancelRestore, noInput, () => vault.cancelRestore())
   handle(IPC_CHANNELS.vaultExport, noInput, () => vault.exportData())
   handle(IPC_CHANNELS.vaultEraseAll, currentPasswordSchema, (input) => vault.eraseAll(input))
+
+  // Registre : un canal par méthode, chacun avec le schéma d'entrée de sa méthode.
+  for (const method of LEDGER_METHODS) {
+    handle(ledgerChannel(method), LEDGER_INPUTS[method], (input) => vault.ledger(method, input))
+  }
 
   // Démonstration : coffre séparé, libellés dans la langue de l'interface.
   handle(IPC_CHANNELS.vaultEnterDemo, noInput, () => vault.enterDemo(settings.get().locale))

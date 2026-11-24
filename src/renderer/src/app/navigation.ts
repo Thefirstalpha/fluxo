@@ -2,6 +2,7 @@ import {
   ArrowLeftRight,
   ChartNoAxesCombined,
   FileScan,
+  Landmark,
   LayoutDashboard,
   PiggyBank,
   Upload,
@@ -10,7 +11,14 @@ import {
 } from 'lucide-react'
 
 export type NavKey =
-  'dashboard' | 'transactions' | 'imports' | 'payslips' | 'analytics' | 'budgets' | 'documents'
+  | 'dashboard'
+  | 'accounts'
+  | 'transactions'
+  | 'imports'
+  | 'payslips'
+  | 'analytics'
+  | 'budgets'
+  | 'documents'
 
 export interface NavItem {
   key: NavKey
@@ -22,6 +30,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'dashboard', path: '/', icon: LayoutDashboard },
+  { key: 'accounts', path: '/accounts', icon: Landmark },
   { key: 'transactions', path: '/transactions', icon: ArrowLeftRight, milestone: 'M2' },
   { key: 'imports', path: '/imports', icon: Upload, milestone: 'M3' },
   { key: 'analytics', path: '/analytics', icon: ChartNoAxesCombined, milestone: 'M5' },

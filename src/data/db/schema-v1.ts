@@ -15,10 +15,17 @@
  * Σ des ventilations = montant de la transaction : vérifiée par le service à chaque écriture
  * (SQLite n'a pas de contrainte différée) et par `findUnbalancedTransactions` (tests).
  */
+import {
+  ACCOUNT_TYPES,
+  CATEGORY_KINDS,
+  TRACKING_MODES,
+  TRANSACTION_NATURES,
+  TRANSACTION_STATUSES,
+} from '@shared/ledger/model'
 
-const id = (column = 'id') => `${column} TEXT NOT NULL CHECK (length(${column}) = 36)`
+export const id = (column = 'id') => `${column} TEXT NOT NULL CHECK (length(${column}) = 36)`
 const date = (column: string) => `date(${column}) IS ${column}`
-const timestamp = (column: string) =>
+export const timestamp = (column: string) =>
   `${column} TEXT NOT NULL CHECK (${column} GLOB '[0-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z')`
 const currency = (column = 'currency') =>
   `${column} TEXT NOT NULL CHECK (${column} GLOB '[A-Z][A-Z][A-Z]')`
@@ -31,20 +38,7 @@ const text = (column: string, max: number, required = true) =>
 const color = (column = 'color') =>
   `${column} TEXT CHECK (${column} IS NULL OR ${column} GLOB '#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]')`
 
-export const ACCOUNT_TYPES = [
-  'checking',
-  'savings',
-  'deferred_card',
-  'cash',
-  'meal_voucher',
-  'investment',
-  'loan',
-  'other_asset',
-] as const
-export const TRACKING_MODES = ['statement', 'manual', 'valuation'] as const
-export const CATEGORY_KINDS = ['expense', 'income', 'savings', 'transfer'] as const
-export const TRANSACTION_STATUSES = ['pending', 'cleared', 'reconciled'] as const
-export const TRANSACTION_NATURES = ['operation', 'adjustment'] as const
+export { ACCOUNT_TYPES, CATEGORY_KINDS, TRACKING_MODES, TRANSACTION_NATURES, TRANSACTION_STATUSES }
 export const IMPORT_FORMATS = ['csv', 'ofx', 'qfx', 'qif', 'camt053', 'demo'] as const
 export const IMPORT_STATES = ['pending', 'committed', 'reverted'] as const
 export const AUDIT_ENTITIES = [
@@ -70,7 +64,7 @@ export const AUDIT_ACTIONS = [
 ] as const
 export const AUDIT_ORIGINS = ['user', 'import', 'rule', 'ai', 'system'] as const
 
-const list = (values: readonly string[]) => values.map((value) => `'${value}'`).join(', ')
+export const list = (values: readonly string[]) => values.map((value) => `'${value}'`).join(', ')
 
 export const SCHEMA_V1 = `
 CREATE TABLE meta (

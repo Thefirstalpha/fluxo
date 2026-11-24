@@ -69,7 +69,7 @@ async function setup(storage = fakeStorage()) {
 describe('VaultManager', () => {
   it('mode session : crée, verrouille, puis déverrouille sans saisie via le trousseau', async () => {
     const { manager, storage, statuses } = await setup()
-    expect(await manager.create({ mode: 'session' })).toEqual({ ok: true })
+    expect(await manager.create({ mode: 'session' }, 'fr-FR')).toEqual({ ok: true })
     expect(storage.encrypt).toHaveBeenCalledTimes(1)
     expect(statuses.at(-1)).toMatchObject({ state: 'unlocked', mode: 'session' })
 
@@ -85,16 +85,18 @@ describe('VaultManager', () => {
       sessionAvailable: false,
       sessionUnavailableReason: 'no-secure-storage',
     })
-    expect(await manager.create({ mode: 'session' })).toEqual({
+    expect(await manager.create({ mode: 'session' }, 'fr-FR')).toEqual({
       ok: false,
       reason: 'session-unavailable',
     })
-    expect(await manager.create({ mode: 'password', password: PASSWORD })).toEqual({ ok: true })
+    expect(await manager.create({ mode: 'password', password: PASSWORD }, 'fr-FR')).toEqual({
+      ok: true,
+    })
   })
 
   it('trousseau perdu : le code de récupération rouvre le coffre et ré-enveloppe la clé', async () => {
     const { manager, storage } = await setup()
-    await manager.create({ mode: 'session' })
+    await manager.create({ mode: 'session' }, 'fr-FR')
     const recovery = await manager.createRecoveryCode({})
     if (!recovery.ok) throw new Error('code attendu')
     await manager.lock('test')
@@ -112,7 +114,7 @@ describe('VaultManager', () => {
 
   it('mode mot de passe : n’auto-déverrouille pas au lancement', async () => {
     const { manager } = await setup()
-    await manager.create({ mode: 'password', password: PASSWORD })
+    await manager.create({ mode: 'password', password: PASSWORD }, 'fr-FR')
     await manager.lock('test')
     await manager.unlockAtStartup()
     expect((await manager.status()).state).toBe('locked')
@@ -121,7 +123,7 @@ describe('VaultManager', () => {
 
   it('bascule du mot de passe au mode session, mot de passe actuel exigé', async () => {
     const { manager } = await setup()
-    await manager.create({ mode: 'password', password: PASSWORD })
+    await manager.create({ mode: 'password', password: PASSWORD }, 'fr-FR')
     expect(await manager.enableSessionMode({ currentPassword: 'faux' })).toMatchObject({
       ok: false,
       reason: 'wrong-credentials',
@@ -134,7 +136,7 @@ describe('VaultManager', () => {
 describe('VaultManager — sauvegardes et effacement', () => {
   it('annuler une boîte de dialogue ne fait rien', async () => {
     const { manager } = await setup()
-    await manager.create({ mode: 'password', password: PASSWORD })
+    await manager.create({ mode: 'password', password: PASSWORD }, 'fr-FR')
     expect(await manager.pickBackup()).toEqual({ ok: false, reason: 'cancelled' })
     expect(await manager.exportData()).toEqual({ ok: false, reason: 'cancelled' })
     expect(await manager.chooseBackupDirectory()).toEqual({ ok: false, reason: 'cancelled' })
@@ -142,7 +144,7 @@ describe('VaultManager — sauvegardes et effacement', () => {
 
   it('exporte dans le dossier choisi par la boîte de dialogue', async () => {
     const { manager, dialogs } = await setup()
-    await manager.create({ mode: 'password', password: PASSWORD })
+    await manager.create({ mode: 'password', password: PASSWORD }, 'fr-FR')
     dialogs.chooseDirectory.mockResolvedValueOnce(directory)
     const result = await manager.exportData()
     expect(result.ok && result.folderName).toMatch(/^Fluxo-export-/)
@@ -151,7 +153,7 @@ describe('VaultManager — sauvegardes et effacement', () => {
 
   it('restaure une sauvegarde « session » en reprenant le mode session', async () => {
     const { manager, dialogs } = await setup()
-    await manager.create({ mode: 'session' })
+    await manager.create({ mode: 'session' }, 'fr-FR')
     const recovery = await manager.createRecoveryCode({})
     if (!recovery.ok) throw new Error('code attendu')
     await manager.backupNow()
@@ -186,7 +188,7 @@ describe('VaultManager — sauvegardes et effacement', () => {
       },
       onErased,
     )
-    await manager.create({ mode: 'session' })
+    await manager.create({ mode: 'session' }, 'fr-FR')
     expect(await manager.eraseAll({})).toEqual({ ok: true })
     expect(onErased).toHaveBeenCalledTimes(1)
     expect((await manager.status()).state).toBe('absent')

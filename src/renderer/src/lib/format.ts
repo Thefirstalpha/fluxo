@@ -8,8 +8,14 @@ export const MASKED_AMOUNT = '••••••'
 
 /** Propriétés-fonctions (et non méthodes) : utilisables détachées, ex. `money: fmt.money`. */
 export interface Formatters {
-  /** Montant en centimes → texte localisé (masqué si l'utilisateur l'a demandé). */
-  money: (amount: MinorUnits, options?: { signed?: boolean; compact?: boolean }) => string
+  /**
+   * Montant en centimes → texte localisé (masqué si l'utilisateur l'a demandé), dans la devise
+   * de référence ou celle indiquée (compte en devise étrangère).
+   */
+  money: (
+    amount: MinorUnits,
+    options?: { signed?: boolean; compact?: boolean; currency?: string },
+  ) => string
   /** Ratio (0,123) → « 12,3 % ». */
   percent: (value: number, options?: { signed?: boolean; digits?: number }) => string
   /** « 2026-11 » → « novembre 2026 » (long) ou « nov. 26 » (short). */
@@ -45,12 +51,12 @@ export function createFormatters({
   const calendarDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' })
   const integer = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
   return {
-    money: (amount, { signed = false, compact = false } = {}) =>
+    money: (amount, { signed = false, compact = false, currency: code = currency } = {}) =>
       hideAmounts
         ? MASKED_AMOUNT
         : formatMoney(amount, {
             locale,
-            currency,
+            currency: code,
             compact,
             signDisplay: signed ? 'exceptZero' : 'auto',
           }),

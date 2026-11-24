@@ -1,6 +1,6 @@
 # M2 — Comptes & transactions
 
-> **Statut : ⬜ À venir** · Taille : L · Dépend de : M1 · Version : 0.3
+> **Statut : 🟡 En cours** (démarré le 24/11/2026 — lot 1 livré) · Taille : L · Dépend de : M1 · Version : 0.3
 
 ## Objectif
 
@@ -29,11 +29,11 @@ Le registre de toutes les opérations : **rapide, fiable, agréable au clavier**
 
 ### Lot 1 — Comptes
 
-- [ ] Types : courant, épargne, carte à débit différé, espèces, titres-restaurant, placement, prêt (lecture seule — échéancier au M8), autre. `Besoin`
-- [ ] **Mode de suivi** : relevé importé (défaut : courant, épargne, carte), saisie manuelle (défaut : espèces, titres-restaurant), valorisation manuelle (placement) ([ADR-026](../architecture/decisions.md#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé)). `Besoin`
-- [ ] Champs : nom, établissement, devise, solde et date d'ouverture, IBAN (chiffré, affiché masqué), couleur, icône, archivage. `Besoin`
-- [ ] **Comptes multiples d'épargne et comptes externes** : plusieurs livrets, PEA, assurances-vie, etc., chacun avec son solde propre. `Besoin`
-- [ ] Soldes calculés à date, rapprochés et non rapprochés. `Socle`
+- [x] Types : courant, épargne, carte à débit différé, espèces, titres-restaurant, placement, prêt (lecture seule — échéancier au M8), autre. `Besoin`
+- [x] **Mode de suivi** : relevé importé (défaut : courant, épargne, carte), saisie manuelle (défaut : espèces, titres-restaurant), valorisation manuelle (placement, prêt) ([ADR-026](../architecture/decisions.md#adr-026--saisie-manuelle-réservée-aux-comptes-sans-relevé)) ; figé dès la première opération (règle portée par la base, [ADR-032](../architecture/decisions.md#adr-032--registre--api-de-domaine-écritures-tracées-recherche-plein-texte)). `Besoin`
+- [x] Champs : nom, établissement, devise, solde et date d'ouverture, IBAN (clé contrôlée, dans la base chiffrée, affiché masqué, copie explicite), couleur (palette validée), icône, archivage (suppression réservée aux comptes vides). `Besoin`
+- [x] **Comptes multiples d'épargne et comptes externes** : plusieurs livrets, PEA, assurances-vie, etc., chacun avec son solde propre. `Besoin`
+- [x] Soldes calculés à date, rapprochés et non rapprochés ; totaux par famille dans la devise de référence (sans conversion implicite). `Socle`
 
 ### Lot 2 — Transactions
 
@@ -63,7 +63,7 @@ Le registre de toutes les opérations : **rapide, fiable, agréable au clavier**
 ### Lot 5 — Fiabilité & intégration
 
 - [ ] Journal d'audit et annuler/rétablir (Ctrl/⌘ Z, Ctrl/⌘ Maj Z). `Proposition`
-- [ ] Couche de données du renderer avec TanStack Query (cache, invalidation après écriture) ; toute écriture passe par l'API validée du service de données. `Socle`
+- [x] Couche de données du renderer avec TanStack Query (cache, invalidation après écriture, vidé au verrouillage) ; toute écriture passe par l'API validée du service de données — mise en place dès le lot 1 ([ADR-032](../architecture/decisions.md#adr-032--registre--api-de-domaine-écritures-tracées-recherche-plein-texte)). `Socle`
 - [ ] Tableau de bord branché sur les vraies données, mode démo conservé. `Socle`
 
 ## Sécurité & confidentialité

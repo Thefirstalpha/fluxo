@@ -1,16 +1,11 @@
-import { lazy, Suspense, useEffect, type ReactNode } from 'react'
-import { Redirect, Route, Router, Switch, useLocation } from 'wouter'
-import { useHashLocation } from 'wouter/use-hash-location'
-import { AppShell } from './app/AppShell'
-import { ErrorBoundary } from './components/ErrorBoundary'
+import { lazy, Suspense, useEffect } from 'react'
 import { VaultGate } from './features/vault/VaultGate'
-import { ComingSoonPage } from './features/roadmap/ComingSoonPage'
 import { useResolvedTheme } from './lib/theme'
 import { useSettingsStore } from './stores/settings'
 
-// Pages lourdes chargées à la demande (ECharts vit dans son propre chunk).
-const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'))
-const SettingsPage = lazy(() => import('./features/settings/SettingsPage'))
+// Tout ce qui suit le déverrouillage (coque, routes, cache des données) est chargé à la demande :
+// l'écran du coffre, seul affiché au démarrage, reste léger.
+const UnlockedApp = lazy(() => import('./app/UnlockedApp'))
 
 /** Reflète langue et thème résolu sur <html> (lecteurs d'écran, tests, sélecteurs CSS). */
 function useDocumentAttributes(): void {
@@ -22,57 +17,13 @@ function useDocumentAttributes(): void {
   }, [locale, theme])
 }
 
-/** Une page en échec n'emporte pas la coque : la navigation reste utilisable. */
-function PageBoundary({ children }: { children: ReactNode }) {
-  const [location] = useLocation()
-  return (
-    <ErrorBoundary key={location} scope="page">
-      {children}
-    </ErrorBoundary>
-  )
-}
-
 export function App() {
   useDocumentAttributes()
   return (
     <VaultGate>
-      <Router hook={useHashLocation}>
-        <AppShell>
-          <PageBoundary>
-            <Suspense fallback={null}>
-              <Switch>
-                <Route path="/">
-                  <DashboardPage />
-                </Route>
-                <Route path="/transactions">
-                  <ComingSoonPage section="transactions" />
-                </Route>
-                <Route path="/imports">
-                  <ComingSoonPage section="imports" />
-                </Route>
-                <Route path="/analytics">
-                  <ComingSoonPage section="analytics" />
-                </Route>
-                <Route path="/payslips">
-                  <ComingSoonPage section="payslips" />
-                </Route>
-                <Route path="/documents">
-                  <ComingSoonPage section="documents" />
-                </Route>
-                <Route path="/budgets">
-                  <ComingSoonPage section="budgets" />
-                </Route>
-                <Route path="/settings">
-                  <SettingsPage />
-                </Route>
-                <Route>
-                  <Redirect to="/" />
-                </Route>
-              </Switch>
-            </Suspense>
-          </PageBoundary>
-        </AppShell>
-      </Router>
+      <Suspense fallback={null}>
+        <UnlockedApp />
+      </Suspense>
     </VaultGate>
   )
 }

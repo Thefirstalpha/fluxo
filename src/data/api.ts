@@ -3,6 +3,8 @@
  * Chaque méthode est validée côté service par un schéma (voir `methods.ts`).
  * Ce module ne contient que des types : il est importé par le main et par le service.
  */
+import type { LedgerMethod } from '@shared/ledger/api'
+import type { LedgerResult } from '@shared/ledger/model'
 import type { Locale } from '@shared/settings'
 import type {
   BackupInfo,
@@ -30,9 +32,13 @@ export interface ServiceStatus {
   demo: boolean
 }
 
-/** Création : en mode session, la clé est tirée et enveloppée par le main (`safeStorage`). */
-export type CreateParams =
+/**
+ * Création : en mode session, la clé est tirée et enveloppée par le main (`safeStorage`).
+ * `locale` : langue des catégories par défaut (français si absente).
+ */
+export type CreateParams = (
   { mode: 'session'; key: Uint8Array; sessionBlob: string } | { mode: 'password'; password: string }
+) & { locale?: Locale }
 
 export type UnlockParams =
   | { method: 'key'; key: Uint8Array }
@@ -73,6 +79,14 @@ export interface DataServiceApi {
   /** Coffre de démonstration séparé, recréé à chaque entrée ; verrouille le coffre réel. */
   enterDemo(params: { locale: Locale }): Promise<ServiceStatus>
   exitDemo(): ServiceStatus
+  /** Registre (comptes, opérations…) du coffre ouvert — réel ou de démonstration. */
+  ledger(params: LedgerRequest): LedgerResult<unknown>
+}
+
+/** Requête du registre : méthode et entrée, revalidées par le service (`LEDGER_INPUTS`). */
+export interface LedgerRequest {
+  method: LedgerMethod
+  input: unknown
 }
 
 export type DataServiceMethod = keyof DataServiceApi
