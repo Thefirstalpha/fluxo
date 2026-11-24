@@ -8,6 +8,7 @@ import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
 import {
   ACCOUNT_TYPES,
+  CATEGORY_KINDS,
   LEDGER_ICONS,
   PALETTE,
   TRACKING_MODES,
@@ -181,6 +182,35 @@ export const LEDGER_INPUTS = {
   tagUpdate: z.strictObject({ id: idSchema, patch: tagDraft.partial() }),
   tagDelete: byId,
   payeesList: z.strictObject({ search: z.string().max(200).optional() }),
+
+  categoriesList: z.strictObject({ includeArchived: z.boolean().optional() }),
+  /** Une sous-catégorie prend le type de son parent ; une catégorie de premier niveau le choisit. */
+  categoryCreate: z.strictObject({
+    name: requiredText(100),
+    parentId: idSchema.nullable(),
+    kind: z.enum(CATEGORY_KINDS).optional(),
+    icon: z.enum(LEDGER_ICONS).nullable(),
+    color: z.enum(PALETTE).nullable(),
+  }),
+  categoryUpdate: z.strictObject({
+    id: idSchema,
+    patch: z
+      .strictObject({
+        name: requiredText(100),
+        parentId: idSchema.nullable(),
+        kind: z.enum(CATEGORY_KINDS),
+        icon: z.enum(LEDGER_ICONS).nullable(),
+        color: z.enum(PALETTE).nullable(),
+      })
+      .partial(),
+  }),
+  categoryMerge: z.strictObject({ sourceId: idSchema, targetId: idSchema }),
+  categoryArchive: z.strictObject({
+    id: idSchema,
+    archived: z.boolean(),
+    reassignTo: idSchema.nullable().optional(),
+  }),
+  categoryDelete: byId,
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

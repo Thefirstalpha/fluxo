@@ -4,8 +4,6 @@ import {
   ACCOUNT_TYPES,
   allowedTrackingModes,
   DEFAULT_TRACKING_MODE,
-  LEDGER_ICONS,
-  PALETTE,
   type AccountDraft,
   type AccountSummary,
   type AccountType,
@@ -15,9 +13,9 @@ import {
 } from '@shared/ledger/model'
 import { parseAmount } from '@shared/money'
 import { CURRENCIES } from '@shared/settings'
-import { LEDGER_ICON_COMPONENTS, paletteVar } from '../../lib/ledger-visual'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
+import { ColorPicker, IconPicker } from '../../components/ui/Pickers'
 import { SelectField, TextField } from '../../components/ui/Field'
 import { useT } from '../../i18n'
 import { cx } from '../../lib/cx'
@@ -232,57 +230,13 @@ export function AccountForm({ account, onClose, onSaved }: AccountFormProps) {
           />
         ) : null}
 
-        <fieldset>
-          <legend className="mb-1.5 text-sm font-medium text-fg">{f.color}</legend>
-          <div className="flex flex-wrap gap-2">
-            <SwatchOption
-              label={f.noColor}
-              checked={color === null}
-              onSelect={() => setColor(null)}
-              tint="var(--fx-surface-3)"
-            />
-            {PALETTE.map((value, index) => (
-              <SwatchOption
-                key={value}
-                label={f.colorName(index + 1)}
-                checked={color === value}
-                onSelect={() => setColor(value)}
-                tint={paletteVar(value)}
-              />
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className="mb-1.5 text-sm font-medium text-fg">{f.icon}</legend>
-          <div className="flex flex-wrap gap-1.5">
-            {LEDGER_ICONS.map((value) => {
-              const Icon = LEDGER_ICON_COMPONENTS[value]
-              const checked = (icon ?? DEFAULT_ACCOUNT_ICON[type]) === value
-              return (
-                <label
-                  key={value}
-                  title={t.ledger.icons[value]}
-                  className={cx(
-                    'flex size-9 cursor-pointer items-center justify-center rounded-md border has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-pink',
-                    checked ? 'fx-frame text-pink' : 'border-border text-fg-2 hover:text-fg',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="account-icon"
-                    value={value}
-                    checked={checked}
-                    onChange={() => setIcon(value)}
-                    aria-label={t.ledger.icons[value]}
-                    className="sr-only"
-                  />
-                  <Icon size={16} aria-hidden />
-                </label>
-              )
-            })}
-          </div>
-        </fieldset>
+        <ColorPicker name="account-color" value={color} onChange={setColor} />
+        <IconPicker
+          name="account-icon"
+          value={icon}
+          fallback={DEFAULT_ACCOUNT_ICON[type]}
+          onChange={setIcon}
+        />
 
         {failure ? (
           <p role="alert" className="text-sm font-medium text-expense">
@@ -297,37 +251,5 @@ export function AccountForm({ account, onClose, onSaved }: AccountFormProps) {
         </div>
       </form>
     </Dialog>
-  )
-}
-
-function SwatchOption({
-  label,
-  checked,
-  onSelect,
-  tint,
-}: {
-  label: string
-  checked: boolean
-  onSelect: () => void
-  tint: string
-}) {
-  return (
-    <label
-      title={label}
-      className={cx(
-        'flex size-8 cursor-pointer items-center justify-center rounded-full border-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-pink',
-        checked ? 'border-fg' : 'border-transparent',
-      )}
-    >
-      <input
-        type="radio"
-        name="account-color"
-        checked={checked}
-        onChange={onSelect}
-        aria-label={label}
-        className="sr-only"
-      />
-      <span aria-hidden className="size-5 rounded-full" style={{ backgroundColor: tint }} />
-    </label>
   )
 }

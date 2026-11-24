@@ -4,6 +4,7 @@
  */
 import type {
   AccountSummary,
+  CategorySummary,
   LedgerResult,
   PayeeSummary,
   TagSummary,
@@ -43,6 +44,13 @@ export interface LedgerOutputs {
   tagUpdate: null
   tagDelete: null
   payeesList: PayeeSummary[]
+  categoriesList: CategorySummary[]
+  categoryCreate: { id: string }
+  categoryUpdate: null
+  /** Nombre de parts réaffectées. */
+  categoryMerge: { reassigned: number }
+  categoryArchive: { reassigned: number }
+  categoryDelete: null
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -77,6 +85,12 @@ export const LEDGER_METHODS = [
   'tagUpdate',
   'tagDelete',
   'payeesList',
+  'categoriesList',
+  'categoryCreate',
+  'categoryUpdate',
+  'categoryMerge',
+  'categoryArchive',
+  'categoryDelete',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -93,6 +107,7 @@ export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'transactionGet',
   'tagsList',
   'payeesList',
+  'categoriesList',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

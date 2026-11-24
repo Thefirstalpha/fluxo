@@ -134,7 +134,8 @@ Conventions du registre (M2, service `src/data/ledger/`) :
 
 - **Ventilation** : une opération sans part est « non catégorisée » ; une part unique sans catégorie, sans note ni étiquette équivaut à aucune part. Sinon Σ des parts = montant, chaque part non nulle.
 - **Virement** : deux opérations de montants opposés, sur deux comptes distincts de même devise, liées l'une à l'autre (`transfer_id` réciproque). Les deux sont classées dans la première catégorie active de type `épargne` si un seul des comptes est un compte d'épargne ou de placement, sinon de type `transfert`. Supprimer une opération saisie délie sa contrepartie.
-- **Tiers** : créé à la volée à partir d'un nom (sans distinction de casse).
+- **Tiers** : créé à la volée à partir d'un nom (sans distinction de casse, accents compris).
+- **Catégories** : deux niveaux, type hérité du parent, noms uniques entre sœurs ; fusion et archivage avec réaffectation des parts, suppression seulement si inutilisée ([ADR-034](decisions.md#adr-034--catégories--deux-niveaux-réorganisation-sans-perte)).
 - **Opération importée** : seules les annotations changent (libellé personnalisé, tiers, note, statut, favori, contre-valeur, ventilation, étiquettes, lien de virement).
 
 ## Bulletin de paie (France)

@@ -12,6 +12,7 @@ import { AppShell } from './AppShell'
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'))
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage'))
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'))
+const CategoriesPage = lazy(() => import('../features/categories/CategoriesPage'))
 
 // Verrouillage, démonstration ouverte ou fermée : les données en cache sont celles d'un autre
 // coffre (ou d'un coffre fermé) ; on les oublie.
@@ -49,6 +50,9 @@ export default function UnlockedApp() {
                 </Route>
                 <Route path="/accounts">
                   <AccountsPage />
+                </Route>
+                <Route path="/categories">
+                  <CategoriesPage />
                 </Route>
                 <Route path="/transactions">
                   <ComingSoonPage section="transactions" />

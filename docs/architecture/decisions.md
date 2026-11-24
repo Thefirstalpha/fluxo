@@ -277,3 +277,14 @@ Chaque décision structurante est consignée ici : contexte, choix, conséquence
   - **Contrôle rapide au plus une fois par 24 h** au déverrouillage (date du dernier contrôle dans `meta.last_quick_check`) ; une base altérée est toujours refusée (`vault-corrupt`). Chaque page lue reste authentifiée par SQLCipher (HMAC-SHA512) : une page altérée est détectée à la lecture, et chaque sauvegarde est précédée d'un contrôle **complet** (`integrity_check`).
   - **Cache de pages de 32 Mio** dans le service de données : rempli à l'usage (une petite base n'en occupe qu'une fraction), libéré au verrouillage. Les pages en cache sont déchiffrées, comme le reste de la mémoire du service pendant que le coffre est ouvert.
 - **Conséquences** : ouverture en ≈ 5 ms hors contrôle, ≈ 0,5 s une fois par jour à 50 000 opérations ; jusqu'à 32 Mio de mémoire de plus pour un gros coffre (budget mémoire à remesurer avec des données réelles).
+
+### ADR-034 — Catégories : deux niveaux, réorganisation sans perte
+
+- **Statut** : acceptée (2026-11-24, M2 lot 3).
+- **Contexte** : l'utilisateur doit pouvoir adapter le pack France (renommer, regrouper, retirer) sans jamais perdre la trace d'une opération ni fausser un total.
+- **Décisions** :
+  - **Deux niveaux** (règle portée par la base, migration v2) ; une sous-catégorie a **le type de son parent** (dépense, revenu, épargne, virement), et changer le type d'un parent l'applique à ses sous-catégories. Noms uniques entre sœurs, sans distinction de casse **y compris accentuée** (comparaison faite par le service : `COLLATE NOCASE` de SQLite ne traite que l'ASCII ; même règle pour les étiquettes et les tiers).
+  - **Fusion** (même type) : les parts sont réaffectées à la cible, puis la source est supprimée ; un parent fusionné dans une catégorie de premier niveau lui confie ses sous-catégories (celles de même nom ne font plus qu'une), fusionné dans une sous-catégorie il y fond aussi les siennes. Les catégories par défaut des tiers suivent.
+  - **Archivage** plutôt que suppression : une catégorie archivée (avec ses sous-catégories) reste sur les opérations passées mais ne se choisit plus ; une réaffectation facultative déplace d'abord ses parts. **Suppression** réservée à une catégorie sans part ni sous-catégorie.
+  - Chaque réorganisation est une écriture tracée (audit, annulation au lot 5) ; un test vérifie que **la somme des parts catégorisées est inchangée** après fusion ou archivage avec réaffectation.
+- **Conséquences** : pas d'arbre profond (les besoins plus fins passent par les étiquettes, [ADR-013](#adr-013--étiquettes-posées-sur-la-ventilation-split-pas-sur-la-transaction)) ; une fusion est définitive en dehors de l'annulation.

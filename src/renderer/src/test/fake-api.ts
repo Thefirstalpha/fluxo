@@ -90,6 +90,12 @@ const LEDGER_DEFAULTS: { [M in LedgerMethod]: LedgerOutput<M> } = {
   tagUpdate: null,
   tagDelete: null,
   payeesList: [],
+  categoriesList: [],
+  categoryCreate: { id: '0192f0c8-0000-7000-8000-000000000006' },
+  categoryUpdate: null,
+  categoryMerge: { reassigned: 0 },
+  categoryArchive: { reassigned: 0 },
+  categoryDelete: null,
 }
 
 export type FakeLedger = {

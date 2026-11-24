@@ -226,6 +226,21 @@ export interface TransactionSummary {
   currencies: string[]
 }
 
+export interface CategorySummary {
+  id: string
+  parentId: string | null
+  name: string
+  kind: CategoryKind
+  icon: LedgerIcon | null
+  color: PaletteColor | null
+  sortOrder: number
+  archived: boolean
+  /** Opérations ayant au moins une part dans cette catégorie (sans ses sous-catégories). */
+  transactionCount: number
+  /** Σ des parts de cette catégorie (sans ses sous-catégories). */
+  total: MinorUnits
+}
+
 export interface TagSummary {
   id: string
   name: string

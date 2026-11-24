@@ -37,6 +37,8 @@ Jalons [M0 — Fondations](docs/planning/M0-fondations.md) (socle applicatif, in
 
 - **Opérations** (M2, service) : saisie sur les comptes sans relevé, annotation des opérations importées, ventilation sur plusieurs catégories, virements internes et d'épargne, étiquettes, tiers, favoris, statuts, recherche sans accents ni casse et filtres combinables.
 
+- **Catégories et étiquettes** (M2) : créer, renommer, déplacer, fusionner ou archiver une catégorie en réaffectant ses opérations ; gérer ses étiquettes et voir leur total.
+
 ### Sécurité
 
 - Renderer isolé : `sandbox`, `contextIsolation`, pas de Node.js, balise `<webview>` désactivée, bac à sable activé pour toute l'application.

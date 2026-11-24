@@ -5,6 +5,7 @@ import {
   Landmark,
   LayoutDashboard,
   PiggyBank,
+  Tags,
   Upload,
   Wallet,
   type LucideIcon,
@@ -14,6 +15,7 @@ export type NavKey =
   | 'dashboard'
   | 'accounts'
   | 'transactions'
+  | 'categories'
   | 'imports'
   | 'payslips'
   | 'analytics'
@@ -32,6 +34,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'dashboard', path: '/', icon: LayoutDashboard },
   { key: 'accounts', path: '/accounts', icon: Landmark },
   { key: 'transactions', path: '/transactions', icon: ArrowLeftRight, milestone: 'M2' },
+  { key: 'categories', path: '/categories', icon: Tags },
   { key: 'imports', path: '/imports', icon: Upload, milestone: 'M3' },
   { key: 'analytics', path: '/analytics', icon: ChartNoAxesCombined, milestone: 'M5' },
   { key: 'payslips', path: '/payslips', icon: Wallet, milestone: 'M6' },

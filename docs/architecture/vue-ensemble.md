@@ -88,7 +88,7 @@ fluxo/
 │  │  └─ src/
 │  │     ├─ app/       Coque : barre de titre, navigation, barre d'état ; UnlockedApp (chargée à la demande)
 │  │     ├─ components/ Composants d'interface réutilisables, logo, ErrorBoundary
-│  │     ├─ features/  Pages : tableau de bord, comptes, paramètres, coffre (création, déverrouillage), pages à venir
+│  │     ├─ features/  Pages : tableau de bord, comptes, catégories et étiquettes, paramètres, coffre, pages à venir
 │  │     ├─ lib/       API, cache du registre (TanStack Query), formatage, thème, graphiques (ECharts)
 │  │     ├─ i18n/      Dictionnaires typés FR/EN
 │  │     ├─ stores/    État (Zustand)

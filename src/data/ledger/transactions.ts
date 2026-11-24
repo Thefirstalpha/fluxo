@@ -5,6 +5,7 @@ import type { Db } from '../db/connection'
 import { getAccount } from './accounts'
 import type { ChangeSet, Row } from './changes'
 import { fail } from './failure'
+import { sameName } from './names'
 import { readSplits, writeSplits } from './splits'
 
 export interface TransactionDbRow {
@@ -49,11 +50,12 @@ export function isEditable(db: Db, transaction: TransactionDbRow): boolean {
 /** Tiers par son nom (sans distinction de casse), créé au besoin. */
 export function resolvePayee(changes: ChangeSet, name: string | null, now: Date): string | null {
   if (name === null) return null
-  const existing = changes.db
-    .prepare('SELECT id FROM payee WHERE name = ? COLLATE NOCASE ORDER BY id LIMIT 1')
-    .pluck()
-    .get(name) as string | undefined
-  if (existing) return existing
+  const payees = changes.db.prepare('SELECT id, name FROM payee ORDER BY id').all() as {
+    id: string
+    name: string
+  }[]
+  const existing = payees.find((payee) => sameName(payee.name, name))
+  if (existing) return existing.id
   const id = uuidv7()
   const stamp = now.toISOString()
   changes.insert('payee', { id, name, created_at: stamp, updated_at: stamp })

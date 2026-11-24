@@ -11,6 +11,14 @@ import {
   setAccountArchived,
   updateAccount,
 } from './accounts'
+import {
+  archiveCategory,
+  createCategory,
+  deleteCategory,
+  listCategories,
+  mergeCategory,
+  updateCategory,
+} from './categories'
 import { auditChanges, ChangeSet } from './changes'
 import { databaseRuleError, LedgerFailure } from './failure'
 import { getTransactionDetail, listTransactions, summarizeTransactions } from './queries'
@@ -88,6 +96,18 @@ export class Ledger {
       tagUpdate: (input) => write('tag-update', (changes) => updateTag(changes, input)),
       tagDelete: (input) => write('tag-delete', (changes) => deleteTag(changes, input)),
       payeesList: (input) => listPayees(db, input),
+
+      categoriesList: (input) => listCategories(db, input),
+      categoryCreate: (input) =>
+        write('category-create', (changes) => createCategory(changes, input, this.now())),
+      categoryUpdate: (input) =>
+        write('category-update', (changes) => updateCategory(changes, input, this.now())),
+      categoryMerge: (input) =>
+        write('category-merge', (changes) => mergeCategory(changes, input, this.now())),
+      categoryArchive: (input) =>
+        write('category-archive', (changes) => archiveCategory(changes, input, this.now())),
+      categoryDelete: (input) =>
+        write('category-delete', (changes) => deleteCategory(changes, input, this.now())),
     }
   }
 

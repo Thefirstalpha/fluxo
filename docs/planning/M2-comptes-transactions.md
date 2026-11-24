@@ -1,6 +1,6 @@
 # M2 — Comptes & transactions
 
-> **Statut : 🟡 En cours** (démarré le 24/11/2026 — lots 1 et 2 livrés ; le lot 2 est un service de données, son interface arrive au lot 4) · Taille : L · Dépend de : M1 · Version : 0.3
+> **Statut : 🟡 En cours** (démarré le 24/11/2026 — lots 1 à 3 livrés ; l'interface des opérations du lot 2 arrive au lot 4) · Taille : L · Dépend de : M1 · Version : 0.3
 
 ## Objectif
 
@@ -43,13 +43,13 @@ Le registre de toutes les opérations : **rapide, fiable, agréable au clavier**
 - [x] **Virement vers un compte d'épargne classé comme épargne** (catégorie de type `épargne`, pas `transfert`) : visible dans le taux d'épargne de la synthèse mensuelle (M5), distingué d'un virement neutre entre deux comptes courants. `Besoin`
 - [x] Statuts : en attente, pointée, rapprochée (y compris en masse). `Proposition`
 - [x] **Étiquettes multiples par ventilation** (une part peut porter plusieurs étiquettes, indépendamment de sa catégorie), notes, favoris ; tiers créés à la volée. `Proposition`
-- [ ] Vue **Étiquettes** : liste des étiquettes avec total et nombre d'opérations, filtre transverse aux catégories (ex. toutes les dépenses « Abonnement téléphonique »). Service prêt (totaux, filtre) ; vue au lot 4. `Proposition`
+- [ ] Vue **Étiquettes** : liste des étiquettes avec total et nombre d'opérations, filtre transverse aux catégories (ex. toutes les dépenses « Abonnement téléphonique »). Liste, totaux, création, renommage et suppression livrés (page « Catégories », onglet « Étiquettes ») ; le filtre du registre arrive au lot 4. `Proposition`
 - [ ] Multi-devises : montant d'origine + montant converti (taux saisi) ; synthèses dans la devise de référence. Stockage prêt (montant dans la devise du compte, contre-valeur facultative) ; saisie du taux au lot 4, synthèses au M5. `Proposition`
 
 ### Lot 3 — Catégories
 
-- [ ] Arbre à deux niveaux, pack France par défaut, types (dépense, revenu, épargne, transfert), icône, couleur issue de la palette validée. `Besoin`
-- [ ] Fusion, déplacement et archivage avec réaffectation des opérations. `Socle`
+- [x] Arbre à deux niveaux, pack France par défaut (créé avec le coffre, FR/EN), types (dépense, revenu, épargne, transfert ; une sous-catégorie prend celui de son parent), icône, couleur issue de la palette validée — page « Catégories » ([ADR-034](../architecture/decisions.md#adr-034--catégories--deux-niveaux-réorganisation-sans-perte)). `Besoin`
+- [x] Fusion, déplacement et archivage avec réaffectation des opérations (total des parts inchangé, vérifié par test) ; suppression réservée aux catégories inutilisées. `Socle`
 
 ### Lot 4 — Interface
 

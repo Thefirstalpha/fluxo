@@ -41,6 +41,7 @@ export const en: Dictionary = {
     dashboard: 'Dashboard',
     accounts: 'Accounts',
     transactions: 'Transactions',
+    categories: 'Categories',
     imports: 'Imports',
     payslips: 'Payslips',
     analytics: 'Analytics',
@@ -345,6 +346,12 @@ export const en: Dictionary = {
     },
   },
   ledger: {
+    pickers: {
+      color: 'Colour',
+      noColor: 'None',
+      colorName: (index: number) => `Colour ${index}`,
+      icon: 'Icon',
+    },
     icons: {
       wallet: 'Wallet',
       landmark: 'Bank',
@@ -479,13 +486,102 @@ export const en: Dictionary = {
       ibanInvalid: 'Invalid IBAN (wrong check digits).',
       amountInvalid: 'Invalid amount (e.g. 1,250.00).',
       nameRequired: 'Enter a name.',
-      color: 'Colour',
-      noColor: 'None',
-      colorName: (index: number) => `Colour ${index}`,
-      icon: 'Icon',
       create: 'Create account',
       save: 'Save',
     },
+  },
+  categoryManager: {
+    title: 'Categories',
+    subtitle: 'Classify your transactions; tags group them across categories.',
+    tabs: { categories: 'Categories', tags: 'Tags', aria: 'Show' },
+    add: 'New category',
+    addChild: (name: string) => `Add a subcategory to ${name}`,
+    edit: (name: string) => `Edit ${name}`,
+    merge: (name: string) => `Merge ${name}`,
+    archive: (name: string) => `Archive ${name}`,
+    unarchive: (name: string) => `Restore ${name}`,
+    remove: (name: string) => `Delete ${name}`,
+    kinds: {
+      expense: 'Expenses',
+      income: 'Income',
+      savings: 'Savings',
+      transfer: 'Internal transfers',
+    },
+    kindHints: {
+      expense: 'Counted in the month’s expenses.',
+      income: 'Counted in the month’s income.',
+      savings: 'Neither expense nor income: shown in the savings rate.',
+      transfer: 'Neutral moves between your accounts, excluded from summaries.',
+    },
+    usage: (count: number) =>
+      count === 0 ? 'Unused' : count === 1 ? '1 transaction' : `${count} transactions`,
+    showArchived: (count: number) => `Show archived categories (${count})`,
+    hideArchived: 'Hide archived categories',
+    archivedTitle: 'Archived categories',
+    archivedBadge: 'Archived',
+    saved: 'Category saved.',
+    merged: (count: number) =>
+      count === 0
+        ? 'Categories merged.'
+        : `Categories merged: ${count} part${count > 1 ? 's' : ''} reassigned.`,
+    archived: (name: string) => `${name} is archived: it stays on past transactions.`,
+    deleted: (name: string) => `${name} was deleted.`,
+    form: {
+      createTitle: 'New category',
+      createChildTitle: (parent: string) => `New subcategory of ${parent}`,
+      editTitle: 'Edit category',
+      name: 'Name',
+      kind: 'Type',
+      parent: 'Parent category',
+      noParent: 'None (top level)',
+      parentHint: 'A subcategory takes the type of its parent category.',
+      nameRequired: 'Enter a name.',
+      save: 'Save',
+      create: 'Create',
+    },
+    mergeDialog: {
+      title: (name: string) => `Merge ${name}`,
+      description: (count: number) =>
+        `Its transactions (${count}) will be moved to the chosen category, then it will be deleted.`,
+      target: 'Merge into',
+      confirm: 'Merge',
+      noTarget: 'No other category of the same type.',
+    },
+    archiveDialog: {
+      title: (name: string) => `Archive ${name}`,
+      description:
+        'An archived category stays on past transactions but can no longer be chosen. Its subcategories are archived with it.',
+      reassign: 'Reassign its transactions to',
+      keep: 'Do not reassign',
+      confirm: 'Archive',
+    },
+    confirmDeleteTitle: 'Delete category?',
+    confirmDelete: (name: string) =>
+      `The category “${name}” will be deleted. No transaction uses it.`,
+    deleteButton: 'Delete',
+  },
+  tags: {
+    emptyTitle: 'No tags',
+    emptyDescription:
+      'A tag groups transactions whatever their category (e.g. “Phone plan”, “Work”, “Holidays 2026”).',
+    add: 'New tag',
+    name: 'Tag name',
+    create: 'Add',
+    usage: (count: number) =>
+      count === 0 ? 'No transactions' : count === 1 ? '1 transaction' : `${count} transactions`,
+    edit: (name: string) => `Edit ${name}`,
+    remove: (name: string) => `Delete ${name}`,
+    editTitle: 'Edit tag',
+    save: 'Save',
+    created: (name: string) => `Tag “${name}” added.`,
+    deleted: (name: string) => `Tag “${name}” deleted.`,
+    confirmDeleteTitle: 'Delete tag?',
+    confirmDelete: (name: string, count: number) =>
+      count === 0
+        ? `The tag “${name}” will be deleted.`
+        : `The tag “${name}” will be removed from ${count} transaction${count > 1 ? 's' : ''}, then deleted.`,
+    deleteButton: 'Delete',
+    nameRequired: 'Enter a name.',
   },
   coming: {
     transactions: {

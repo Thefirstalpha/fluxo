@@ -43,6 +43,7 @@ export const fr = {
     dashboard: 'Tableau de bord',
     accounts: 'Comptes',
     transactions: 'Transactions',
+    categories: 'Catégories',
     imports: 'Imports',
     payslips: 'Salaires',
     analytics: 'Analyses',
@@ -351,6 +352,12 @@ export const fr = {
     },
   },
   ledger: {
+    pickers: {
+      color: 'Couleur',
+      noColor: 'Aucune',
+      colorName: (index: number) => `Couleur ${index}`,
+      icon: 'Icône',
+    },
     icons: {
       wallet: 'Portefeuille',
       landmark: 'Banque',
@@ -486,13 +493,102 @@ export const fr = {
       ibanInvalid: 'IBAN invalide (clé de contrôle incorrecte).',
       amountInvalid: 'Montant invalide (ex. 1 250,00).',
       nameRequired: 'Indiquez un nom.',
-      color: 'Couleur',
-      noColor: 'Aucune',
-      colorName: (index: number) => `Couleur ${index}`,
-      icon: 'Icône',
       create: 'Créer le compte',
       save: 'Enregistrer',
     },
+  },
+  categoryManager: {
+    title: 'Catégories',
+    subtitle: 'Classez vos opérations ; les étiquettes les regroupent à travers les catégories.',
+    tabs: { categories: 'Catégories', tags: 'Étiquettes', aria: 'Afficher' },
+    add: 'Nouvelle catégorie',
+    addChild: (name: string) => `Ajouter une sous-catégorie à ${name}`,
+    edit: (name: string) => `Modifier ${name}`,
+    merge: (name: string) => `Fusionner ${name}`,
+    archive: (name: string) => `Archiver ${name}`,
+    unarchive: (name: string) => `Réactiver ${name}`,
+    remove: (name: string) => `Supprimer ${name}`,
+    kinds: {
+      expense: 'Dépenses',
+      income: 'Revenus',
+      savings: 'Épargne',
+      transfer: 'Virements internes',
+    },
+    kindHints: {
+      expense: 'Comptées dans les dépenses du mois.',
+      income: 'Comptées dans les revenus du mois.',
+      savings: 'Ni dépense ni revenu : visibles dans le taux d’épargne.',
+      transfer: 'Mouvements neutres entre vos comptes, exclus des synthèses.',
+    },
+    usage: (count: number) =>
+      count === 0 ? 'Inutilisée' : count === 1 ? '1 opération' : `${count} opérations`,
+    showArchived: (count: number) => `Afficher les catégories archivées (${count})`,
+    hideArchived: 'Masquer les catégories archivées',
+    archivedTitle: 'Catégories archivées',
+    archivedBadge: 'Archivée',
+    saved: 'Catégorie enregistrée.',
+    merged: (count: number) =>
+      count === 0
+        ? 'Catégories fusionnées.'
+        : `Catégories fusionnées : ${count} part${count > 1 ? 's' : ''} réaffectée${count > 1 ? 's' : ''}.`,
+    archived: (name: string) => `${name} est archivée : elle reste sur les opérations passées.`,
+    deleted: (name: string) => `${name} a été supprimée.`,
+    form: {
+      createTitle: 'Nouvelle catégorie',
+      createChildTitle: (parent: string) => `Nouvelle sous-catégorie de ${parent}`,
+      editTitle: 'Modifier la catégorie',
+      name: 'Nom',
+      kind: 'Type',
+      parent: 'Catégorie parente',
+      noParent: 'Aucune (premier niveau)',
+      parentHint: 'Une sous-catégorie prend le type de sa catégorie parente.',
+      nameRequired: 'Indiquez un nom.',
+      save: 'Enregistrer',
+      create: 'Créer',
+    },
+    mergeDialog: {
+      title: (name: string) => `Fusionner ${name}`,
+      description: (count: number) =>
+        `Ses opérations (${count}) seront classées dans la catégorie choisie, puis elle sera supprimée.`,
+      target: 'Fusionner dans',
+      confirm: 'Fusionner',
+      noTarget: 'Aucune autre catégorie du même type.',
+    },
+    archiveDialog: {
+      title: (name: string) => `Archiver ${name}`,
+      description:
+        'Une catégorie archivée reste sur les opérations passées mais ne se choisit plus. Ses sous-catégories sont archivées avec elle.',
+      reassign: 'Réaffecter ses opérations à',
+      keep: 'Ne rien réaffecter',
+      confirm: 'Archiver',
+    },
+    confirmDeleteTitle: 'Supprimer la catégorie ?',
+    confirmDelete: (name: string) =>
+      `La catégorie « ${name} » sera supprimée. Elle n’est utilisée par aucune opération.`,
+    deleteButton: 'Supprimer',
+  },
+  tags: {
+    emptyTitle: 'Aucune étiquette',
+    emptyDescription:
+      'Une étiquette regroupe des opérations quelle que soit leur catégorie (ex. « Abonnement téléphonique », « Pro », « Vacances 2026 »).',
+    add: 'Nouvelle étiquette',
+    name: 'Nom de l’étiquette',
+    create: 'Ajouter',
+    usage: (count: number) =>
+      count === 0 ? 'Aucune opération' : count === 1 ? '1 opération' : `${count} opérations`,
+    edit: (name: string) => `Modifier ${name}`,
+    remove: (name: string) => `Supprimer ${name}`,
+    editTitle: 'Modifier l’étiquette',
+    save: 'Enregistrer',
+    created: (name: string) => `Étiquette « ${name} » ajoutée.`,
+    deleted: (name: string) => `Étiquette « ${name} » supprimée.`,
+    confirmDeleteTitle: 'Supprimer l’étiquette ?',
+    confirmDelete: (name: string, count: number) =>
+      count === 0
+        ? `L’étiquette « ${name} » sera supprimée.`
+        : `L’étiquette « ${name} » sera retirée de ${count} opération${count > 1 ? 's' : ''}, puis supprimée.`,
+    deleteButton: 'Supprimer',
+    nameRequired: 'Indiquez un nom.',
   },
   coming: {
     transactions: {

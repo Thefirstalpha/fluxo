@@ -4,6 +4,7 @@ import { uuidv7 } from '@shared/uuid'
 import type { Db } from '../db/connection'
 import type { ChangeSet } from './changes'
 import { fail } from './failure'
+import { sameName } from './names'
 
 /**
  * Étiquettes (posées sur les parts, ADR-013) : total des parts étiquetées et nombre
@@ -39,11 +40,17 @@ function requireTag(db: Db, id: string): void {
   if (db.prepare('SELECT 1 FROM tag WHERE id = ?').get(id) === undefined) fail('not-found')
 }
 
+function checkTagName(db: Db, name: string, except: string | null): void {
+  const tags = db.prepare('SELECT id, name FROM tag').all() as { id: string; name: string }[]
+  if (tags.some((tag) => tag.id !== except && sameName(tag.name, name))) fail('name-taken')
+}
+
 export function createTag(
   changes: ChangeSet,
   { name, color }: ParsedLedgerInputs['tagCreate'],
   now: Date,
 ): { id: string } {
+  checkTagName(changes.db, name, null)
   const id = uuidv7()
   changes.insert('tag', { id, name, color, created_at: now.toISOString() })
   return { id }
@@ -55,7 +62,10 @@ export function updateTag(
 ): null {
   requireTag(changes.db, id)
   const row: Record<string, string | null> = {}
-  if (patch.name !== undefined) row.name = patch.name
+  if (patch.name !== undefined) {
+    checkTagName(changes.db, patch.name, id)
+    row.name = patch.name
+  }
   if (patch.color !== undefined) row.color = patch.color
   if (Object.keys(row).length > 0) changes.update('tag', { id }, row)
   return null
