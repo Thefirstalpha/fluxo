@@ -20,6 +20,9 @@ export function createMainWindow({ theme, contentProtection }: MainWindowOptions
     minHeight: 640,
     show: false,
     title: APP_NAME,
+    // En développement, electron.exe générique n'a pas l'icône de Fluxo : on la fournit
+    // explicitement. Une fois packagée, l'icône vient de l'exécutable (electron-builder.yml).
+    ...(app.isPackaged ? {} : { icon: join(__dirname, '../../build/icon.png') }),
     backgroundColor: chrome.background,
     // Barre de titre intégrée, façon éditeur de code (boutons natifs conservés).
     titleBarStyle: 'hidden',

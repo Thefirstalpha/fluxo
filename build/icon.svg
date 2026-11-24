@@ -1,34 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="-4 -4 72 72">
-  <!-- Emblème Fluxo (création originale) : soleil couchant à rayures sur une vague.
+  <!-- Emblème Fluxo (création originale) : le F de Fluxo en grand, rempli d'un dégradé
+       coucher de soleil et traversé de bandes sombres façon horizon.
        Source unique de l'icône : `npm run icons` génère build/icon.png. -->
   <defs>
-    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFD166"/>
       <stop offset="0.45" stop-color="#FF7A3D"/>
       <stop offset="0.8" stop-color="#FF3D8B"/>
       <stop offset="1" stop-color="#B24BF3"/>
-    </linearGradient>
-    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#2DE2E6"/>
-      <stop offset="1" stop-color="#3D8BFF"/>
     </linearGradient>
     <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#FF8A3D"/>
       <stop offset="0.5" stop-color="#FF3D8B"/>
       <stop offset="1" stop-color="#A855F7"/>
     </linearGradient>
-    <clipPath id="sun-clip">
-      <circle cx="32" cy="28" r="17"/>
+    <clipPath id="f-clip">
+      <path d="M15,8 L49,8 L49,20 L27,20 L27,31 L45,31 L45,42 L27,42 L27,56 L15,56 Z"/>
     </clipPath>
   </defs>
   <rect width="64" height="64" rx="15" fill="#141414"/>
   <rect x="0.6" y="0.6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="url(#frame)" stroke-width="1.2" opacity="0.9"/>
-  <g clip-path="url(#sun-clip)">
-    <rect x="15" y="11" width="34" height="34" fill="url(#sun)"/>
-    <rect x="15" y="30" width="34" height="1.6" fill="#141414"/>
-    <rect x="15" y="34" width="34" height="2.2" fill="#141414"/>
-    <rect x="15" y="38.6" width="34" height="2.8" fill="#141414"/>
-    <rect x="15" y="43.6" width="34" height="3.4" fill="#141414"/>
+  <g clip-path="url(#f-clip)">
+    <rect x="8" y="2" width="48" height="60" fill="url(#fill)"/>
+    <rect x="8" y="35.0" width="48" height="1.8" fill="#141414"/>
+    <rect x="8" y="39.2" width="48" height="2.4" fill="#141414"/>
+    <rect x="8" y="44.0" width="48" height="3.0" fill="#141414"/>
+    <rect x="8" y="49.4" width="48" height="8" fill="#141414"/>
   </g>
-  <path d="M11 50.5c5.3-4.6 10.7-4.6 16 0s10.7 4.6 16 0c3.3-2.9 6.7-3.8 10-2.6" fill="none" stroke="url(#sea)" stroke-width="3.6" stroke-linecap="round"/>
 </svg>

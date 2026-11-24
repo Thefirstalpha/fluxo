@@ -127,7 +127,7 @@ Points notables :
 
 ## Logo
 
-L'emblème représente un **soleil couchant à rayures posé sur une vague** : l'horizon et le « flux ». Création originale.
+L'emblème est le **F de Fluxo en grand**, rempli d'un dégradé coucher de soleil et traversé de bandes sombres façon horizon — la lettre domine, à la manière d'un gros monogramme, plutôt qu'une icône séparée du nom. Création originale.
 
 - Sources : `build/icon.svg` (icône d'application → `npm run icons`) et `src/renderer/src/components/Logo.tsx` (barre de titre).
 - Toujours sur sa tuile sombre arrondie ; taille minimale 16 px ; ne pas recolorer, déformer ni ajouter de texte dans la tuile.
