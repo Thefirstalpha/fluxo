@@ -12,6 +12,7 @@ import { matchesOrigin, type OriginMatcher } from './security/url'
 import { SettingsStore } from './settings/settings-store'
 import { applyThemePreference, resolvedTheme, syncWindowChrome } from './theme'
 import { createMainWindow } from './window'
+import { readInitialBounds, trackWindowState } from './window-state/track'
 
 const APP_USER_MODEL_ID = 'app.fluxo.desktop'
 
@@ -99,19 +100,25 @@ async function start(): Promise<void> {
     for (const window of BrowserWindow.getAllWindows()) syncWindowChrome(window)
   })
 
-  const openMainWindow = (): void => {
+  const windowStateFile = join(app.getPath('userData'), 'window-state.json')
+  const openMainWindow = async (): Promise<void> => {
     const window = createMainWindow({
       theme: resolvedTheme(),
       contentProtection: settings.get().contentProtection,
+      bounds: await readInitialBounds(windowStateFile),
     })
+    trackWindowState(window, windowStateFile)
     window.loadURL(devServerUrl ?? APP_ENTRY_URL).catch((error: unknown) => {
       logger.error('Chargement de l’interface impossible', error)
     })
   }
 
-  openMainWindow()
+  await openMainWindow()
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) openMainWindow()
+    if (BrowserWindow.getAllWindows().length > 0) return
+    openMainWindow().catch((error: unknown) => {
+      logger.error('Ouverture de la fenêtre impossible', error)
+    })
   })
   logger.info(`Fluxo ${app.getVersion()} démarré (${process.platform}/${process.arch}).`)
 }

@@ -24,6 +24,8 @@ const api: FluxoApi = {
     getInfo: () => ipcRenderer.invoke(IPC_CHANNELS.appGetInfo) as Promise<AppInfo>,
     openExternal: (url) =>
       ipcRenderer.invoke(IPC_CHANNELS.appOpenExternal, url) as Promise<boolean>,
+    reportError: (report) =>
+      ipcRenderer.invoke(IPC_CHANNELS.appReportError, report) as Promise<void>,
   },
 }
 

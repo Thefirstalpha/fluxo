@@ -19,6 +19,14 @@ export const fr = {
     encryptionPending: 'Chiffrement de la base : jalon M1',
     demoMode: 'Mode démonstration',
   },
+  error: {
+    title: 'Un problème est survenu dans l’interface',
+    description:
+      'Vos données ne sont pas affectées. L’erreur a été consignée dans le journal local de Fluxo (rien n’est envoyé en ligne).',
+    retry: 'Réessayer',
+    reload: 'Recharger l’interface',
+    details: 'Détail technique',
+  },
   titleBar: {
     search: 'Rechercher…',
     searchSoon: 'Palette de commandes (bientôt)',

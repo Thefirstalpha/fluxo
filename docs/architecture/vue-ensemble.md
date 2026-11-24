@@ -68,12 +68,14 @@ fluxo/
 │  │  ├─ security/     CSP, chemins, URL, durcissement (fonctions pures testées)
 │  │  ├─ ipc/          Fabrique de handlers validés + enregistrement des canaux
 │  │  ├─ settings/     Lecture/écriture atomique, store des préférences
-│  │  └─ logger/       Journal local + masquage des données personnelles
+│  │  ├─ logger/       Journal local + masquage des données personnelles
+│  │  ├─ window-state/ Taille et position de la fenêtre (adaptées aux écrans branchés)
+│  │  └─ fs/           Écriture atomique de petits fichiers
 │  ├─ preload/         Pont contextBridge (window.fluxo) et ses types
 │  ├─ renderer/        Interface React
 │  │  └─ src/
 │  │     ├─ app/       Coque : barre de titre, navigation, barre d'état
-│  │     ├─ components/ Composants d'interface réutilisables, logo
+│  │     ├─ components/ Composants d'interface réutilisables, logo, ErrorBoundary
 │  │     ├─ features/  Pages : tableau de bord, paramètres, pages à venir
 │  │     ├─ lib/       API, formatage, thème, graphiques (ECharts)
 │  │     ├─ i18n/      Dictionnaires typés FR/EN

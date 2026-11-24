@@ -1,17 +1,13 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { readFile, rename } from 'node:fs/promises'
 import { DEFAULT_SETTINGS, type Settings } from '@shared/settings'
 import { settingsFileSchema } from '@shared/settings-schema'
+import { isMissingFileError, writeFileAtomic } from '../fs/atomic-write'
 
 export type SettingsLoadStatus = 'loaded' | 'missing' | 'recovered'
 
 export interface SettingsLoadResult {
   settings: Settings
   status: SettingsLoadStatus
-}
-
-function isMissingFile(error: unknown): boolean {
-  return error instanceof Error && 'code' in error && error.code === 'ENOENT'
 }
 
 /**
@@ -23,7 +19,7 @@ export async function loadSettingsFile(filePath: string): Promise<SettingsLoadRe
   try {
     raw = await readFile(filePath, 'utf8')
   } catch (error) {
-    if (isMissingFile(error)) return { settings: { ...DEFAULT_SETTINGS }, status: 'missing' }
+    if (isMissingFileError(error)) return { settings: { ...DEFAULT_SETTINGS }, status: 'missing' }
     throw error
   }
   try {
@@ -36,11 +32,5 @@ export async function loadSettingsFile(filePath: string): Promise<SettingsLoadRe
 
 /** Écriture atomique : fichier temporaire puis renommage (pas de fichier à moitié écrit). */
 export async function saveSettingsFile(filePath: string, settings: Settings): Promise<void> {
-  await mkdir(dirname(filePath), { recursive: true })
-  const temporary = `${filePath}.tmp`
-  await writeFile(temporary, `${JSON.stringify(settings, null, 2)}\n`, {
-    encoding: 'utf8',
-    mode: 0o600,
-  })
-  await rename(temporary, filePath)
+  await writeFileAtomic(filePath, `${JSON.stringify(settings, null, 2)}\n`)
 }

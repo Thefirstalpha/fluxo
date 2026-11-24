@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect } from 'react'
-import { Redirect, Route, Router, Switch } from 'wouter'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { Redirect, Route, Router, Switch, useLocation } from 'wouter'
 import { useHashLocation } from 'wouter/use-hash-location'
 import { AppShell } from './app/AppShell'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { ComingSoonPage } from './features/roadmap/ComingSoonPage'
 import { useResolvedTheme } from './lib/theme'
 import { useSettingsStore } from './stores/settings'
@@ -20,42 +21,54 @@ function useDocumentAttributes(): void {
   }, [locale, theme])
 }
 
+/** Une page en échec n'emporte pas la coque : la navigation reste utilisable. */
+function PageBoundary({ children }: { children: ReactNode }) {
+  const [location] = useLocation()
+  return (
+    <ErrorBoundary key={location} scope="page">
+      {children}
+    </ErrorBoundary>
+  )
+}
+
 export function App() {
   useDocumentAttributes()
   return (
     <Router hook={useHashLocation}>
       <AppShell>
-        <Suspense fallback={null}>
-          <Switch>
-            <Route path="/">
-              <DashboardPage />
-            </Route>
-            <Route path="/transactions">
-              <ComingSoonPage section="transactions" />
-            </Route>
-            <Route path="/imports">
-              <ComingSoonPage section="imports" />
-            </Route>
-            <Route path="/analytics">
-              <ComingSoonPage section="analytics" />
-            </Route>
-            <Route path="/payslips">
-              <ComingSoonPage section="payslips" />
-            </Route>
-            <Route path="/documents">
-              <ComingSoonPage section="documents" />
-            </Route>
-            <Route path="/budgets">
-              <ComingSoonPage section="budgets" />
-            </Route>
-            <Route path="/settings">
-              <SettingsPage />
-            </Route>
-            <Route>
-              <Redirect to="/" />
-            </Route>
-          </Switch>
-        </Suspense>
+        <PageBoundary>
+          <Suspense fallback={null}>
+            <Switch>
+              <Route path="/">
+                <DashboardPage />
+              </Route>
+              <Route path="/transactions">
+                <ComingSoonPage section="transactions" />
+              </Route>
+              <Route path="/imports">
+                <ComingSoonPage section="imports" />
+              </Route>
+              <Route path="/analytics">
+                <ComingSoonPage section="analytics" />
+              </Route>
+              <Route path="/payslips">
+                <ComingSoonPage section="payslips" />
+              </Route>
+              <Route path="/documents">
+                <ComingSoonPage section="documents" />
+              </Route>
+              <Route path="/budgets">
+                <ComingSoonPage section="budgets" />
+              </Route>
+              <Route path="/settings">
+                <SettingsPage />
+              </Route>
+              <Route>
+                <Redirect to="/" />
+              </Route>
+            </Switch>
+          </Suspense>
+        </PageBoundary>
       </AppShell>
     </Router>
   )

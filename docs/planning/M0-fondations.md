@@ -46,8 +46,8 @@ Poser un socle **sûr, léger et testable** que les jalons suivants pourront enr
 ### Qualité & outillage
 
 - ESLint (règles typées, interdiction d'`innerHTML`/`eval`, frontières d'architecture main/preload/renderer/shared), Prettier, EditorConfig.
-- Vitest : **15 fichiers, 105 tests** (sécurité, montants, bulletins, préférences, palette, composants).
-- Playwright : **6 tests E2E** sur la build de production — protocole `app://`, isolation du renderer, CSP qui bloque script injecté et réseau, rejet d'une mise à jour IPC invalide, thème appliqué et conservé au redémarrage, `window.open` bloqué.
+- Vitest : **19 fichiers, 121 tests** (sécurité, montants, bulletins, préférences, état de la fenêtre, rapports d'erreur, palette, composants).
+- Playwright : **8 tests E2E** sur la build de production — protocole `app://`, isolation du renderer, CSP qui bloque script injecté et réseau, rejet d'une mise à jour IPC invalide, thème appliqué et conservé au redémarrage, taille de fenêtre conservée, erreur de l'interface consignée et expurgée, `window.open` bloqué.
 - Débogage VS Code (main + renderer), extensions recommandées.
 
 ### Vérifications réalisées (24/11/2026, Windows 11)
@@ -56,9 +56,12 @@ Poser un socle **sûr, léger et testable** que les jalons suivants pourront enr
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run typecheck` | ✅ 0 erreur                                                                                                                        |
 | `npm run lint`      | ✅ 0 erreur                                                                                                                        |
-| `npm test`          | ✅ 105/105                                                                                                                         |
-| `npm run test:e2e`  | ✅ 6/6                                                                                                                             |
-| `npm run build`     | ✅ renderer 259 Ko + tableau de bord 604 Ko (ECharts inclus), main 184 Ko, preload 1,4 Ko                                          |
+| `npm test`          | ✅ 121/121                                                                                                                         |
+| `npm run test:e2e`  | ✅ 8/8                                                                                                                             |
+| `npm run build`     | ✅ renderer 261 Ko + tableau de bord 604 Ko (ECharts inclus), CSS 25 Ko, main 184 Ko, preload 1,4 Ko                               |
+| `npm run package`   | ✅ Windows x64 : démarrage de l'application packagée, fuses vérifiés dans l'exécutable                                             |
+| Installeur NSIS x64 | ✅ 113 Mo (budget 120 Mo)                                                                                                          |
+| Mémoire au repos    | ✅ 254 Mo de mémoire privée, 4 processus (budget 300 Mo)                                                                           |
 | Revue visuelle      | ✅ tableau de bord et paramètres, clair et sombre, montants masqués                                                                |
 | `npm audit`         | ⚠ 6 alertes « moderate » dans `minimatch` (dépendance d'electron-builder, outil de build — rien n'est embarqué dans l'application) |
 
@@ -128,10 +131,11 @@ Points d'attention :
 
 ### Lot C — Packaging & finitions
 
-- [ ] Valider `npm run package` sur Windows, macOS et Linux : démarrage avec les fuses actifs (intégrité ASAR, `onlyLoadAppFromAsar`) et le protocole `app://`. `Socle`
-- [ ] Mémoriser la taille et la position de la fenêtre. `Proposition`
-- [ ] Gestion des erreurs de l'interface : `ErrorBoundary`, écran d'erreur, remontée des erreurs du renderer vers le journal local (expurgées). `Socle`
-- [ ] Polices : ne conserver qu'Inter latin + latin-ext (−85 Ko dans le paquet). `Proposition`
+- [x] Valider `npm run package` sous **Windows** (24/11/2026) : l'application packagée démarre avec les fuses actifs (lus dans `Fluxo.exe` : `RunAsNode`, `NODE_OPTIONS` et `--inspect` coupés ; intégrité ASAR et chargement depuis l'ASAR seul actifs) et sert l'interface par `app://`. `Socle`
+- [ ] Valider `npm run package` sous **macOS et Linux** : étape `npm run package` de la matrice CI (lot B), à constater au premier passage de la CI. `Socle`
+- [x] Mémoriser la taille, la position et la maximisation de la fenêtre (`window-state.json`, validé par schéma) ; une position hors des écrans actuels (écran débranché) est recentrée. `Proposition`
+- [x] Gestion des erreurs de l'interface : `ErrorBoundary` global et par page (la navigation reste utilisable), écran d'erreur traduit, remontée des erreurs de rendu, exceptions et promesses rejetées vers le journal local — canal IPC dédié, schéma strict, champs bornés, 20 rapports par minute au plus, contenu expurgé par le journal. `Socle`
+- [x] Polices : seuls les sous-ensembles latin et latin-ext d'Inter et de Bebas Neue sont déclarés, en WOFF2 uniquement (−101 Ko de polices dans le paquet ; CSS 26 → 25 Ko). `Proposition`
 
 ## Critères d'acceptation
 

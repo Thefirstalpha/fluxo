@@ -29,7 +29,11 @@ function installFakeApi() {
       update,
       onChange: () => () => undefined,
     },
-    app: { getInfo: () => Promise.resolve(info), openExternal },
+    app: {
+      getInfo: () => Promise.resolve(info),
+      openExternal,
+      reportError: () => Promise.resolve(),
+    },
   }
   Object.defineProperty(window, 'fluxo', { value: api, configurable: true })
   return { update, openExternal }

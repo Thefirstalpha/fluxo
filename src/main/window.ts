@@ -3,21 +3,27 @@ import { app, BrowserWindow } from 'electron'
 import { APP_NAME } from '@shared/app-meta'
 import type { ResolvedTheme } from '@shared/settings'
 import { TITLE_BAR_HEIGHT, WINDOW_CHROME } from '@shared/theme-chrome'
+import { MIN_WINDOW_SIZE, type InitialBounds } from './window-state/window-state'
 
 interface MainWindowOptions {
   theme: ResolvedTheme
   contentProtection: boolean
+  bounds: InitialBounds
 }
 
-export function createMainWindow({ theme, contentProtection }: MainWindowOptions): BrowserWindow {
+export function createMainWindow({
+  theme,
+  contentProtection,
+  bounds,
+}: MainWindowOptions): BrowserWindow {
   const chrome = WINDOW_CHROME[theme]
   const isMac = process.platform === 'darwin'
+  const { maximized, ...rectangle } = bounds
 
   const window = new BrowserWindow({
-    width: 1320,
-    height: 860,
-    minWidth: 980,
-    minHeight: 640,
+    ...rectangle,
+    minWidth: MIN_WINDOW_SIZE.width,
+    minHeight: MIN_WINDOW_SIZE.height,
     show: false,
     title: APP_NAME,
     // En développement, electron.exe générique n'a pas l'icône de Fluxo : on la fournit
@@ -54,6 +60,9 @@ export function createMainWindow({ theme, contentProtection }: MainWindowOptions
   })
 
   window.setContentProtection(contentProtection)
-  window.once('ready-to-show', () => window.show())
+  window.once('ready-to-show', () => {
+    if (maximized) window.maximize()
+    window.show()
+  })
   return window
 }

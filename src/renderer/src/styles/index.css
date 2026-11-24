@@ -1,8 +1,6 @@
 @import 'tailwindcss';
 @import './tokens.css';
-@import '@fontsource-variable/inter/wght.css';
-@import '@fontsource/bebas-neue/latin-400.css';
-@import '@fontsource/bebas-neue/latin-ext-400.css';
+@import './fonts.css';
 
 /* Les utilitaires Tailwind lisent les tokens : bg-surface, text-fg-2, border-border… */
 @theme inline {

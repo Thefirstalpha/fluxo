@@ -17,6 +17,14 @@ export const en: Dictionary = {
     encryptionPending: 'Database encryption: milestone M1',
     demoMode: 'Demo mode',
   },
+  error: {
+    title: 'Something went wrong in the interface',
+    description:
+      'Your data is not affected. The error was recorded in Fluxo’s local log (nothing is sent online).',
+    retry: 'Try again',
+    reload: 'Reload the interface',
+    details: 'Technical details',
+  },
   titleBar: {
     search: 'Search…',
     searchSoon: 'Command palette (coming soon)',

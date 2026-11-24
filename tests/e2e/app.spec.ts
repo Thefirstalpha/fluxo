@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -120,6 +120,39 @@ test('le thème choisi est appliqué immédiatement et conservé au redémarrage
   const second = await launch()
   await expect(second.page.locator('html')).toHaveAttribute('data-theme', 'light')
   await second.app.close()
+})
+
+test('la taille de la fenêtre est mémorisée entre deux lancements', async () => {
+  const first = await launch()
+  await first.app.evaluate(({ BrowserWindow }) => {
+    BrowserWindow.getAllWindows()[0]?.setBounds({ width: 1111, height: 777 })
+  })
+  await first.app.close()
+
+  const second = await launch()
+  const size = await second.app.evaluate(({ BrowserWindow }) => {
+    const bounds = BrowserWindow.getAllWindows()[0]?.getNormalBounds()
+    return { width: bounds?.width, height: bounds?.height }
+  })
+  expect(size).toEqual({ width: 1111, height: 777 })
+  await second.app.close()
+})
+
+test('une erreur de l’interface est consignée, expurgée, dans le journal local', async () => {
+  const { app, page } = await launch()
+  await page.evaluate(() => {
+    setTimeout(() => {
+      throw new Error('échec simulé FR7630006000011234567890189')
+    })
+  })
+  const logFile = join(userDataDir, 'logs', 'fluxo.log')
+  await expect
+    .poll(() => (existsSync(logFile) ? readFileSync(logFile, 'utf8') : ''))
+    .toContain('Erreur de l’interface (window)')
+  const log = readFileSync(logFile, 'utf8')
+  expect(log).toContain('échec simulé [iban]')
+  expect(log).not.toContain('FR7630006000011234567890189')
+  await app.close()
 })
 
 test('aucune nouvelle fenêtre ne peut être ouverte vers un site non autorisé', async () => {
