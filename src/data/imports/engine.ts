@@ -15,6 +15,7 @@ import { importCommitSchema } from '@shared/imports/schemas'
 import { uuidv7 } from '@shared/uuid'
 import { recordAudit } from '../db/audit'
 import type { Db } from '../db/connection'
+import { runAutoCategorization } from '../ledger/categorize'
 import { fail } from '../ledger/failure'
 import { sameName } from '../ledger/names'
 import { saveCsvProfile } from './profiles'
@@ -462,6 +463,7 @@ export function commitImport(
     removedAdjustmentAmount,
   )
 
+  const insertedTxIds: string[] = []
   const result = db
     .transaction(() => {
       const now = new Date().toISOString()
@@ -529,6 +531,7 @@ export function commitImport(
       const payeeCache = new Map<string, string>()
       for (const { row, hash } of rowsToInsert) {
         const txId = uuidv7()
+        insertedTxIds.push(txId)
         const payeeId = findOrCreatePayeeId(db, row.payee, payeeCache)
         insertTx.run(
           txId,
@@ -617,6 +620,9 @@ export function commitImport(
     .immediate()
 
   store.delete(input.previewId)
+  if (insertedTxIds.length > 0) {
+    runAutoCategorization(db, { transactionIds: insertedTxIds })
+  }
   return result
 }
 

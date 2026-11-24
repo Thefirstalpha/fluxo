@@ -18,6 +18,7 @@ export const TRACKED_TABLES = {
   transactions: { key: ['id'], entity: 'transaction' },
   split: { key: ['id'], entity: 'split' },
   split_tag: { key: ['split_id', 'tag_id'], entity: 'split' },
+  rule: { key: ['id'], entity: 'rule' },
   saved_filter: { key: ['id'], entity: null },
 } as const satisfies Record<string, { key: readonly string[]; entity: AuditInput['entity'] | null }>
 

@@ -8,6 +8,7 @@ import {
   Redo2,
   Search,
   Settings,
+  Sparkles,
   SunMoon,
   Undo2,
 } from 'lucide-react'
@@ -19,7 +20,7 @@ import { useT } from '../i18n'
 import { getApi } from '../lib/api'
 import { cx } from '../lib/cx'
 import { useFormatters } from '../lib/format'
-import { useLedgerQuery } from '../lib/ledger'
+import { useLedgerMutation, useLedgerQuery } from '../lib/ledger'
 import { useRegisterStore } from '../stores/register'
 import { useSettingsStore } from '../stores/settings'
 import { Dialog } from './ui/Dialog'
@@ -60,6 +61,8 @@ export function CommandPalette({
   const setQuickEntryOpen = useRegisterStore((state) => state.setQuickEntryOpen)
   const setShortcutsOpen = useRegisterStore((state) => state.setShortcutsOpen)
   const setAuditOpen = useRegisterStore((state) => state.setAuditOpen)
+  const showToast = useRegisterStore((state) => state.showToast)
+  const autoCategorize = useLedgerMutation('categorizeAutoRun')
 
   const trimmed = query.trim()
   const history = useLedgerQuery('ledgerHistoryStatus', {})
@@ -146,6 +149,26 @@ export function CommandPalette({
             },
           ]
         : []),
+      {
+        id: 'act:auto-categorize',
+        group: 'actions',
+        label: t.commandPalette.actions.autoCategorize,
+        icon: <Sparkles size={15} aria-hidden className="text-pink" />,
+        run: () => {
+          onClose()
+          void autoCategorize.mutateAsync({}).then((res) => {
+            showToast(
+              t.categorization.queue.autoSummary(
+                res.evaluatedCount,
+                res.autoAppliedCount,
+                res.queuedCount,
+                res.durationMs,
+              ),
+            )
+            navigate('/categorization')
+          })
+        },
+      },
       {
         id: 'act:audit',
         group: 'actions',
@@ -238,6 +261,8 @@ export function CommandPalette({
     updateSettings,
     setShortcutsOpen,
     openRegister,
+    showToast,
+    autoCategorize,
   ])
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

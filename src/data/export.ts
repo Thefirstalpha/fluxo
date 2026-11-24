@@ -20,6 +20,9 @@ export const EXPORTED_TABLES = [
   'split',
   'split_tag',
   'rule',
+  'classifier_state',
+  'categorization_suggestion',
+  'recurring_dismissed',
   'saved_filter',
   'audit_entry',
 ] as const

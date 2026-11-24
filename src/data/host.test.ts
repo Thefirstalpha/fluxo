@@ -8,6 +8,7 @@ import { generateDemoLedger } from '@shared/demo/demo-ledger'
 import { monthOf } from '@shared/months'
 import { listAudit } from './db/audit'
 import { findUnbalancedTransactions } from './db/integrity'
+import { MIGRATIONS } from './db/migrations'
 import { VaultHost } from './host'
 import { createMethods } from './methods'
 import { ServiceError } from './rpc'
@@ -81,9 +82,7 @@ describe('coffre de démonstration', () => {
       EXPENSE_CATEGORY_IDS.map((id) => last.byCategory[id]),
     )
     expect(listAudit(db).map((entry) => entry.action)).toEqual([
-      'migrate',
-      'migrate',
-      'migrate',
+      ...MIGRATIONS.map(() => 'migrate'),
       'seed',
       'create',
       'seed',

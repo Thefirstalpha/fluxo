@@ -2,6 +2,7 @@ import { Settings, type LucideIcon } from 'lucide-react'
 import { Link, useLocation } from 'wouter'
 import { useT } from '../i18n'
 import { cx } from '../lib/cx'
+import { useLedgerQuery } from '../lib/ledger'
 import { isActivePath, NAV_ITEMS, SETTINGS_PATH } from './navigation'
 
 function NavLink({
@@ -46,6 +47,8 @@ function NavLink({
 export function Sidebar() {
   const t = useT()
   const [location] = useLocation()
+  const queue = useLedgerQuery('categorizationQueueList', { limit: 100 })
+  const pendingCount = queue.data?.length ?? 0
 
   return (
     <nav
@@ -53,17 +56,25 @@ export function Sidebar() {
       className="flex w-56 shrink-0 flex-col border-r border-border px-2 py-3"
     >
       <ul className="flex flex-col gap-0.5">
-        {NAV_ITEMS.map((item) => (
-          <li key={item.key}>
-            <NavLink
-              href={item.path}
-              icon={item.icon}
-              label={t.nav[item.key]}
-              active={isActivePath(location, item.path)}
-              hint={item.milestone}
-            />
-          </li>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const hint =
+            item.key === 'categorization' && pendingCount > 0
+              ? pendingCount >= 100
+                ? '99+'
+                : String(pendingCount)
+              : item.milestone
+          return (
+            <li key={item.key}>
+              <NavLink
+                href={item.path}
+                icon={item.icon}
+                label={t.nav[item.key]}
+                active={isActivePath(location, item.path)}
+                hint={hint}
+              />
+            </li>
+          )
+        })}
       </ul>
       <div className="mt-auto border-t border-border pt-2">
         <NavLink

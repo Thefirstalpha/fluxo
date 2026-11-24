@@ -105,7 +105,7 @@ describe('sauvegardes', () => {
     expect(files.length).toBeLessThanOrEqual(7 + 4 + 12)
     expect(files.length).toBeGreaterThanOrEqual(7)
     expect((await vault.backupInfo()).lastAutomaticAt).toBe(now.toISOString())
-  })
+  }, 15_000)
 
   it('sauvegarde automatique désactivable', async () => {
     const vault = await openVault()

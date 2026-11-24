@@ -14,6 +14,7 @@ const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'))
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage'))
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'))
 const CategoriesPage = lazy(() => import('../features/categories/CategoriesPage'))
+const CategorizationPage = lazy(() => import('../features/categorization/CategorizationPage'))
 const TransactionsPage = lazy(() => import('../features/transactions/TransactionsPage'))
 const ImportsPage = lazy(() => import('../features/imports/ImportsPage'))
 
@@ -57,6 +58,9 @@ export default function UnlockedApp() {
                 </Route>
                 <Route path="/categories">
                   <CategoriesPage />
+                </Route>
+                <Route path="/categorization">
+                  <CategorizationPage />
                 </Route>
                 <Route path="/transactions">
                   <TransactionsPage />

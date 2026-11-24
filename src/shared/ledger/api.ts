@@ -3,6 +3,15 @@
  * Module sans zod (le preload l'importe) : les schémas d'entrée vivent dans `schemas.ts`.
  */
 import type {
+  AutoCategorizeResult,
+  CategorizationQueueItem,
+  ClassifierStatus,
+  RulePreviewResult,
+  RuleSummary,
+  SubscriptionsOverview,
+  TransferMatchCandidate,
+} from '../categorization/model'
+import type {
   AccountSummary,
   AuditEntrySummary,
   CategorySummary,
@@ -63,6 +72,22 @@ export interface LedgerOutputs {
   ledgerUndo: { action: string }
   ledgerRedo: { action: string }
   dashboardSummary: DashboardSummary
+  rulesList: RuleSummary[]
+  rulePreview: RulePreviewResult
+  ruleSave: RuleSummary
+  ruleDelete: null
+  ruleApply: { appliedCount: number }
+  ruleCreateFromTransaction: RuleSummary
+  categorizationQueueList: CategorizationQueueItem[]
+  categorizeAutoRun: AutoCategorizeResult
+  classifierStatus: ClassifierStatus
+  classifierRetrain: ClassifierStatus
+  categorizationThresholdSet: { threshold: number }
+  categorizationAccept: null
+  categorizationReject: null
+  subscriptionsOverview: SubscriptionsOverview
+  subscriptionDismissAlert: null
+  transferCandidatesList: TransferMatchCandidate[]
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -111,6 +136,22 @@ export const LEDGER_METHODS = [
   'ledgerUndo',
   'ledgerRedo',
   'dashboardSummary',
+  'rulesList',
+  'rulePreview',
+  'ruleSave',
+  'ruleDelete',
+  'ruleApply',
+  'ruleCreateFromTransaction',
+  'categorizationQueueList',
+  'categorizeAutoRun',
+  'classifierStatus',
+  'classifierRetrain',
+  'categorizationThresholdSet',
+  'categorizationAccept',
+  'categorizationReject',
+  'subscriptionsOverview',
+  'subscriptionDismissAlert',
+  'transferCandidatesList',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -132,6 +173,12 @@ export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'auditList',
   'ledgerHistoryStatus',
   'dashboardSummary',
+  'rulesList',
+  'rulePreview',
+  'categorizationQueueList',
+  'classifierStatus',
+  'subscriptionsOverview',
+  'transferCandidatesList',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

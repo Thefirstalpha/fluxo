@@ -4,6 +4,7 @@
  * Les règles métier (somme des ventilations, compte à relevé…) sont vérifiées par le service.
  */
 import { z } from 'zod'
+import { ruleConditionsSchema, ruleSaveSchema } from '../categorization/schemas'
 import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
 import {
@@ -236,6 +237,51 @@ export const LEDGER_INPUTS = {
       .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
       .optional(),
   }),
+  rulesList: z.strictObject({}),
+  rulePreview: ruleConditionsSchema,
+  ruleSave: ruleSaveSchema,
+  ruleDelete: byId,
+  ruleApply: z.strictObject({
+    ruleId: idSchema.optional(),
+    onlyUncategorized: z.boolean().optional(),
+  }),
+  ruleCreateFromTransaction: z.strictObject({
+    transactionId: idSchema,
+    name: requiredText(120),
+    pattern: requiredText(180),
+    categoryId: idSchema.nullable().optional(),
+    tagIds: z.array(idSchema).max(20).optional(),
+    customLabel: requiredText(200).nullable().optional(),
+    applyRetroactively: z.boolean().optional(),
+  }),
+  categorizationQueueList: z.strictObject({
+    limit: z.int().min(1).max(500).optional(),
+  }),
+  categorizeAutoRun: z.strictObject({
+    transactionIds: z.array(idSchema).max(20_000).optional(),
+  }),
+  classifierStatus: z.strictObject({}),
+  classifierRetrain: z.strictObject({}),
+  categorizationThresholdSet: z.strictObject({
+    threshold: z.number().min(0.5).max(0.99),
+  }),
+  categorizationAccept: z.strictObject({
+    transactionId: idSchema,
+    categoryId: idSchema.nullable(),
+    tagIds: z.array(idSchema).max(20).optional(),
+    customLabel: requiredText(200).nullable().optional(),
+  }),
+  categorizationReject: z.strictObject({
+    transactionId: idSchema,
+  }),
+  subscriptionsOverview: z.strictObject({
+    currency: currencySchema,
+  }),
+  subscriptionDismissAlert: z.strictObject({
+    signature: requiredText(300),
+    lastKnownAmount: amountSchema.nullable(),
+  }),
+  transferCandidatesList: z.strictObject({}),
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

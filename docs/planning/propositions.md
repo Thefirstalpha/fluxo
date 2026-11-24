@@ -38,8 +38,8 @@ Retirées lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisi
 | P-14 | **Rapprochement des soldes** — D08                | Garantit qu'aucune opération ne manque.                                                                                                                                               | M3    | ⭐⭐⭐   | S      | ✅   |
 | P-11 | **Écriture d'ajustement** (mode rattrapage) — D11 | Quand le rapprochement révèle un écart, le combler par une opération d'ajustement annotée, sans avoir le relevé manquant sous la main ; remplacée si le relevé est importé plus tard. | M3    | ⭐⭐     | S      | ✅   |
 | P-15 | **Import MT940** — D05                            | Format encore fréquent dans certaines banques européennes.                                                                                                                            | M3    | ⭐       | S      | ✅   |
-| P-16 | **Dictionnaire de marchands** — E01               | Bonne catégorisation dès le premier jour.                                                                                                                                             | M4    | ⭐⭐     | M      | ⬜   |
-| P-17 | **Abonnements & alertes de hausse** — E05, E06    | Économies concrètes, effet « waouh » immédiat.                                                                                                                                        | M4    | ⭐⭐⭐   | M      | ⬜   |
+| P-16 | **Dictionnaire de marchands** — E01               | Bonne catégorisation dès le premier jour.                                                                                                                                             | M4    | ⭐⭐     | M      | ✅   |
+| P-17 | **Abonnements & alertes de hausse** — E05, E06    | Économies concrètes, effet « waouh » immédiat.                                                                                                                                        | M4    | ⭐⭐⭐   | M      | ✅   |
 
 ### Analyses
 

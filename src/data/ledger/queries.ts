@@ -310,5 +310,11 @@ export function getTransactionDetail(
     note: split.note,
     tagIds: tagsOf.all(split.id) as string[],
   }))
-  return { ...base, splits: detail }
+  const explanation = db
+    .prepare(
+      'SELECT source, confidence, reason FROM categorization_suggestion WHERE transaction_id = ?',
+    )
+    .get(id) as
+    { source: 'rule' | 'merchant' | 'naive-bayes'; confidence: number; reason: string } | undefined
+  return { ...base, splits: detail, categorizationExplanation: explanation ?? null }
 }

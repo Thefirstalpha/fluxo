@@ -147,6 +147,16 @@ Migration `src/data/db/schema-v3.ts` ([ADR-035](decisions.md#adr-035--import-de-
 | `import_batch` | ajout de `mt940` aux formats autorisés et des colonnes `opening_balance`, `closing_balance`, `balance_discrepancy` (centimes, `INTEGER` ou `NULL`)                                |
 | `csv_profile`  | profils CSV personnalisés enregistrés (`id`, `name`, `bank`, `config` JSON validé par `csvProfileConfigSchema`, `created_at`, `updated_at`) ; table incluse dans l'export complet |
 
+## Schéma v4 (M4)
+
+Migration `src/data/db/schema-v4.ts` ([ADR-036](decisions.md#adr-036--catégorisation-automatique--normalisation-bayes-naïf-local-et-garde-redos)) :
+
+| Élément                     | Détail                                                                                                                                                                                            |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `classifier_state`          | modèle local Bayes naïf multinomial (`vocabulary_json`, `priors_json`, `sample_count`, `updated_at`), chiffré dans SQLCipher et inclus dans l'export complet                                      |
+| `categorization_suggestion` | file « À valider » et explicabilité (`source`, `rule_id`, `confidence`, `reason`, `status`, étiquettes et libellé suggérés) ; index partiel `idx_suggestion_pending` (`WHERE status = 'pending'`) |
+| `recurring_dismissed`       | empreintes d'abonnements dont l'alerte de hausse de prix a été masquée (`signature`, `last_known_amount`, `dismissed_at`), réactivée automatiquement à la prochaine variation de tarif            |
+
 ## Bulletin de paie (France)
 
 | Section              | Champs                                                                                                                                              | Contrôles                                       |

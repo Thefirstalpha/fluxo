@@ -70,15 +70,15 @@ C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([
 
 | ID  | Fonctionnalité                                                                | Origine     | Jalon | Statut |
 | --- | ----------------------------------------------------------------------------- | ----------- | ----- | ------ |
-| E01 | Normalisation des libellés et des marchands                                   | Besoin      | M4    | ⬜     |
-| E02 | Règles personnalisables (conditions → catégorie, étiquettes, renommage)       | Besoin      | M4    | ⬜     |
-| E03 | Apprentissage local à partir des corrections                                  | Besoin      | M4    | ⬜     |
-| E04 | File « à valider » avec niveau de confiance                                   | Besoin      | M4    | ⬜     |
-| E05 | Détection des récurrences et abonnements                                      | Proposition | M4    | ⬜     |
-| E06 | Alerte de hausse de prix d'un abonnement                                      | Proposition | M4    | ⬜     |
-| E07 | Détection automatique des virements internes                                  | Socle       | M4    | ⬜     |
+| E01 | Normalisation des libellés et des marchands                                   | Besoin      | M4    | ✅     |
+| E02 | Règles personnalisables (conditions → catégorie, étiquettes, renommage)       | Besoin      | M4    | ✅     |
+| E03 | Apprentissage local à partir des corrections                                  | Besoin      | M4    | ✅     |
+| E04 | File « à valider » avec niveau de confiance                                   | Besoin      | M4    | ✅     |
+| E05 | Détection des récurrences et abonnements                                      | Proposition | M4    | ✅     |
+| E06 | Alerte de hausse de prix d'un abonnement                                      | Proposition | M4    | ✅     |
+| E07 | Détection automatique des virements internes                                  | Socle       | M4    | ✅     |
 | E08 | Suggestions par IA pour les marchands inconnus (facultatif)                   | Besoin      | M7    | ⬜     |
-| E09 | Règles pouvant poser une ou plusieurs étiquettes, pas seulement une catégorie | Besoin      | M4    | ⬜     |
+| E09 | Règles pouvant poser une ou plusieurs étiquettes, pas seulement une catégorie | Besoin      | M4    | ✅     |
 
 ## F. Analyses & synthèses
 

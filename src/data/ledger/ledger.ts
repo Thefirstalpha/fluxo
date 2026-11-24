@@ -19,11 +19,29 @@ import {
   mergeCategory,
   updateCategory,
 } from './categories'
+import {
+  acceptQueueSuggestion,
+  createRuleFromCorrection,
+  getClassifierStatus,
+  listValidationQueue,
+  rejectQueueSuggestion,
+  retrainClassifier,
+  runAutoCategorization,
+  setCategorizationThreshold,
+} from './categorize'
 import { auditChanges, ChangeSet, TRACKED_TABLES } from './changes'
 import { getDashboardSummary } from './dashboard'
 import { databaseRuleError, fail, LedgerFailure } from './failure'
 import { HISTORY_LIMIT, listAuditEntries, statusOfHistory, type HistoryEntry } from './history'
 import { getTransactionDetail, listTransactions, summarizeTransactions } from './queries'
+import { detectSubscriptions, detectTransferCandidates, dismissPriceAlert } from './recurring'
+import {
+  applyRulesRetroactively,
+  deleteRule,
+  listRules,
+  previewRuleMatches,
+  saveRule,
+} from './rules'
 import { deleteSavedFilter, listSavedFilters, saveSavedFilter } from './saved-filters'
 import { createTag, deleteTag, listPayees, listTags, updateTag } from './tags'
 import {
@@ -125,6 +143,41 @@ export class Ledger {
       ledgerUndo: () => this.applyHistory('undo'),
       ledgerRedo: () => this.applyHistory('redo'),
       dashboardSummary: (input) => getDashboardSummary(db, input, this.now()),
+
+      rulesList: () => listRules(db),
+      rulePreview: (input) => previewRuleMatches(db, input),
+      ruleSave: (input) => write('rule-save', (changes) => saveRule(changes, input, this.now())),
+      ruleDelete: (input) => write('rule-delete', (changes) => deleteRule(changes, input.id)),
+      ruleApply: (input) =>
+        write('rule-apply', (changes) => applyRulesRetroactively(changes, input, this.now())),
+      ruleCreateFromTransaction: (input) => {
+        const rule = write('rule-create', (changes) =>
+          createRuleFromCorrection(changes, input, this.now()),
+        )
+        if (input.applyRetroactively) {
+          write('rule-apply', (changes) =>
+            applyRulesRetroactively(changes, { ruleId: rule.id }, this.now()),
+          )
+        }
+        return rule
+      },
+      categorizationQueueList: (input) => listValidationQueue(db, input),
+      categorizeAutoRun: (input) => runAutoCategorization(db, input, this.now()),
+      classifierStatus: () => getClassifierStatus(db),
+      classifierRetrain: () => retrainClassifier(db, this.now()),
+      categorizationThresholdSet: (input) => setCategorizationThreshold(db, input.threshold),
+      categorizationAccept: (input) => {
+        write('categorization-accept', (changes) =>
+          acceptQueueSuggestion(changes, input, this.now()),
+        )
+        if (input.categoryId !== null) retrainClassifier(db, this.now())
+        return null
+      },
+      categorizationReject: (input) => rejectQueueSuggestion(db, input.transactionId, this.now()),
+      subscriptionsOverview: (input) => detectSubscriptions(db, input, this.now()),
+      subscriptionDismissAlert: (input) =>
+        dismissPriceAlert(db, input.signature, input.lastKnownAmount, this.now()),
+      transferCandidatesList: () => detectTransferCandidates(db),
     }
   }
 

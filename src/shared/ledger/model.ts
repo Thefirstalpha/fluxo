@@ -3,6 +3,7 @@
  * et le renderer. Module sans dépendance (importé jusque dans le preload).
  * Voir docs/architecture/modele-de-donnees.md et l'ADR-032.
  */
+import type { SuggestionSource } from '../categorization/model'
 import type { MinorUnits } from '../money'
 
 export const ACCOUNT_TYPES = [
@@ -183,8 +184,15 @@ export interface TransactionRow {
   splitCount: number
 }
 
+export interface CategorizationExplanation {
+  source: SuggestionSource
+  confidence: number
+  reason: string
+}
+
 export interface TransactionDetail extends TransactionRow {
   splits: Split[]
+  categorizationExplanation?: CategorizationExplanation | null
 }
 
 export const TRANSACTION_SORTS = ['date-desc', 'date-asc', 'amount-desc', 'amount-asc'] as const

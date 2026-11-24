@@ -2,6 +2,7 @@ import type { Db } from './connection'
 import { SCHEMA_V1 } from './schema-v1'
 import { SCHEMA_V2 } from './schema-v2'
 import { SCHEMA_V3 } from './schema-v3'
+import { SCHEMA_V4 } from './schema-v4'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
@@ -21,6 +22,11 @@ export const MIGRATIONS: readonly Migration[] = [
     name: 'imports (MT940, soldes de rapprochement, profils CSV)',
     up: SCHEMA_V3,
     rebuildForeignKeys: true,
+  },
+  {
+    version: 4,
+    name: 'catégorisation (modèle local, file de validation, récurrences)',
+    up: SCHEMA_V4,
   },
 ]
 

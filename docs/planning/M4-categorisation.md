@@ -1,6 +1,6 @@
 # M4 — Catégorisation automatique
 
-> **Statut : ⬜ À venir** · Taille : L · Dépend de : M3 · Version : 0.5
+> **Statut : ✅ Livré** (24 novembre 2026) · Taille : L · Dépend de : M3 · Version : 0.5
 
 ## Objectif
 
@@ -27,30 +27,30 @@ Que la grande majorité des opérations soient **bien catégorisées sans effort
 
 ### Lot 1 — Normalisation
 
-- [ ] Nettoyage des libellés : préfixes (`CB`, `PRLV SEPA`, `VIR`, `CARTE X1234`), dates et heures, références, villes, numéros → libellé canonique. `Besoin`
-- [ ] Dictionnaire de marchands (pack communautaire France) : alias → marchand → catégorie suggérée. `Proposition`
+- [x] Nettoyage des libellés : préfixes (`CB`, `PRLV SEPA`, `VIR`, `CARTE X1234`), dates et heures, références, villes, numéros → libellé canonique. `Besoin`
+- [x] Dictionnaire de marchands (pack communautaire France) : alias → marchand → catégorie suggérée. `Proposition`
 
 ### Lot 2 — Règles
 
-- [ ] Conditions (contient, commence par, expression régulière bornée, montant, sens, compte) → actions (catégorie et/ou **une ou plusieurs étiquettes**, renommage, marquer comme virement). `Besoin`
-- [ ] Priorités, aperçu des opérations concernées, application rétroactive. `Besoin`
-- [ ] Création de règle depuis une correction (« toujours classer X en Y », « toujours étiqueter X »). `Proposition`
+- [x] Conditions (contient, commence par, expression régulière bornée, montant, sens, compte) → actions (catégorie et/ou **une ou plusieurs étiquettes**, renommage, marquer comme virement). `Besoin`
+- [x] Priorités, aperçu des opérations concernées, application rétroactive. `Besoin`
+- [x] Création de règle depuis une correction (« toujours classer X en Y », « toujours étiqueter X »). `Proposition`
 
 ### Lot 3 — Apprentissage local
 
-- [ ] Classifieur léger (Bayes naïf multinomial sur mots et n-grammes de caractères, quelques Ko), entraîné sur les opérations de l'utilisateur, ré-entraîné en tâche de fond. `Besoin`
-- [ ] Score de confiance ; seuil d'auto-validation réglable ; en dessous → file « à valider ». `Besoin`
-- [ ] Aucune donnée ne quitte l'appareil. `Socle`
+- [x] Classifieur léger (Bayes naïf multinomial sur mots et n-grammes de caractères, quelques Ko), entraîné sur les opérations de l'utilisateur, ré-entraîné en tâche de fond. `Besoin`
+- [x] Score de confiance ; seuil d'auto-validation réglable ; en dessous → file « à valider ». `Besoin`
+- [x] Aucune donnée ne quitte l'appareil. `Socle`
 
 ### Lot 4 — File de validation
 
-- [ ] Boîte « À valider » : accepter, corriger, créer une règle ; raccourcis (1–9, Entrée, flèches). `Besoin`
+- [x] Boîte « À valider » : accepter, corriger, créer une règle ; raccourcis (1–9, Entrée, flèches). `Besoin`
 
 ### Lot 5 — Récurrences & virements
 
-- [ ] Détection des récurrences (mensuelle, trimestrielle, annuelle) : marchand, montant ± tolérance, périodicité, prochaine échéance. `Proposition`
-- [ ] Vue **Abonnements** : coût mensuel et annuel total, **alerte de hausse de prix** (cas présent dans les données de démonstration), abonnements dormants. `Proposition`
-- [ ] Détection des virements internes (montants opposés entre comptes, ± 3 jours) proposée à la validation. `Socle`
+- [x] Détection des récurrences (mensuelle, trimestrielle, annuelle) : marchand, montant ± tolérance, périodicité, prochaine échéance. `Proposition`
+- [x] Vue **Abonnements** : coût mensuel et annuel total, **alerte de hausse de prix** (cas présent dans les données de démonstration), abonnements dormants. `Proposition`
+- [x] Détection des virements internes (montants opposés entre comptes, ± 3 jours) proposée à la validation. `Socle`
 
 ## Sécurité & confidentialité
 

@@ -1,4 +1,4 @@
-import { ArrowLeftRight, History, Plus, Star, Trash2, X } from 'lucide-react'
+import { ArrowLeftRight, History, Plus, Sparkles, Star, Trash2, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import {
   TRANSACTION_STATUSES,
@@ -21,6 +21,7 @@ import { useFormatters } from '../../lib/format'
 import { ledgerErrorCode, useLedgerMutation, useLedgerQuery } from '../../lib/ledger'
 import { useSettingsStore } from '../../stores/settings'
 import { amountToInput } from '../accounts/account-groups'
+import { CreateRuleFromTxDialog } from '../categorization/CreateRuleFromTxDialog'
 import { convertedFromRate, rateFromConverted, splitRemainder } from './grouping'
 
 interface DetailPanelProps {
@@ -158,6 +159,7 @@ function DetailBody({
   const [counterpartAccountId, setCounterpartAccountId] = useState('')
   const [linkTargetId, setLinkTargetId] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [ruleDialogOpen, setRuleDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const manualTargets = accounts.filter(
@@ -506,6 +508,21 @@ function DetailBody({
           </Button>
         </div>
 
+        {detail.categorizationExplanation ? (
+          <div className="rounded-lg border border-border bg-surface-2 px-2.5 py-2 text-xs text-fg-2">
+            <p className="flex items-center gap-1.5 font-medium text-fg">
+              <Sparkles size={12} aria-hidden className="text-pink" />
+              <span>{d.explanationLabel}</span>
+            </p>
+            <p className="mt-0.5">
+              {detail.categorizationExplanation.reason}{' '}
+              {detail.categorizationExplanation.source !== 'rule'
+                ? `· ${d.explanationConfidence(Math.round(detail.categorizationExplanation.confidence * 100))}`
+                : ''}
+            </p>
+          </div>
+        ) : null}
+
         <div className="space-y-2.5">
           {splits.map((split, index) => (
             <div
@@ -594,6 +611,11 @@ function DetailBody({
             {d.saveSplits}
           </Button>
         </div>
+
+        <Button onClick={() => setRuleDialogOpen(true)} className="w-full justify-center text-xs">
+          <Sparkles size={13} aria-hidden className="text-pink" />
+          {d.createRuleButton}
+        </Button>
       </section>
 
       {/* Virement interne */}
@@ -735,6 +757,21 @@ function DetailBody({
               .then((res) => onDeleted(res.count))
               .catch((failure: unknown) => setError(t.ledger.errors[ledgerErrorCode(failure)]))
           }
+        />
+      ) : null}
+      {ruleDialogOpen ? (
+        <CreateRuleFromTxDialog
+          transactionId={detail.id}
+          rawLabel={detail.labelRaw}
+          defaultCategoryId={splits[0]?.categoryId ?? null}
+          defaultTagIds={splits[0]?.tagIds ?? []}
+          categories={categories}
+          tags={tags}
+          onClose={() => setRuleDialogOpen(false)}
+          onCreated={(ruleName) => {
+            setRuleDialogOpen(false)
+            onNotice(d.createRuleCreated(ruleName))
+          }}
         />
       ) : null}
     </aside>
