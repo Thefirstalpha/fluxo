@@ -6,7 +6,7 @@
 
 **Vos finances personnelles, en local.** Fluxo est une application de bureau open source (Windows, macOS, Linux) pour suivre ses dépenses, comprendre ses salaires et analyser ses comptes — sans compte en ligne, sans télémétrie, avec des données chiffrées sur votre ordinateur.
 
-> **Statut : pré-alpha (jalon M0 — Fondations).** Le socle technique, l'interface et un tableau de bord de démonstration sont en place ; la gestion de vos vraies données arrive avec les jalons M1 à M3. Voir la [feuille de route](docs/planning/README.md).
+> **Statut : pré-alpha (jalons M0 — Fondations et M1 — Coffre-fort local).** Le socle technique, l'interface, un tableau de bord de démonstration et le **coffre chiffré** (création, déverrouillage par la session ou un mot de passe, code de récupération, sauvegardes, restauration, export) sont en place ; la saisie et l'import de vos opérations arrivent avec les jalons M2 et M3. Voir la [feuille de route](docs/planning/README.md).
 
 ## Ce que Fluxo fera
 
