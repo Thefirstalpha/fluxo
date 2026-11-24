@@ -2,7 +2,7 @@
 
 Fluxo est livré par **jalons** successifs, ordonnés par importance et par logique d'implémentation : chaque jalon s'appuie sur les précédents et produit une application utilisable.
 
-> Dernière mise à jour : 24 novembre 2026 — **M0 à M5 implémentés** (M4–M5 en attente de validation CI multi-OS) ; prochain jalon : **M6** (salaires & bulletins).
+> Dernière mise à jour : 24 novembre 2026 — **M0 à M5 livrés** et vérifiés en CI multi-OS ; prochain jalon : **M6** (salaires & bulletins).
 
 ## Vue d'ensemble
 
