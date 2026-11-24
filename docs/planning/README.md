@@ -2,23 +2,23 @@
 
 Fluxo est livré par **jalons** successifs, ordonnés par importance et par logique d'implémentation : chaque jalon s'appuie sur les précédents et produit une application utilisable.
 
-> Dernière mise à jour : 24 novembre 2026 — M0 et M1 livrés en local, en attente de la publication du dépôt GitHub (premier passage de la CI sur les trois systèmes) ; **M2 en cours** (lot 1 livré : comptes).
+> Dernière mise à jour : 24 novembre 2026 — M0 et M1 livrés et vérifiés en CI multi-OS ; **M2 en cours** (lots 1 à 3 livrés).
 
 ## Vue d'ensemble
 
-| Jalon                            | Titre                         | Objectif                                                                                | Statut                   | Taille | Version         |
-| -------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------ | ------ | --------------- |
-| [M0](M0-fondations.md)           | Fondations                    | Socle Electron sécurisé, interface, design, i18n, tests, CI                             | ✅ Livré                 | M      | 0.1             |
-| [M1](M1-coffre-fort.md)          | Coffre-fort local             | Base chiffrée, déverrouillage, sauvegardes, migrations                                  | 🟡 Livré, CI à constater | L      | 0.2             |
-| [M2](M2-comptes-transactions.md) | Comptes & transactions        | Registre rapide, ventilation, virements, catégories                                     | 🟡 En cours              | L      | 0.3             |
-| [M3](M3-import-releves.md)       | Import des relevés            | CSV, OFX/QFX, QIF, CAMT.053, doublons, annulation                                       | ⬜                       | L      | 0.4 · **Alpha** |
-| [M4](M4-categorisation.md)       | Catégorisation automatique    | Règles, apprentissage local, abonnements                                                | ⬜                       | L      | 0.5             |
-| [M5](M5-analyses.md)             | Analyses & synthèses          | Filtres globaux, synthèse mensuelle, exploration                                        | ⬜ (aperçu 🟡)           | L      | 0.6 · **Bêta**  |
-| [M6](M6-salaires.md)             | Salaires & bulletins          | Bulletin détaillé, du brut au net, tableau de bord salaire                              | ⬜ (aperçu 🟡)           | XL     | 0.7             |
-| [M7](M7-documents-ia.md)         | Documents & IA                | Extraction PDF/OCR, IA locale ou cloud consentie                                        | ⬜                       | XL     | 0.8             |
-| [M8](M8-patrimoine-budgets.md)   | Patrimoine, crédits & budgets | Crédits, amortissement, patrimoine net, enveloppes, prévisions, simulation à long terme | ⬜                       | XL     | 0.9 · **RC**    |
-| [M9](M9-distribution.md)         | Distribution v1.0             | Installeurs signés, mises à jour, audits                                                | ⬜                       | XL     | **1.0**         |
-| [M10](M10-au-dela.md)            | Au-delà de la v1              | Synchronisation, mobile, open banking, packs pays                                       | 💭                       | —      | 1.x             |
+| Jalon                            | Titre                         | Objectif                                                                                | Statut         | Taille | Version         |
+| -------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------- | -------------- | ------ | --------------- |
+| [M0](M0-fondations.md)           | Fondations                    | Socle Electron sécurisé, interface, design, i18n, tests, CI                             | ✅ Livré       | M      | 0.1             |
+| [M1](M1-coffre-fort.md)          | Coffre-fort local             | Base chiffrée, déverrouillage, sauvegardes, migrations                                  | ✅ Livré       | L      | 0.2             |
+| [M2](M2-comptes-transactions.md) | Comptes & transactions        | Registre rapide, ventilation, virements, catégories                                     | 🟡 En cours    | L      | 0.3             |
+| [M3](M3-import-releves.md)       | Import des relevés            | CSV, OFX/QFX, QIF, CAMT.053, doublons, annulation                                       | ⬜             | L      | 0.4 · **Alpha** |
+| [M4](M4-categorisation.md)       | Catégorisation automatique    | Règles, apprentissage local, abonnements                                                | ⬜             | L      | 0.5             |
+| [M5](M5-analyses.md)             | Analyses & synthèses          | Filtres globaux, synthèse mensuelle, exploration                                        | ⬜ (aperçu 🟡) | L      | 0.6 · **Bêta**  |
+| [M6](M6-salaires.md)             | Salaires & bulletins          | Bulletin détaillé, du brut au net, tableau de bord salaire                              | ⬜ (aperçu 🟡) | XL     | 0.7             |
+| [M7](M7-documents-ia.md)         | Documents & IA                | Extraction PDF/OCR, IA locale ou cloud consentie                                        | ⬜             | XL     | 0.8             |
+| [M8](M8-patrimoine-budgets.md)   | Patrimoine, crédits & budgets | Crédits, amortissement, patrimoine net, enveloppes, prévisions, simulation à long terme | ⬜             | XL     | 0.9 · **RC**    |
+| [M9](M9-distribution.md)         | Distribution v1.0             | Installeurs signés, mises à jour, audits                                                | ⬜             | XL     | **1.0**         |
+| [M10](M10-au-dela.md)            | Au-delà de la v1              | Synchronisation, mobile, open banking, packs pays                                       | 💭             | —      | 1.x             |
 
 Taille = complexité relative (S < M < L < XL), pas une durée.
 

@@ -1,6 +1,6 @@
 # M1 — Coffre-fort local
 
-> **Statut : 🟡 Livré en local, CI à constater** — les cinq lots sont livrés et vérifiés sous Windows 11 (24/11/2026). Reste à constater sur la CI (macOS, Linux) les deux modes de déverrouillage, notamment le refus du mode session sans trousseau sous Linux. · Taille : L · Dépend de : M0 · Version : 0.2
+> **Statut : ✅ Livré et vérifié** — les cinq lots sont livrés et vérifiés sous Windows 11 et en CI (macOS et Ubuntu, run `45448897969` du 24/11/2026) : les deux modes de déverrouillage passent en E2E sous Windows et macOS ; sous Ubuntu sans trousseau, le mode mot de passe passe en E2E et le refus du mode session (`basic_text`) est vérifié. · Taille : L · Dépend de : M0 · Version : 0.2
 
 ## Objectif
 
@@ -81,7 +81,7 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 ## Critères d'acceptation
 
 - [x] Données persistées entre redémarrages, chiffrées (vérifié par test unitaire et E2E : en-tête et contenu illisibles, mauvaise clé refusée).
-- [ ] Les deux modes de déverrouillage fonctionnent sur les 3 OS (Windows ✅ ; macOS et Linux par la CI).
+- [x] Les deux modes de déverrouillage fonctionnent sur les 3 OS (Windows ✅, macOS ✅ ; Linux : mode mot de passe et refus du mode session sans trousseau vérifiés sur la CI Ubuntu).
 - [x] Sauvegarde et restauration fonctionnelles (même coffre et autre ordinateur) ; migrations testées (montée de version, échec annulé, base trop récente refusée).
 - [x] Aucune donnée sensible dans les journaux : seuls des codes et des noms d'erreur, expurgés ; aucun secret, aucune clé, aucun chemin de base.
 

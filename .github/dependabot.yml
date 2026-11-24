@@ -37,3 +37,7 @@ updates:
     groups:
       github-actions:
         patterns: ['*']
+    ignore:
+      # v2.6.0 GHCR amd64 manifest returns 404; wait for a fixed release.
+      - dependency-name: ossf/scorecard-action
+        versions: ['2.6.0']

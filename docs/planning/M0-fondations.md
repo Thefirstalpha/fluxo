@@ -115,7 +115,7 @@ Versions vérifiées le 24/11/2026 :
 | `actions/download-artifact`        | v8.0.2  | `9000827ccba6bdab643e8b6fd33ac0654aef8333` |
 | `github/codeql-action`             | v4.39.4 | `1bd86f2fdb4b86187fa4059f16f31a3202acc9ea` |
 | `actions/dependency-review-action` | v5.0.1  | `bbc44d14a204704ccc493733616cd1e93a0321ec` |
-| `ossf/scorecard-action`            | v2.6.0  | `23f22cd43608bae7a1f1fa2603d7314dee9538a5` |
+| `ossf/scorecard-action`            | v2.5.0  | `46dc3187a971a9febf3aeb7f94ccde489f7bb46a` |
 | `actions/attest-build-provenance`  | v4.2.2  | `4d101475d8b20a2381f78447822ac1eab6504dd8` |
 
 Tâches :
