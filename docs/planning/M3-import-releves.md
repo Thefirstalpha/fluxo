@@ -1,6 +1,6 @@
 # M3 — Import des relevés bancaires
 
-> **Statut : 🟢 Implémenté** (achevé le 24/11/2026 ; validation CI multi-OS en attente au push) · Taille : L · Dépend de : M2 · Version : 0.4 — **Alpha**
+> **Statut : ✅ Livré** (achevé le 24/11/2026, CI multi-OS verte) · Taille : L · Dépend de : M2 · Version : 0.4 — **Alpha**
 
 ## Objectif
 

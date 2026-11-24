@@ -1,6 +1,6 @@
 # M2 — Comptes & transactions
 
-> **Statut : 🟢 Implémenté** (démarré et achevé le 24/11/2026 ; validation CI multi-OS prévue lors du push avec M3) · Taille : L · Dépend de : M1 · Version : 0.3
+> **Statut : ✅ Livré** (achevé le 24/11/2026, CI multi-OS verte) · Taille : L · Dépend de : M1 · Version : 0.3
 
 ## Objectif
 
