@@ -47,14 +47,14 @@ Ces mesures sont couvertes par des tests unitaires (CSP, chemins, URL, masquage,
 
 ## Mesures prévues
 
-| Jalon | Mesure                                                                                                                              |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| M0    | CodeQL, revue des dépendances, OpenSSF Scorecard, Dependabot, `SECURITY.md`                                                         |
-| M1    | Base SQLCipher, clé protégée par le trousseau ou un mot de passe maître (Argon2id), verrouillage automatique, sauvegardes chiffrées |
-| M3    | Analyseurs dans un processus isolé, limites, protection XXE, neutralisation des formules à l'export CSV                             |
-| M4    | Expressions régulières bornées (ReDoS)                                                                                              |
-| M7    | Clés d'API chiffrées côté main, anonymisation, consentement, pdf.js sans évaluation de code, aucune requête sans accord (test)      |
-| M9    | Signature et notarisation, mises à jour vérifiées, SBOM et attestations de provenance, audit externe                                |
+| Jalon | Mesure                                                                                                                                           |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M0    | CodeQL, revue des dépendances, OpenSSF Scorecard, Dependabot (workflows écrits, actifs dès la création du dépôt GitHub) ; `SECURITY.md` en place |
+| M1    | Base SQLCipher, clé protégée par le trousseau ou un mot de passe maître (Argon2id), verrouillage automatique, sauvegardes chiffrées              |
+| M3    | Analyseurs dans un processus isolé, limites, protection XXE, neutralisation des formules à l'export CSV                                          |
+| M4    | Expressions régulières bornées (ReDoS)                                                                                                           |
+| M7    | Clés d'API chiffrées côté main, anonymisation, consentement, pdf.js sans évaluation de code, aucune requête sans accord (test)                   |
+| M9    | Signature et notarisation, mises à jour vérifiées, SBOM et attestations de provenance, audit externe                                             |
 
 ## Chaîne d'approvisionnement
 

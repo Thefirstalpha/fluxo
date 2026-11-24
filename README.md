@@ -1,5 +1,9 @@
 # Fluxo
 
+[![CI](https://github.com/Thefirstalpha/fluxo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Thefirstalpha/fluxo/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Thefirstalpha/fluxo/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Thefirstalpha/fluxo/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Thefirstalpha/fluxo/badge)](https://scorecard.dev/viewer/?uri=github.com/Thefirstalpha/fluxo)
+
 **Vos finances personnelles, en local.** Fluxo est une application de bureau open source (Windows, macOS, Linux) pour suivre ses dépenses, comprendre ses salaires et analyser ses comptes — sans compte en ligne, sans télémétrie, avec des données chiffrées sur votre ordinateur.
 
 > **Statut : pré-alpha (jalon M0 — Fondations).** Le socle technique, l'interface et un tableau de bord de démonstration sont en place ; la gestion de vos vraies données arrive avec les jalons M1 à M3. Voir la [feuille de route](docs/planning/README.md).
@@ -39,9 +43,10 @@ npm run test:e2e  # build de production + tests de bout en bout (Playwright)
 - [Vision du projet](docs/projet/vision.md) · [Catalogue des fonctionnalités](docs/projet/fonctionnalites.md)
 - [Feuille de route et jalons](docs/planning/README.md) · [Propositions](docs/planning/propositions.md) · [Questions ouvertes](docs/planning/questions-ouvertes.md)
 - [Architecture](docs/architecture/vue-ensemble.md) · [Sécurité](docs/architecture/securite.md) · [Système de design](docs/design/systeme-de-design.md)
+- [Contribuer](CONTRIBUTING.md) (en anglais) · [Signaler une vulnérabilité](SECURITY.md) · [Code de conduite](CODE_OF_CONDUCT.md) · [Journal des modifications](CHANGELOG.md)
 
 ## Licence
 
-[MIT](LICENSE).
+[MIT](LICENSE). Les bibliothèques et polices tierces embarquées gardent leur propre licence : voir [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 L'identité visuelle de Fluxo s'inspire de l'esthétique « coucher de soleil sur la côte de Floride » ; elle est entièrement originale et n'est affiliée à aucun éditeur de jeu vidéo.

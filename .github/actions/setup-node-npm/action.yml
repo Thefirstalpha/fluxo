@@ -1,0 +1,31 @@
+name: Set up Node.js and npm 12
+description: >
+  Installs Node.js from .nvmrc, then npm 12 from outside the repository (Node 26 ships npm 11,
+  which devEngines rejects inside the project), then restores the npm cache.
+  Requires a prior actions/checkout.
+
+runs:
+  using: composite
+  steps:
+    # Automatic caching is disabled on purpose: setup-node would run `npm config get cache`
+    # with the bundled npm 11 inside the repository, which fails with EBADDEVENGINES.
+    - name: Set up Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+
+    # Run from the runner's temp folder: inside the repository, devEngines blocks npm 11.
+    - name: Install npm 12
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: |
+        npm install --global npm@12.2.2
+        echo "npm $(npm --version)"
+
+    # Same Node.js version (already in the tool cache, now with npm 12): only restores the npm cache.
+    - name: Restore npm cache
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: npm

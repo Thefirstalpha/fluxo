@@ -151,7 +151,7 @@ G05 (congés payés et RTT) a été retiré, jugé inutile ([ADR-025](../archite
 
 | ID  | Fonctionnalité                                           | Origine | Jalon | Statut |
 | --- | -------------------------------------------------------- | ------- | ----- | ------ |
-| J01 | Intégration continue (qualité, sécurité, build multi-OS) | Besoin  | M0    | ⬜     |
+| J01 | Intégration continue (qualité, sécurité, build multi-OS) | Besoin  | M0    | 🟡     |
 | J02 | Installeurs signés Windows, macOS, Linux                 | Socle   | M9    | 🟡     |
 | J03 | Mises à jour automatiques vérifiées                      | Socle   | M9    | ⬜     |
 | J04 | Documentation utilisateur en ligne                       | Socle   | M9    | ⬜     |

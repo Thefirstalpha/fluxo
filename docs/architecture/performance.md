@@ -26,12 +26,12 @@ Electron embarque Chromium : la légèreté se gagne sur tout le reste — dépe
 - **Polices locales** (pas de requête réseau) : seuls les sous-ensembles latin et latin-ext sont embarqués, en WOFF2 (`src/renderer/src/styles/fonts.css`).
 - **Cache de code V8** activé pour le protocole `app://`.
 - Une seule fenêtre ; animations désactivées si « mouvement réduit » est demandé.
+- **Budgets vérifiés en CI** : `npm run size` échoue si un budget de poids du renderer est dépassé.
 
 ## Leviers prévus
 
 | Jalon   | Levier                                                                        |
 | ------- | ----------------------------------------------------------------------------- |
-| M0      | Contrôle de budget de poids en CI                                             |
 | M1      | Base et requêtes dans un processus utilitaire (process main toujours réactif) |
 | M2      | Tableaux virtualisés, pagination par curseur, recherche FTS5                  |
 | M3 / M7 | Analyse de fichiers et OCR hors du process main, avec progression             |

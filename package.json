@@ -29,6 +29,7 @@
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
     "build": "electron-vite build",
+    "size": "node scripts/check-bundle-size.mjs",
     "typecheck": "npm run typecheck:node && npm run typecheck:web && npm run typecheck:tests",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",

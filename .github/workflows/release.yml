@@ -1,0 +1,165 @@
+# Publication (squelette) — docs/planning/M0-fondations.md, lot B ; complétée au M9 (signature, notarisation).
+# Builds the installers on each OS, produces a CycloneDX SBOM, SHA-256 checksums and build provenance
+# attestations, then creates a DRAFT GitHub release for a maintainer to review and publish.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build installers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js and npm 12
+        uses: ./.github/actions/setup-node-npm
+
+      - name: Check that the tag matches package.json
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$version" ]; then
+            echo "::error::Tag $TAG does not match package.json version $version"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Unsigned installers for now: code signing and notarisation are enabled at M9
+      # (secrets only in a protected GitHub environment, see docs/planning/M9-distribution.md).
+      - name: Package installers (unsigned)
+        run: npx electron-builder --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload installers
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fluxo-${{ runner.os }}
+          path: |
+            release/*/*.exe
+            release/*/*.dmg
+            release/*/*.AppImage
+            release/*/*.deb
+          if-no-files-found: error
+          retention-days: 7
+
+  sbom:
+    name: SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js and npm 12
+        uses: ./.github/actions/setup-node-npm
+
+      # All dependencies are kept: shipped libraries are bundled devDependencies.
+      - name: Generate SBOM
+        shell: bash
+        run: |
+          mkdir -p sbom
+          version="$(node -p "require('./package.json').version")"
+          npm sbom --sbom-format cyclonedx --package-lock-only > "sbom/Fluxo-${version}-sbom.cdx.json"
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fluxo-sbom
+          path: sbom/
+          if-no-files-found: error
+          retention-days: 7
+
+  attest:
+    name: Checksums and provenance
+    needs: [build, sbom]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download build outputs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: fluxo-*
+          merge-multiple: true
+          path: dist
+
+      - name: Compute SHA-256 checksums
+        working-directory: dist
+        run: |
+          sha256sum -- * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: dist/SHA256SUMS.txt
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fluxo-checksums
+          path: dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Draft GitHub release
+    needs: [attest]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download release files
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: fluxo-*
+          merge-multiple: true
+          path: dist
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cat > notes.md <<EOF
+          Brouillon créé automatiquement par la CI à partir de l'étiquette ${TAG}. Voir [CHANGELOG.md](https://github.com/${GH_REPO}/blob/${TAG}/CHANGELOG.md).
+
+          - Les installeurs **ne sont pas encore signés** (signature et notarisation prévues au jalon M9).
+          - Vérifier l'intégrité : \`sha256sum -c SHA256SUMS.txt\`.
+          - Vérifier la provenance : \`gh attestation verify <fichier> --repo ${GH_REPO}\`.
+          - Nomenclature logicielle (SBOM CycloneDX) jointe.
+          EOF
+          gh release create "$TAG" dist/* --draft --verify-tag --title "Fluxo ${TAG}" --notes-file notes.md

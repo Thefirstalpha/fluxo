@@ -123,5 +123,6 @@ Règles de sécurité outillées : pas d'`innerHTML`/`outerHTML`/`insertAdjacent
 | `npm run check`                      | Types + lint + format + tests unitaires             |
 | `npm test` · `npm run test:coverage` | Tests unitaires (via `scripts/vitest.mjs`)          |
 | `npm run test:e2e`                   | Build + tests de bout en bout                       |
+| `npm run size`                       | Vérifie les budgets de poids de la build            |
 | `npm run icons`                      | Génère `build/icon.png` depuis `build/icon.svg`     |
 | `npm run package` · `npm run dist`   | Application non empaquetée · installeurs            |

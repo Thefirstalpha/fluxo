@@ -120,13 +120,13 @@ Versions vérifiées le 24/11/2026 :
 
 Tâches :
 
-- [ ] Écrire les workflows et `dependabot.yml` ci-dessus. `Besoin`
-- [ ] Contrôle de budget de poids (échec si un chunk dépasse son budget). `Proposition`
-- [ ] Badges CI, CodeQL et Scorecard dans le README. `Socle`
+- [x] Écrire les workflows et `dependabot.yml` ci-dessus (`.github/workflows/`, action partagée `.github/actions/setup-node-npm`) ; syntaxe YAML et entrées de chaque action épinglée vérifiées. Premier passage à constater après la création du dépôt. `Besoin`
+- [x] Contrôle de budget de poids : `npm run size` (`scripts/check-bundle-size.mjs`) échoue si le JS initial dépasse 300 Ko, un chunk 700 Ko ou le CSS 40 Ko ; exécuté par le job qualité. `Proposition`
+- [x] Badges CI, CodeQL et Scorecard dans le README. `Socle`
 
 Points d'attention :
 
-- Node 26 LTS embarque npm 11 : installer npm ≥ 12.2 **hors du dossier du projet** (sinon `devEngines` bloque l'installation).
+- Node 26 LTS embarque npm 11 : installer npm ≥ 12.2 **hors du dossier du projet** (sinon `devEngines` bloque l'installation). Le cache npm de `setup-node` appelle lui aussi npm dans le dépôt : l'action partagée installe d'abord Node sans cache, puis npm 12 depuis `runner.temp`, puis restaure le cache.
 - Ubuntu 24.04 : `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` pour le bac à sable Chromium, tests sous `xvfb-run`.
 - Les secrets de signature ne servent qu'au workflow de release, dans un environnement GitHub protégé.
 
