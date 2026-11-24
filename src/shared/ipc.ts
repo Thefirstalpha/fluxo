@@ -1,3 +1,4 @@
+import type { AnalyticsExportOutcome, AnalyticsFilter } from './analytics/model'
 import type {
   CsvProfile,
   CsvProfileConfig,
@@ -72,6 +73,9 @@ export const IPC_CHANNELS = {
   importsProfilesList: 'fluxo:imports:profiles-list',
   importsProfileSave: 'fluxo:imports:profile-save',
   importsProfileDelete: 'fluxo:imports:profile-delete',
+  analyticsExportCsv: 'fluxo:analytics:export-csv',
+  analyticsExportImage: 'fluxo:analytics:export-image',
+  analyticsExportMonthlyPdf: 'fluxo:analytics:export-monthly-pdf',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -180,5 +184,15 @@ export interface FluxoApi {
       config: CsvProfileConfig
     }): Promise<LedgerResult<CsvProfile>>
     profileDelete(id: string): Promise<LedgerResult<{ deleted: true }>>
+  }
+  /** Exports locaux de graphiques, CSV filtrés et rapports mensuels PDF (M5). */
+  readonly analytics: {
+    exportCsv(filter: AnalyticsFilter): Promise<AnalyticsExportOutcome>
+    exportImage(input: {
+      format: 'png' | 'svg'
+      defaultName: string
+      data: string
+    }): Promise<AnalyticsExportOutcome>
+    exportMonthlyPdf(filter: AnalyticsFilter): Promise<AnalyticsExportOutcome>
   }
 }

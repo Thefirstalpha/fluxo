@@ -1,6 +1,6 @@
 # M5 — Analyses & synthèses
 
-> **Statut : ⬜ À venir** (aperçu 🟡 dans le tableau de bord de démonstration) · Taille : L · Dépend de : M4 · Version : 0.6 — **Bêta**
+> **Statut : ✅ Livré** (24 novembre 2026) · Taille : L · Dépend de : M4 · Version : 0.6 — **Bêta**
 
 ## Objectif
 
@@ -24,35 +24,35 @@ Une **vraie partie analytique** : filtrer, zoomer sur certains mois, parcourir l
 
 ### Lot 1 — Socle analytique
 
-- [ ] Agrégats en base (tables mensuelles par compte et catégorie, mises à jour à l'écriture) ; requêtes < 50 ms à 50 000 opérations. `Socle`
-- [ ] **Barre de filtres globale** unique, au-dessus des graphiques qu'elle pilote : période (préréglages + plage personnalisée), comptes, catégories, étiquettes, montants, inclusion des virements ; état conservé entre pages. `Besoin`
-- [ ] Recalcul sans saut visuel : graphiques conservés à opacité réduite pendant le chargement. `Socle`
+- [x] Agrégats en base (tables mensuelles par compte et catégorie, mises à jour à l'écriture) ; requêtes < 50 ms à 50 000 opérations. `Socle`
+- [x] **Barre de filtres globale** unique, au-dessus des graphiques qu'elle pilote : période (préréglages + plage personnalisée), comptes, catégories, étiquettes, montants, inclusion des virements ; état conservé entre pages. `Besoin`
+- [x] Recalcul sans saut visuel : graphiques conservés à opacité réduite pendant le chargement. `Socle`
 
 ### Lot 2 — Synthèse mensuelle
 
-- [ ] Page « Synthèse de novembre » : revenus, dépenses, épargne et taux ; comparaison **M-1 et N-1** ; principales catégories et marchands ; plus grosses dépenses ; récurrences du mois ; **faits marquants** générés (« Loisirs +42 % vs votre moyenne ») ; lien vers le bulletin du mois. `Besoin`
-- [ ] Navigation mois par mois (flèches, clavier). `Besoin`
+- [x] Page « Synthèse de novembre » : revenus, dépenses, épargne et taux ; comparaison **M-1 et N-1** ; principales catégories et marchands ; plus grosses dépenses ; récurrences du mois ; **faits marquants** générés (« Loisirs +42 % vs votre moyenne ») ; lien vers le bulletin du mois. `Besoin`
+- [x] Navigation mois par mois (flèches, clavier). `Besoin`
 
 ### Lot 3 — Exploration
 
-- [ ] Exploration **année → mois → catégorie → opérations** (chaque clic filtre et affiche la liste). `Besoin`
-- [ ] **Sélection de plage** par glisser (brush) → filtre global. `Besoin`
-- [ ] **Filtrage croisé** entre graphiques. `Besoin`
-- [ ] Légendes interactives ; couleurs stables (une catégorie garde sa couleur, quel que soit le filtre). `Besoin`
+- [x] Exploration **année → mois → catégorie → opérations** (chaque clic filtre et affiche la liste). `Besoin`
+- [x] **Sélection de plage** par glisser (brush) → filtre global. `Besoin`
+- [x] **Filtrage croisé** entre graphiques. `Besoin`
+- [x] Légendes interactives ; couleurs stables (une catégorie garde sa couleur, quel que soit le filtre). `Besoin`
 
 ### Lot 4 — Graphiques
 
-- [ ] Évolution des catégories dans le temps (barres empilées, ≤ 8 séries + « Autres »). `Besoin`
-- [ ] **Sankey** revenus → catégories → épargne. `Proposition`
-- [ ] **Calendrier des dépenses** (carte de chaleur, rampe mono-teinte). `Proposition`
-- [ ] Tendances avec moyenne glissante 3/6/12 mois. `Besoin`
-- [ ] Répartition des montants (histogramme). `Proposition`
+- [x] Évolution des catégories dans le temps (barres empilées, ≤ 8 séries + « Autres »). `Besoin`
+- [x] **Sankey** revenus → catégories → épargne. `Proposition`
+- [x] **Calendrier des dépenses** (carte de chaleur, rampe mono-teinte). `Proposition`
+- [x] Tendances avec moyenne glissante 3/6/12 mois. `Besoin`
+- [x] Répartition des montants (histogramme). `Proposition`
 
 ### Lot 5 — Export, rapports, alertes
 
-- [ ] Export PNG/SVG d'un graphique et CSV des données filtrées (boîte de dialogue du process main). `Proposition`
-- [ ] **Rapport mensuel PDF**. `Proposition`
-- [ ] **Anomalies** : dépense inhabituelle (> 3× la médiane du marchand), double prélèvement, cumul des frais bancaires. `Proposition`
+- [x] Export PNG/SVG d'un graphique et CSV des données filtrées (boîte de dialogue du process main). `Proposition`
+- [x] **Rapport mensuel PDF**. `Proposition`
+- [x] **Anomalies** : dépense inhabituelle (> 3× la médiane du marchand), double prélèvement, cumul des frais bancaires. `Proposition`
 
 ## Règles de visualisation
 

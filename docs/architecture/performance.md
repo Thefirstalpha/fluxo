@@ -17,7 +17,7 @@ Electron embarque Chromium : la légèreté se gagne sur tout le reste — dépe
 | Ouverture du coffre (hors Argon2id), 50 000 op. | < 500 ms    | 6 ms ✅ ; contrôle de structure ≈ 480 ms, une fois par jour ([ADR-033](decisions.md#adr-033--contrôle-dintégrité-quotidien-et-cache-de-pages)) |
 | Argon2id (déverrouillage par mot de passe)      | ≈ 250 ms    | 215 ms ✅                                                                                                                                      |
 | Requêtes courantes à 50 000 opérations          | < 20 ms     | 0,02 à 7,4 ms ✅ (liste des comptes et soldes : 7,4 ms ; recherche plein texte : 0,07 ms)                                                      |
-| Requête d'analyse à 50 000 opérations           | < 50 ms     | — (M5)                                                                                                                                         |
+| Requête d'analyse à 50 000 opérations           | < 50 ms     | 20,57 ms ✅ (médiane sur agrégats `monthly_category_aggregate`, M5)                                                                            |
 
 ## Leviers en place
 

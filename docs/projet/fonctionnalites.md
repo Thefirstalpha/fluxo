@@ -84,18 +84,18 @@ C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([
 
 | ID  | Fonctionnalité                                                                    | Origine     | Jalon   | Statut |
 | --- | --------------------------------------------------------------------------------- | ----------- | ------- | ------ |
-| F01 | Tableau de bord : indicateurs du mois et variations                               | Besoin      | M0 → M5 | 🟡     |
-| F02 | Synthèse mensuelle détaillée                                                      | Besoin      | M5      | 🟡     |
-| F03 | Filtres globaux (période, comptes, catégories, étiquettes, montants)              | Besoin      | M5      | 🟡     |
-| F04 | Zoom, sélection de plage, exploration année → mois → catégorie → transactions     | Besoin      | M0 → M5 | 🟡     |
+| F01 | Tableau de bord : indicateurs du mois et variations                               | Besoin      | M0 → M5 | ✅     |
+| F02 | Synthèse mensuelle détaillée                                                      | Besoin      | M5      | ✅     |
+| F03 | Filtres globaux (période, comptes, catégories, étiquettes, montants)              | Besoin      | M5      | ✅     |
+| F04 | Zoom, sélection de plage, exploration année → mois → catégorie → transactions     | Besoin      | M0 → M5 | ✅     |
 | F05 | Infobulles détaillées et vue tableau équivalente pour chaque graphique            | Besoin      | M0      | ✅     |
-| F06 | Comparaisons M-1 / N-1, moyennes glissantes                                       | Besoin      | M5      | 🟡     |
-| F07 | Diagramme de flux (Sankey) revenus → catégories                                   | Proposition | M5      | ⬜     |
-| F08 | Calendrier des dépenses (carte de chaleur)                                        | Proposition | M5      | ⬜     |
-| F09 | Évolution des catégories dans le temps                                            | Besoin      | M5      | ⬜     |
-| F10 | Export des graphiques (PNG/SVG) et des données (CSV)                              | Proposition | M5      | ⬜     |
-| F11 | Rapport mensuel PDF                                                               | Proposition | M5      | ⬜     |
-| F12 | Détection d'anomalies (dépense inhabituelle, double prélèvement, frais bancaires) | Proposition | M5      | ⬜     |
+| F06 | Comparaisons M-1 / N-1, moyennes glissantes                                       | Besoin      | M5      | ✅     |
+| F07 | Diagramme de flux (Sankey) revenus → catégories                                   | Proposition | M5      | ✅     |
+| F08 | Calendrier des dépenses (carte de chaleur)                                        | Proposition | M5      | ✅     |
+| F09 | Évolution des catégories dans le temps                                            | Besoin      | M5      | ✅     |
+| F10 | Export des graphiques (PNG/SVG) et des données (CSV)                              | Proposition | M5      | ✅     |
+| F11 | Rapport mensuel PDF                                                               | Proposition | M5      | ✅     |
+| F12 | Détection d'anomalies (dépense inhabituelle, double prélèvement, frais bancaires) | Proposition | M5      | ✅     |
 
 ## G. Salaires & bulletins de paie
 

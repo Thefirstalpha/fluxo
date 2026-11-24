@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
+import type { AnalyticsExportOutcome } from '@shared/analytics/model'
 import type {
   CsvProfile,
   ImportBatchSummary,
@@ -139,6 +140,21 @@ const api: FluxoApi = {
   },
   ledger,
   imports,
+  analytics: Object.freeze({
+    exportCsv: (filter) =>
+      ipcRenderer.invoke(IPC_CHANNELS.analyticsExportCsv, {
+        filter,
+      }) as Promise<AnalyticsExportOutcome>,
+    exportImage: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.analyticsExportImage,
+        input,
+      ) as Promise<AnalyticsExportOutcome>,
+    exportMonthlyPdf: (filter) =>
+      ipcRenderer.invoke(IPC_CHANNELS.analyticsExportMonthlyPdf, {
+        filter,
+      }) as Promise<AnalyticsExportOutcome>,
+  }),
 }
 
 contextBridge.exposeInMainWorld('fluxo', api)

@@ -159,6 +159,46 @@ const LEDGER_DEFAULTS: { [M in LedgerMethod]: LedgerOutput<M> } = {
   },
   subscriptionDismissAlert: null,
   transferCandidatesList: [],
+  analyticsOverview: {
+    filterRange: { from: '2026-01-01', to: '2026-11-30', focusMonth: '2026-11' },
+    hasTransactions: false,
+    otherCurrencies: [],
+    kpis: {
+      income: 0,
+      expenses: 0,
+      savings: 0,
+      net: 0,
+      savingsRate: 0,
+      transactionCount: 0,
+    },
+    monthlySeries: [],
+    categoryEvolution: { months: [], series: [] },
+    categoryBreakdown: [],
+    sankey: { nodes: [], links: [] },
+    calendarHeatmap: { year: '2026', days: [], maxOutflow: 0 },
+    amountHistogram: [],
+    monthlySynthesis: {
+      month: '2026-11',
+      availableMonths: [],
+      income: 0,
+      expenses: 0,
+      savings: 0,
+      net: 0,
+      savingsRate: 0,
+      transactionCount: 0,
+      vsPrevMonth: null,
+      vsLastYear: null,
+      topCategories: [],
+      topMerchants: [],
+      largestExpenses: [],
+      recurringInMonth: [],
+      payslipSummary: null,
+      insights: [{ kind: 'no-data' }],
+    },
+    anomalies: [],
+  },
+  analyticsAnomalies: [],
+  analyticsCsvData: { csv: '', rowCount: 0 },
 }
 
 export type FakeLedger = {
@@ -282,6 +322,17 @@ export function createFakeApi() {
       ),
       profileDelete: vi.fn((): ReturnType<FluxoApi['imports']['profileDelete']> =>
         Promise.resolve({ ok: false, error: 'invalid' }),
+      ),
+    },
+    analytics: {
+      exportCsv: vi.fn((): ReturnType<FluxoApi['analytics']['exportCsv']> =>
+        Promise.resolve({ ok: true, fileName: 'fluxo-analyses.csv', rowCount: 0 }),
+      ),
+      exportImage: vi.fn((): ReturnType<FluxoApi['analytics']['exportImage']> =>
+        Promise.resolve({ ok: true, fileName: 'chart.png' }),
+      ),
+      exportMonthlyPdf: vi.fn((): ReturnType<FluxoApi['analytics']['exportMonthlyPdf']> =>
+        Promise.resolve({ ok: true, fileName: 'fluxo-rapport.pdf' }),
       ),
     },
   } satisfies FluxoApi

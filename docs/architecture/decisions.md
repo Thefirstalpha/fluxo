@@ -310,3 +310,13 @@ Chaque décision structurante est consignée ici : contexte, choix, conséquence
   - **Garde statique ReDoS** (`src/shared/categorization/regex.ts`) : validation syntaxique et rejet statique des quantificateurs imbriqués et références arrière aussi bien à l'enregistrement zod que côté client.
   - **Récurrences & virements** : détection périodique (mensuelle, trimestrielle, annuelle) calculant coûts mensuel/annuel, abonnements dormants (`> 2` cycles écoulés) et hausses de prix (`recurring_dismissed` mémorise les alertes acquittées jusqu'au prochain changement) ; rapprochement des virements candidats à `± 3` jours vers `transferLink`.
 - **Conséquences** : aucun appel réseau ni dépendance NLP externe ; précision vérifiée `≥ 85 %` globale et `≥ 95 %` au-dessus du seuil après 200 exemples, et `< 1 s` pour 10 000 opérations.
+
+### ADR-037 — Analyses : agrégats précalculés et exports hors ligne
+
+- **Statut** : acceptée (2026-11-24, M5).
+- **Contexte** : l'écran d'analyses multi-critères (M5) doit croiser filtres, comparaisons M-1/N-1, moyennes glissantes, Sankey, calendrier et anomalies en moins de 50 ms sur 50 000 opérations, sans augmenter le poids du JS initial ni ajouter de bibliothèque PDF externe.
+- **Décisions** :
+  - **Table d'agrégats `monthly_category_aggregate` (schéma v5)** : stocke les cumuls mensuels par compte, catégorie et devise (y compris contre-valeurs) avec invalidation paresseuse par drapeau `meta.aggregates_dirty` posé via triggers (sans surcoût lors des imports de masse) et recalcul atomique à la première lecture (`~20 ms` observés pour la synthèse complète à 50 000 lignes) ; lorsque des filtres fins (étiquettes, bornes de montant, dates en milieu de mois) sont actifs, les deux voies partagent le même calcul de ventilation afin de garantir `Σ catégories = dépenses filtrées`.
+  - **Chunk ECharts paresseux** (`echarts-analytics.ts`) : isole `SankeyChart`, `HeatmapChart`, `CalendarComponent`, `VisualMapComponent`, `BrushComponent` et `SVGRenderer` dans la route paresseuse `/analytics` ; le chunk `DashboardPage` reste bien sous le budget de 700 Ko et `index.css` sous 40 Ko.
+  - **Exports sûrs côté process main** (`src/main/analytics/export.ts`) : tout chemin est choisi par `dialog.showSaveDialog` ; les CSV filtrés réutilisent `toCsv` (formules neutralisées) ; les rapports mensuels PDF utilisent `BrowserWindow.webContents.printToPDF()` hors ligne dans une fenêtre cachée isolée (`javascript: false`, CSP strict, HTML échappé), sans dépendance externe.
+- **Conséquences** : zéro appel réseau et zéro dépendance tierce supplémentaire pour les graphiques avancés et les PDF ; toute table et tout graphique respectent le masquage des montants (`hideAmounts`) et l'accès en mode tableau.

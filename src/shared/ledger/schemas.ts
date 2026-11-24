@@ -4,6 +4,7 @@
  * Les règles métier (somme des ventilations, compte à relevé…) sont vérifiées par le service.
  */
 import { z } from 'zod'
+import { analyticsFilterSchema } from '../analytics/schemas'
 import { ruleConditionsSchema, ruleSaveSchema } from '../categorization/schemas'
 import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
@@ -282,6 +283,9 @@ export const LEDGER_INPUTS = {
     lastKnownAmount: amountSchema.nullable(),
   }),
   transferCandidatesList: z.strictObject({}),
+  analyticsOverview: analyticsFilterSchema,
+  analyticsAnomalies: analyticsFilterSchema,
+  analyticsCsvData: analyticsFilterSchema,
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

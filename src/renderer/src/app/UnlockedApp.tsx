@@ -5,6 +5,7 @@ import { useHashLocation } from 'wouter/use-hash-location'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { ComingSoonPage } from '../features/roadmap/ComingSoonPage'
 import { queryClient } from '../lib/ledger'
+import { useAnalyticsStore } from '../stores/analytics'
 import { useRegisterStore } from '../stores/register'
 import { useVaultStore } from '../stores/vault'
 import { AppShell } from './AppShell'
@@ -17,6 +18,7 @@ const CategoriesPage = lazy(() => import('../features/categories/CategoriesPage'
 const CategorizationPage = lazy(() => import('../features/categorization/CategorizationPage'))
 const TransactionsPage = lazy(() => import('../features/transactions/TransactionsPage'))
 const ImportsPage = lazy(() => import('../features/imports/ImportsPage'))
+const AnalyticsPage = lazy(() => import('../features/analytics/AnalyticsPage'))
 
 // Verrouillage, démonstration ouverte ou fermée : les données en cache sont celles d'un autre
 // coffre (ou d'un coffre fermé) ; on les oublie.
@@ -25,6 +27,7 @@ useVaultStore.subscribe((state, previous) => {
   if (!status || status.state !== 'unlocked' || previous.status?.demo !== status.demo) {
     queryClient.clear()
     useRegisterStore.getState().clearSession()
+    useAnalyticsStore.getState().clearSession()
   }
 })
 
@@ -69,7 +72,7 @@ export default function UnlockedApp() {
                   <ImportsPage />
                 </Route>
                 <Route path="/analytics">
-                  <ComingSoonPage section="analytics" />
+                  <AnalyticsPage />
                 </Route>
                 <Route path="/payslips">
                   <ComingSoonPage section="payslips" />

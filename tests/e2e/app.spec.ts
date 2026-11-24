@@ -26,21 +26,27 @@ test('le renderer est isolé : ni Node.js, ni require, seulement window.fluxo', 
     process: typeof (globalThis as Record<string, unknown>).process,
     fluxo: typeof window.fluxo,
     apiKeys: Object.keys(window.fluxo).sort(),
-    // Registre et imports : uniquement des fonctions (listes fermées), rien d'autre.
+    // Registre, imports et analyses : uniquement des fonctions (listes fermées), rien d'autre.
     ledgerKinds: [...new Set(Object.values(window.fluxo.ledger).map((value) => typeof value))],
     ledgerFrozen: Object.isFrozen(window.fluxo.ledger),
     importsKinds: [...new Set(Object.values(window.fluxo.imports).map((value) => typeof value))],
     importsFrozen: Object.isFrozen(window.fluxo.imports),
+    analyticsKinds: [
+      ...new Set(Object.values(window.fluxo.analytics).map((value) => typeof value)),
+    ],
+    analyticsFrozen: Object.isFrozen(window.fluxo.analytics),
   }))
   expect(exposure).toEqual({
     require: 'undefined',
     process: 'undefined',
     fluxo: 'object',
-    apiKeys: ['app', 'imports', 'ledger', 'platform', 'settings', 'vault'],
+    apiKeys: ['analytics', 'app', 'imports', 'ledger', 'platform', 'settings', 'vault'],
     ledgerKinds: ['function'],
     ledgerFrozen: true,
     importsKinds: ['function'],
     importsFrozen: true,
+    analyticsKinds: ['function'],
+    analyticsFrozen: true,
   })
 })
 

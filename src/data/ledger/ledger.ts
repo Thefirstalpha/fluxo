@@ -1,6 +1,8 @@
 import type { LedgerMethod, LedgerOutputs } from '@shared/ledger/api'
 import type { LedgerResult } from '@shared/ledger/model'
 import { LEDGER_INPUTS, type ParsedLedgerInputs } from '@shared/ledger/schemas'
+import { buildFilteredAnalyticsCsv } from '../analytics/export-csv'
+import { getAnalyticsAnomaliesForFilter, getAnalyticsOverview } from '../analytics/overview'
 import type { Db } from '../db/connection'
 import {
   createAccount,
@@ -178,6 +180,9 @@ export class Ledger {
       subscriptionDismissAlert: (input) =>
         dismissPriceAlert(db, input.signature, input.lastKnownAmount, this.now()),
       transferCandidatesList: () => detectTransferCandidates(db),
+      analyticsOverview: (input) => getAnalyticsOverview(db, input, this.now()),
+      analyticsAnomalies: (input) => getAnalyticsAnomaliesForFilter(db, input, this.now()),
+      analyticsCsvData: (input) => buildFilteredAnalyticsCsv(db, input),
     }
   }
 

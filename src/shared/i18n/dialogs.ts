@@ -16,6 +16,13 @@ const fr = {
   statementFilterQif: 'QIF',
   statementFilterCamt: 'CAMT.053 (XML)',
   statementFilterMt940: 'MT940 (SWIFT)',
+  saveCsvTitle: 'Exporter les opérations filtrées (CSV)',
+  saveImageTitle: 'Exporter le graphique',
+  savePdfTitle: 'Exporter le rapport mensuel (PDF)',
+  csvFilter: 'CSV (RFC 4180)',
+  pngFilter: 'Image PNG',
+  svgFilter: 'Image SVG',
+  pdfFilter: 'Document PDF',
 }
 
 export type DialogLabels = typeof fr
@@ -32,6 +39,13 @@ const en: DialogLabels = {
   statementFilterQif: 'QIF',
   statementFilterCamt: 'CAMT.053 (XML)',
   statementFilterMt940: 'MT940 (SWIFT)',
+  saveCsvTitle: 'Export filtered transactions (CSV)',
+  saveImageTitle: 'Export chart image',
+  savePdfTitle: 'Export monthly report (PDF)',
+  csvFilter: 'CSV (RFC 4180)',
+  pngFilter: 'PNG image',
+  svgFilter: 'SVG image',
+  pdfFilter: 'PDF document',
 }
 
 export const DIALOG_LABELS: Readonly<Record<Locale, DialogLabels>> = { 'fr-FR': fr, 'en-US': en }

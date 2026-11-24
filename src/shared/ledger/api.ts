@@ -2,6 +2,7 @@
  * Contrat du registre : une méthode = un canal IPC = une fonction du preload (`window.fluxo.ledger`).
  * Module sans zod (le preload l'importe) : les schémas d'entrée vivent dans `schemas.ts`.
  */
+import type { AnalyticsAnomaly, AnalyticsOverview } from '../analytics/model'
 import type {
   AutoCategorizeResult,
   CategorizationQueueItem,
@@ -88,6 +89,9 @@ export interface LedgerOutputs {
   subscriptionsOverview: SubscriptionsOverview
   subscriptionDismissAlert: null
   transferCandidatesList: TransferMatchCandidate[]
+  analyticsOverview: AnalyticsOverview
+  analyticsAnomalies: AnalyticsAnomaly[]
+  analyticsCsvData: { csv: string; rowCount: number }
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -152,6 +156,9 @@ export const LEDGER_METHODS = [
   'subscriptionsOverview',
   'subscriptionDismissAlert',
   'transferCandidatesList',
+  'analyticsOverview',
+  'analyticsAnomalies',
+  'analyticsCsvData',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -179,6 +186,9 @@ export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'classifierStatus',
   'subscriptionsOverview',
   'transferCandidatesList',
+  'analyticsOverview',
+  'analyticsAnomalies',
+  'analyticsCsvData',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

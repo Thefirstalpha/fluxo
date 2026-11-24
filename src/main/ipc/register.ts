@@ -1,6 +1,12 @@
 import { app, shell } from 'electron'
 import { z } from 'zod'
+import {
+  exportAnalyticsCsvSchema,
+  exportAnalyticsImageSchema,
+  exportAnalyticsPdfSchema,
+} from '@shared/analytics/schemas'
 import { EXTERNAL_LINK_HOSTS } from '@shared/app-meta'
+import { DIALOG_LABELS } from '@shared/i18n/dialogs'
 import { ERROR_REPORT_LIMITS, IPC_CHANNELS, type AppInfo } from '@shared/ipc'
 import { LEDGER_METHODS, ledgerChannel } from '@shared/ledger/api'
 import {
@@ -14,6 +20,11 @@ import {
 } from '@shared/imports/schemas'
 import { LEDGER_INPUTS } from '@shared/ledger/schemas'
 import { settingsPatchSchema } from '@shared/settings-schema'
+import {
+  exportAnalyticsCsv,
+  exportAnalyticsImage,
+  exportMonthlyPdfReport,
+} from '../analytics/export'
 import type { ImportManager } from '../imports/import-manager'
 import { logger } from '../logger'
 import { isAllowedExternalUrl } from '../security/url'
@@ -141,5 +152,17 @@ export function registerIpcHandlers({
   )
   handle(IPC_CHANNELS.importsProfileDelete, csvProfileDeleteSchema, (input) =>
     imports.profileDelete(input),
+  )
+
+  // Analyses (M5) : exports CSV filtré, images PNG/SVG et rapport PDF via boîte de dialogue.
+  const labels = () => DIALOG_LABELS[settings.get().locale]
+  handle(IPC_CHANNELS.analyticsExportCsv, exportAnalyticsCsvSchema, (input) =>
+    exportAnalyticsCsv(vault, input.filter, labels()),
+  )
+  handle(IPC_CHANNELS.analyticsExportImage, exportAnalyticsImageSchema, (input) =>
+    exportAnalyticsImage(input, labels()),
+  )
+  handle(IPC_CHANNELS.analyticsExportMonthlyPdf, exportAnalyticsPdfSchema, (input) =>
+    exportMonthlyPdfReport(vault, input.filter, settings.get(), labels()),
   )
 }

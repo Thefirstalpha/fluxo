@@ -45,11 +45,11 @@ Retirées lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisi
 
 | ID   | Proposition                                     | Pourquoi                                                        | Jalon | Priorité | Effort | État |
 | ---- | ----------------------------------------------- | --------------------------------------------------------------- | ----- | -------- | ------ | ---- |
-| P-18 | **Sankey** revenus → catégories → épargne — F07 | Voir d'un coup « où part le salaire ».                          | M5    | ⭐⭐     | S      | ⬜   |
-| P-19 | **Calendrier des dépenses** — F08               | Repérer jours et périodes dépensières.                          | M5    | ⭐⭐     | S      | ⬜   |
-| P-20 | **Export graphiques & données** — F10           | Partager, archiver, retravailler dans un tableur.               | M5    | ⭐⭐     | S      | ⬜   |
-| P-21 | **Rapport mensuel PDF** — F11                   | Une synthèse à archiver ou imprimer.                            | M5    | ⭐⭐     | M      | ⬜   |
-| P-22 | **Détection d'anomalies** — F12                 | Double prélèvement, dépense hors norme, frais bancaires.        | M5    | ⭐⭐⭐   | M      | ⬜   |
+| P-18 | **Sankey** revenus → catégories → épargne — F07 | Voir d'un coup « où part le salaire ».                          | M5    | ⭐⭐     | S      | ✅   |
+| P-19 | **Calendrier des dépenses** — F08               | Repérer jours et périodes dépensières.                          | M5    | ⭐⭐     | S      | ✅   |
+| P-20 | **Export graphiques & données** — F10           | Partager, archiver, retravailler dans un tableur.               | M5    | ⭐⭐     | S      | ✅   |
+| P-21 | **Rapport mensuel PDF** — F11                   | Une synthèse à archiver ou imprimer.                            | M5    | ⭐⭐     | M      | ✅   |
+| P-22 | **Détection d'anomalies** — F12                 | Double prélèvement, dépense hors norme, frais bancaires.        | M5    | ⭐⭐⭐   | M      | ✅   |
 | P-23 | **Inflation personnelle**                       | Comparer l'évolution de son panier aux indices de prix publics. | M10   | ⭐       | M      | ⬜   |
 
 ### Salaires

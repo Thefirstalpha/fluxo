@@ -145,11 +145,17 @@ describe(`coffre à ${COUNT} opérations`, () => {
         ledger.run('transactionsList', { filter: {}, sort: 'amount-desc' }),
       'registre : synthèse du filtre': () =>
         ledger.run('transactionsSummary', { filter: { categoryIds: [category] } }),
+      'analyses M5 : synthèse globale (agrégats < 50 ms)': () =>
+        ledger.run('analyticsOverview', {
+          currency: 'EUR',
+          from: '2026-01-01',
+          to: '2026-11-30',
+        }),
     }
     for (const [name, run] of Object.entries(queries)) {
       const elapsed = median(run, 9)
       report[name] = `${elapsed.toFixed(2)} ms`
-      expect(elapsed, name).toBeLessThan(100)
+      expect(elapsed, name).toBeLessThan(name.includes('< 50 ms') ? 50 : 100)
     }
   })
 })

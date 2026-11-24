@@ -157,6 +157,16 @@ Migration `src/data/db/schema-v4.ts` ([ADR-036](decisions.md#adr-036--catégoris
 | `categorization_suggestion` | file « À valider » et explicabilité (`source`, `rule_id`, `confidence`, `reason`, `status`, étiquettes et libellé suggérés) ; index partiel `idx_suggestion_pending` (`WHERE status = 'pending'`) |
 | `recurring_dismissed`       | empreintes d'abonnements dont l'alerte de hausse de prix a été masquée (`signature`, `last_known_amount`, `dismissed_at`), réactivée automatiquement à la prochaine variation de tarif            |
 
+## Schéma v5 (M5)
+
+Migration `src/data/db/schema-v5.ts` ([ADR-037](decisions.md#adr-037--analyses--agrégats-précalculés-et-exports-hors-ligne)) :
+
+| Élément                         | Détail                                                                                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `monthly_category_aggregate`    | agrégats précalculés par `(month, account_id, category_id, currency)` (revenus, dépenses, épargne, virements et contre-valeurs converties) tenus à jour à l'écriture        |
+| `meta.aggregates_dirty`         | drapeau d'invalidation mis à `'1'` par triggers sur `transactions`, `split` et `category`, recalculé en transaction avant lecture (`~20,6 ms` observés à 50 000 opérations) |
+| `idx_transactions_booking_date` | index partiel `(booking_date, account_id, amount) WHERE nature = 'operation'` accélérant les requêtes d'analyses multi-comptes sur plage de dates                           |
+
 ## Bulletin de paie (France)
 
 | Section              | Champs                                                                                                                                              | Contrôles                                       |

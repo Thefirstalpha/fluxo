@@ -96,6 +96,7 @@ describe('migrate', () => {
       'csv_profile',
       'import_batch',
       'meta',
+      'monthly_category_aggregate',
       'payee',
       'recurring_dismissed',
       'rule',
