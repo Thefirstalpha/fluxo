@@ -1,57 +1,26 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import {
-  _electron as electron,
-  expect,
-  test,
-  type ElectronApplication,
-  type Page,
-} from '@playwright/test'
+import { createVault, dashboardHeading, enterVault, expect, test } from './fixtures'
 
 /**
  * Tests de bout en bout sur la build de production (`npm run build` au préalable) :
  * protocole app://, CSP réelle, preload sandboxé, IPC validé.
  * Les fonctions passées à `page.evaluate` s'exécutent dans le renderer (globals du navigateur).
  */
-let userDataDir: string
-const launched: ElectronApplication[] = []
 
-test.beforeEach(() => {
-  userDataDir = mkdtempSync(join(tmpdir(), 'fluxo-e2e-'))
-})
-
-test.afterEach(async () => {
-  await Promise.all(launched.splice(0).map((app) => app.close().catch(() => undefined)))
-  rmSync(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
-})
-
-async function launch(): Promise<{ app: ElectronApplication; page: Page }> {
-  // Hérité des terminaux lancés depuis un éditeur basé sur Electron : ferait démarrer Electron en mode Node.
-  const { ELECTRON_RUN_AS_NODE: _ignored, ...env } = process.env
-  const app = await electron.launch({
-    args: ['.'],
-    env: { ...env, FLUXO_USER_DATA_DIR: userDataDir },
-    // Playwright émule « prefers-color-scheme: light » par défaut : on laisse Electron piloter le thème.
-    colorScheme: null,
-  })
-  launched.push(app)
-  const page = await app.firstWindow()
-  await page.waitForLoadState('domcontentloaded')
-  return { app, page }
-}
-
-test('démarre sur le tableau de bord, servi par le protocole privé app://', async () => {
-  const { app, page } = await launch()
+test('démarre sur le tableau de bord, servi par le protocole privé app://', async ({ launch }) => {
+  const { page } = await launch()
   await expect(page).toHaveTitle('Fluxo')
   expect(page.url()).toMatch(/^app:\/\/fluxo\/index\.html/)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/tableau de bord/i)
+  await createVault(page)
+  await expect(dashboardHeading(page)).toBeVisible()
   await expect(page.getByRole('img', { name: /revenus et des dépenses/i })).toBeVisible()
-  await app.close()
 })
 
-test('le renderer est isolé : ni Node.js, ni require, seulement window.fluxo', async () => {
-  const { app, page } = await launch()
+test('le renderer est isolé : ni Node.js, ni require, seulement window.fluxo', async ({
+  launch,
+}) => {
+  const { page } = await launch()
   const exposure = await page.evaluate(() => ({
     require: typeof (globalThis as Record<string, unknown>).require,
     process: typeof (globalThis as Record<string, unknown>).process,
@@ -62,13 +31,12 @@ test('le renderer est isolé : ni Node.js, ni require, seulement window.fluxo', 
     require: 'undefined',
     process: 'undefined',
     fluxo: 'object',
-    apiKeys: ['app', 'platform', 'settings'],
+    apiKeys: ['app', 'platform', 'settings', 'vault'],
   })
-  await app.close()
 })
 
-test('la CSP bloque les scripts injectés et le réseau depuis le renderer', async () => {
-  const { app, page } = await launch()
+test('la CSP bloque les scripts injectés et le réseau depuis le renderer', async ({ launch }) => {
+  const { page } = await launch()
   const result = await page.evaluate(async () => {
     const script = document.createElement('script')
     script.textContent = 'window.__injected = true'
@@ -90,11 +58,10 @@ test('la CSP bloque les scripts injectés et le réseau depuis le renderer', asy
   expect(result.network).toBe('blocked')
   expect(result.csp).toContain("default-src 'none'")
   expect(result.csp).toContain("script-src 'self'")
-  await app.close()
 })
 
-test('le process main rejette une mise à jour de préférences invalide', async () => {
-  const { app, page } = await launch()
+test('le process main rejette une mise à jour de préférences invalide', async ({ launch }) => {
+  const { page } = await launch()
   const outcome = await page.evaluate(async () => {
     try {
       // @ts-expect-error — valeur volontairement hors contrat.
@@ -105,11 +72,13 @@ test('le process main rejette une mise à jour de préférences invalide', async
     }
   })
   expect(outcome).toContain('INVALID_INPUT')
-  await app.close()
 })
 
-test('le thème choisi est appliqué immédiatement et conservé au redémarrage', async () => {
+test('le thème choisi est appliqué immédiatement et conservé au redémarrage', async ({
+  launch,
+}) => {
   const first = await launch()
+  const mode = await createVault(first.page)
   await first.page.getByRole('link', { name: 'Paramètres' }).click()
   await first.page.getByRole('button', { name: 'Sombre', exact: true }).click()
   await expect(first.page.locator('html')).toHaveAttribute('data-theme', 'dark')
@@ -118,11 +87,12 @@ test('le thème choisi est appliqué immédiatement et conservé au redémarrage
   await first.app.close()
 
   const second = await launch()
+  // Le thème s'applique dès l'écran du coffre, avant tout déverrouillage.
   await expect(second.page.locator('html')).toHaveAttribute('data-theme', 'light')
-  await second.app.close()
+  await enterVault(second.page, mode)
 })
 
-test('la taille de la fenêtre est mémorisée entre deux lancements', async () => {
+test('la taille de la fenêtre est mémorisée entre deux lancements', async ({ launch }) => {
   const first = await launch()
   await first.app.evaluate(({ BrowserWindow }) => {
     BrowserWindow.getAllWindows()[0]?.setBounds({ width: 1111, height: 777 })
@@ -135,11 +105,13 @@ test('la taille de la fenêtre est mémorisée entre deux lancements', async () 
     return { width: bounds?.width, height: bounds?.height }
   })
   expect(size).toEqual({ width: 1111, height: 777 })
-  await second.app.close()
 })
 
-test('une erreur de l’interface est consignée, expurgée, dans le journal local', async () => {
-  const { app, page } = await launch()
+test('une erreur de l’interface est consignée, expurgée, dans le journal local', async ({
+  launch,
+  userDataDir,
+}) => {
+  const { page } = await launch()
   await page.evaluate(() => {
     setTimeout(() => {
       throw new Error('échec simulé FR7630006000011234567890189')
@@ -152,25 +124,24 @@ test('une erreur de l’interface est consignée, expurgée, dans le journal loc
   const log = readFileSync(logFile, 'utf8')
   expect(log).toContain('échec simulé [iban]')
   expect(log).not.toContain('FR7630006000011234567890189')
-  await app.close()
 })
 
-test('le service de données démarre dans un processus séparé', async () => {
-  const { app } = await launch()
+test('le service de données démarre dans un processus séparé', async ({ launch, userDataDir }) => {
+  await launch()
   const logFile = join(userDataDir, 'logs', 'fluxo.log')
   await expect
     .poll(() => (existsSync(logFile) ? readFileSync(logFile, 'utf8') : ''))
     .toContain('[données] Service de données prêt.')
   expect(existsSync(join(userDataDir, 'vault'))).toBe(true)
-  await app.close()
 })
 
-test('aucune nouvelle fenêtre ne peut être ouverte vers un site non autorisé', async () => {
+test('aucune nouvelle fenêtre ne peut être ouverte vers un site non autorisé', async ({
+  launch,
+}) => {
   const { app, page } = await launch()
   await page.evaluate(() => {
     window.open('https://example.com/phishing', '_blank')
   })
   await page.waitForTimeout(300)
   expect(app.windows()).toHaveLength(1)
-  await app.close()
 })

@@ -16,7 +16,7 @@ export const fr = {
   app: {
     tagline: 'Vos finances, en local.',
     localData: 'Données 100 % locales',
-    encryptionPending: 'Chiffrement de la base : jalon M1',
+    encrypted: 'Base chiffrée',
     demoMode: 'Mode démonstration',
   },
   error: {
@@ -124,6 +124,84 @@ export const fr = {
       checksKo: (count: number) => `${count} incohérence(s) détectée(s)`,
     },
   },
+  vault: {
+    loading: 'Ouverture du coffre…',
+    lock: 'Verrouiller le coffre',
+    setup: {
+      title: 'Créer votre coffre',
+      description:
+        'Vos données restent sur cet ordinateur, dans une base chiffrée. Choisissez comment la déverrouiller.',
+      protection: 'Déverrouillage',
+      sessionTitle: 'Avec ma session (recommandé)',
+      sessionDescription:
+        'Fluxo s’ouvre sans mot de passe tant que vous êtes connecté à votre session : la clé est protégée par le trousseau du système.',
+      sessionUnavailable: {
+        'no-secure-storage':
+          'Aucun trousseau sécurisé (GNOME Keyring, KWallet…) n’est disponible sur ce système : un mot de passe maître est nécessaire.',
+        unavailable:
+          'Le trousseau du système est indisponible : un mot de passe maître est nécessaire.',
+      },
+      passwordTitle: 'Avec un mot de passe maître',
+      passwordDescription:
+        'À privilégier si vous partagez cet ordinateur : le mot de passe est demandé à chaque ouverture.',
+      password: 'Mot de passe maître',
+      confirm: 'Confirmer le mot de passe',
+      passwordHint: (min: number) =>
+        `Au moins ${min} caractères. Une phrase de plusieurs mots est plus sûre et plus facile à retenir.`,
+      recovery: 'Créer un code de récupération',
+      recoveryHint:
+        'Recommandé : c’est le seul moyen de retrouver vos données si vous oubliez le mot de passe ou si le trousseau du système est réinitialisé.',
+      create: 'Créer mon coffre',
+      working: 'Patientez…',
+    },
+    recoveryCode: {
+      title: 'Votre code de récupération',
+      description:
+        'Notez-le ou imprimez-le et rangez-le en lieu sûr, hors de cet ordinateur. Il ne sera plus jamais affiché.',
+      warning:
+        'Sans ce code, un mot de passe oublié signifie des données perdues : personne, pas même les auteurs de Fluxo, ne peut les récupérer.',
+      copy: 'Copier',
+      copied: 'Copié',
+      print: 'Imprimer',
+      confirm: 'J’ai mis ce code en lieu sûr',
+      continue: 'Continuer',
+    },
+    unlock: {
+      title: 'Coffre verrouillé',
+      descriptionSession: 'Vos données sont chiffrées. Déverrouillez pour continuer.',
+      descriptionPassword: 'Saisissez votre mot de passe maître pour déverrouiller vos données.',
+      unlock: 'Déverrouiller',
+      password: 'Mot de passe maître',
+      useRecovery: 'Mot de passe oublié ? Utiliser le code de récupération',
+      recoveryCode: 'Code de récupération',
+      recoveryHint: 'Majuscules, minuscules, espaces et tirets sont acceptés.',
+      backToPassword: 'Revenir au déverrouillage habituel',
+      noRecovery:
+        'Aucun code de récupération n’a été créé pour ce coffre : sans le mot de passe, il ne peut pas être ouvert.',
+      sessionFailed:
+        'Le trousseau du système n’a pas pu ouvrir le coffre (autre session ou trousseau réinitialisé ?). Utilisez le code de récupération.',
+    },
+    newPassword: {
+      title: 'Choisissez un nouveau mot de passe',
+      description:
+        'Vous avez ouvert le coffre avec le code de récupération. Définissez un nouveau mot de passe maître pour continuer.',
+      save: 'Enregistrer le mot de passe',
+    },
+    showPassword: 'Afficher le mot de passe',
+    hidePassword: 'Masquer le mot de passe',
+    errors: {
+      tooShort: (min: number) => `Le mot de passe doit contenir au moins ${min} caractères.`,
+      tooLong: 'Ce mot de passe est trop long.',
+      mismatch: 'Les deux mots de passe ne correspondent pas.',
+      wrongPassword: 'Mot de passe incorrect.',
+      wrongRecovery: 'Code de récupération incorrect.',
+      lockedOut: (seconds: number) => `Trop d’essais. Réessayez dans ${seconds} s.`,
+      sessionUnavailable: 'Le trousseau du système n’est pas disponible.',
+      corrupt:
+        'La base est endommagée et ne peut pas être ouverte. Elle n’a pas été modifiée ; une sauvegarde pourra la remplacer.',
+      generic: 'L’opération a échoué. Le détail est consigné dans le journal local.',
+    },
+  },
   settings: {
     title: 'Paramètres',
     subtitle: 'Apparence, région et confidentialité',
@@ -145,6 +223,38 @@ export const fr = {
       contentProtection: 'Bloquer les captures d’écran',
       contentProtectionHint:
         'Exclut la fenêtre des captures et des partages d’écran (Windows et macOS).',
+    },
+    security: {
+      title: 'Sécurité du coffre',
+      description:
+        'Base chiffrée (SQLCipher, AES-256). La clé ne quitte jamais cet ordinateur et n’est jamais affichée.',
+      mode: 'Déverrouillage',
+      modeSession: 'Par la session du système (trousseau)',
+      modePassword: 'Par mot de passe maître',
+      switchToPassword: 'Exiger un mot de passe maître',
+      switchToSession: 'Ouvrir avec ma session',
+      changePassword: 'Changer le mot de passe',
+      currentPassword: 'Mot de passe actuel',
+      newPassword: 'Nouveau mot de passe',
+      confirmPassword: 'Confirmer le nouveau mot de passe',
+      apply: 'Valider',
+      cancel: 'Annuler',
+      recoveryTitle: 'Code de récupération',
+      recoveryOn: 'Un code de récupération existe pour ce coffre.',
+      recoveryOff:
+        'Aucun code de récupération : un mot de passe oublié ou un trousseau perdu rendrait vos données irrécupérables.',
+      createRecovery: 'Créer un code',
+      regenerateRecovery: 'Remplacer le code',
+      removeRecovery: 'Supprimer le code',
+      autoLock: 'Verrouillage automatique après inactivité',
+      autoLockHint: 'Inactivité du clavier et de la souris, mesurée par le système.',
+      autoLockNever: 'Jamais',
+      autoLockMinutes: (minutes: number) => `${minutes} min`,
+      lockOnSystemLock: 'Verrouiller avec la session du système',
+      lockOnSystemLockHint:
+        'Quand vous verrouillez votre session ou mettez l’ordinateur en veille.',
+      lockNow: 'Verrouiller maintenant',
+      saved: 'Modification enregistrée.',
     },
     about: {
       title: 'À propos',

@@ -1,46 +1,20 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AppInfo, FluxoApi } from '@shared/ipc'
-import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@shared/settings'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { DEFAULT_SETTINGS } from '@shared/settings'
 import { useSettingsStore } from '../../stores/settings'
+import { useVaultStore } from '../../stores/vault'
+import { installFakeApi as installApi, UNLOCKED_STATUS } from '../../test/fake-api'
 import SettingsPage from './SettingsPage'
-
-const info: AppInfo = {
-  name: 'Fluxo',
-  version: '0.1.0',
-  electron: '45.3.3',
-  chrome: '146.0.0.0',
-  node: '24.12.0',
-  platform: 'linux',
-  arch: 'x64',
-  packaged: false,
-}
 
 /** Remplace le preload par un double de test : le renderer ne voit que cette API. */
 function installFakeApi() {
-  const update = vi.fn((patch: SettingsPatch) =>
-    Promise.resolve<Settings>({ ...DEFAULT_SETTINGS, ...patch }),
-  )
-  const openExternal = vi.fn(() => Promise.resolve(true))
-  const api: FluxoApi = {
-    platform: 'linux',
-    settings: {
-      get: () => Promise.resolve({ ...DEFAULT_SETTINGS }),
-      update,
-      onChange: () => () => undefined,
-    },
-    app: {
-      getInfo: () => Promise.resolve(info),
-      openExternal,
-      reportError: () => Promise.resolve(),
-    },
-  }
-  Object.defineProperty(window, 'fluxo', { value: api, configurable: true })
-  return { update, openExternal }
+  const api = installApi()
+  return { update: api.settings.update, openExternal: api.app.openExternal, vault: api.vault }
 }
 
 beforeEach(() => {
   useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS }, ready: true })
+  useVaultStore.setState({ status: { ...UNLOCKED_STATUS }, pendingRecoveryCode: null })
 })
 
 describe('SettingsPage', () => {
@@ -70,5 +44,55 @@ describe('SettingsPage', () => {
     installFakeApi()
     render(<SettingsPage />)
     expect(await screen.findByText('0.1.0')).toBeInTheDocument()
+  })
+
+  it('mode mot de passe : exige le mot de passe actuel pour en choisir un nouveau', async () => {
+    const { vault } = installFakeApi()
+    useVaultStore.setState({ status: { ...UNLOCKED_STATUS, mode: 'password' } })
+    render(<SettingsPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
+    fireEvent.change(screen.getByLabelText('Mot de passe actuel'), {
+      target: { value: 'ancienne phrase' },
+    })
+    fireEvent.change(screen.getByLabelText('Nouveau mot de passe'), {
+      target: { value: 'nouvelle phrase de passe' },
+    })
+    fireEvent.change(screen.getByLabelText('Confirmer le nouveau mot de passe'), {
+      target: { value: 'nouvelle phrase de passe' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Valider' }))
+
+    await waitFor(() =>
+      expect(vault.changePassword).toHaveBeenCalledWith({
+        currentPassword: 'ancienne phrase',
+        newPassword: 'nouvelle phrase de passe',
+      }),
+    )
+    expect(await screen.findByRole('status')).toHaveTextContent('Modification enregistrée')
+  })
+
+  it('refuse une confirmation différente sans appeler le process main', () => {
+    const { vault } = installFakeApi()
+    render(<SettingsPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Exiger un mot de passe maître' }))
+    fireEvent.change(screen.getByLabelText('Nouveau mot de passe'), {
+      target: { value: 'une phrase de passe' },
+    })
+    fireEvent.change(screen.getByLabelText('Confirmer le nouveau mot de passe'), {
+      target: { value: 'une autre phrase' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Valider' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('ne correspondent pas')
+    expect(vault.changePassword).not.toHaveBeenCalled()
+  })
+
+  it('règle le verrouillage automatique', async () => {
+    const { update } = installFakeApi()
+    render(<SettingsPage />)
+    fireEvent.change(screen.getByLabelText('Verrouillage automatique après inactivité'), {
+      target: { value: '30' },
+    })
+    await waitFor(() => expect(update).toHaveBeenCalledWith({ autoLockMinutes: 30 }))
   })
 })

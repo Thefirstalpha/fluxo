@@ -34,21 +34,21 @@ Stocker durablement toutes les données financières sur l'appareil, **chiffrée
 
 ### Lot 2 — Clés & déverrouillage
 
-- [ ] Clé de base aléatoire de 256 bits, jamais affichée ni journalisée, présente en clair uniquement dans le service de données. `Besoin`
-- [ ] Mode **session** : clé protégée par `safeStorage` (DPAPI sous Windows, Trousseau macOS, libsecret/kwallet sous Linux). `Besoin`
-- [ ] Mode **mot de passe maître** : clé enveloppée par une clé dérivée Argon2id (WebAssembly, ~250 ms), sel et paramètres stockés avec l'enveloppe. `Besoin`
-- [ ] Linux sans trousseau sécurisé (`basic_text`) : mot de passe maître imposé, avec explication. `Socle`
-- [ ] **Code de récupération** imprimable (facultatif) ; sans lui, un mot de passe perdu signifie des données perdues — à expliquer clairement. `Proposition`
-- [ ] Écran de verrouillage ; verrouillage automatique (inactivité configurable, verrouillage de session et mise en veille via `powerMonitor`). `Proposition`
-- [ ] Changement de mot de passe par ré-enveloppement de la clé (sans re-chiffrer la base). `Socle`
-- [ ] Délais croissants après des échecs de déverrouillage. `Socle`
+- [x] Clé de base aléatoire de 256 bits, jamais affichée ni journalisée, présente en clair uniquement dans le service de données (et brièvement dans le main en mode session) ; effacée de la mémoire au verrouillage ([ADR-028](../architecture/decisions.md#adr-028--clés-du-coffre--clé-aléatoire-enveloppée-session-ou-mot-de-passe-code-de-récupération)). `Besoin`
+- [x] Mode **session** : clé protégée par `safeStorage` (DPAPI sous Windows, Trousseau macOS, libsecret/kwallet sous Linux), déverrouillage automatique au lancement. `Besoin`
+- [x] Mode **mot de passe maître** : clé enveloppée (AES-256-GCM, données authentifiées) par une clé dérivée Argon2id (hash-wasm, 64 Mio, 3 passes : ≈ 215 ms), sel et paramètres stockés avec l'enveloppe et bornés à la lecture ; 10 caractères au minimum. `Besoin`
+- [x] Linux sans trousseau sécurisé (`basic_text`) : mode session désactivé, mot de passe maître imposé, avec explication (testé avec un trousseau simulé ; à constater sur la CI Linux). `Socle`
+- [x] **Code de récupération** (facultatif, proposé à la création) : 160 bits, 8 groupes de 4 caractères, affiché une seule fois avec copie et impression ; nouveau mot de passe exigé après usage ; conséquences d'un oubli expliquées. `Proposition`
+- [x] Écrans de création et de déverrouillage ; verrouillage manuel (barre de titre, paramètres) et automatique (inactivité du système configurable, verrouillage de session et mise en veille via `powerMonitor`) ; l'interface est démontée au verrouillage. `Proposition`
+- [x] Changement de mot de passe et de mode par ré-enveloppement de la clé (sans re-chiffrer la base, vérifié par test) ; mot de passe actuel exigé pour toute action sensible. `Socle`
+- [x] Délais croissants après des échecs de déverrouillage (3 essais libres, puis 1 s à 5 min), conservés entre deux lancements. `Socle`
 
 ### Lot 3 — Schéma & migrations
 
 - [ ] Schéma v1 (voir [modèle de données](../architecture/modele-de-donnees.md)) : comptes, catégories, tiers, transactions, ventilations, étiquettes, lots d'import, règles, journal d'audit, métadonnées. `Socle`
 - [ ] Migrations versionnées et transactionnelles ; sauvegarde automatique avant chaque migration ; tests de montée de version. `Socle`
 - [ ] Identifiants UUIDv7 (triables), dates ISO 8601, montants en centimes (contraintes `CHECK`). `Socle`
-- [ ] Décider si les préférences restent en JSON (non sensibles) ou migrent en base. `Socle`
+- [x] Préférences : restent en JSON, lues avant le déverrouillage et sans donnée sensible ([ADR-028](../architecture/decisions.md#adr-028--clés-du-coffre--clé-aléatoire-enveloppée-session-ou-mot-de-passe-code-de-récupération)). `Socle`
 
 ### Lot 4 — Sauvegarde, restauration, export
 

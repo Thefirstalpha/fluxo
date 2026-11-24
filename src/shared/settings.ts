@@ -8,6 +8,10 @@ export const THEME_PREFERENCES = ['system', 'light', 'dark'] as const
 export type ThemePreference = (typeof THEME_PREFERENCES)[number]
 export type ResolvedTheme = 'light' | 'dark'
 
+import { AUTO_LOCK_MINUTES, type AutoLockMinutes } from './vault'
+
+export { AUTO_LOCK_MINUTES, type AutoLockMinutes }
+
 export const LOCALES = ['fr-FR', 'en-US'] as const
 export type Locale = (typeof LOCALES)[number]
 
@@ -24,6 +28,10 @@ export interface Settings {
   hideAmounts: boolean
   /** Exclut la fenêtre des captures et partages d'écran (Windows, macOS). */
   contentProtection: boolean
+  /** Verrouille le coffre après cette durée d'inactivité du système (minutes, 0 = jamais). */
+  autoLockMinutes: AutoLockMinutes
+  /** Verrouille le coffre quand la session du système est verrouillée ou mise en veille. */
+  lockOnSystemLock: boolean
 }
 
 export type SettingsPatch = Partial<Omit<Settings, 'schemaVersion'>>
@@ -35,4 +43,6 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   currency: 'EUR',
   hideAmounts: false,
   contentProtection: false,
+  autoLockMinutes: 15,
+  lockOnSystemLock: true,
 })

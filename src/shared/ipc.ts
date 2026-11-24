@@ -1,4 +1,13 @@
 import type { Settings, SettingsPatch } from './settings'
+import type {
+  ChangePasswordInput,
+  CreateVaultInput,
+  CurrentPasswordInput,
+  RecoveryCodeResult,
+  UnlockInput,
+  VaultResult,
+  VaultStatus,
+} from './vault'
 
 /**
  * Contrat IPC entre le renderer (non fiable) et le process main (fiable).
@@ -11,6 +20,15 @@ export const IPC_CHANNELS = {
   appGetInfo: 'fluxo:app:get-info',
   appOpenExternal: 'fluxo:app:open-external',
   appReportError: 'fluxo:app:report-error',
+  vaultGetStatus: 'fluxo:vault:get-status',
+  vaultStatusChanged: 'fluxo:vault:status-changed',
+  vaultCreate: 'fluxo:vault:create',
+  vaultUnlock: 'fluxo:vault:unlock',
+  vaultLock: 'fluxo:vault:lock',
+  vaultChangePassword: 'fluxo:vault:change-password',
+  vaultEnableSession: 'fluxo:vault:enable-session',
+  vaultCreateRecovery: 'fluxo:vault:create-recovery',
+  vaultRemoveRecovery: 'fluxo:vault:remove-recovery',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -61,5 +79,17 @@ export interface FluxoApi {
     openExternal(url: string): Promise<boolean>
     /** Consigne une erreur de l'interface dans le journal local (jamais envoyée en ligne). */
     reportError(report: RendererErrorReport): Promise<void>
+  }
+  /** Coffre chiffré : le renderer ne voit jamais la clé, seulement l'état et le résultat des actions. */
+  readonly vault: {
+    getStatus(): Promise<VaultStatus>
+    onStatusChange(listener: (status: VaultStatus) => void): () => void
+    create(input: CreateVaultInput): Promise<VaultResult>
+    unlock(input: UnlockInput): Promise<VaultResult>
+    lock(): Promise<void>
+    changePassword(input: ChangePasswordInput): Promise<VaultResult>
+    enableSessionMode(input: CurrentPasswordInput): Promise<VaultResult>
+    createRecoveryCode(input: CurrentPasswordInput): Promise<RecoveryCodeResult>
+    removeRecoveryCode(input: CurrentPasswordInput): Promise<VaultResult>
   }
 }

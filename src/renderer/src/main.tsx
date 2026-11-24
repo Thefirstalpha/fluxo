@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { getApi } from './lib/api'
 import { installGlobalErrorHandlers, reportError } from './lib/error-reporting'
 import { initSettings } from './stores/settings'
+import { initVault } from './stores/vault'
 
 installGlobalErrorHandlers()
 
@@ -17,7 +18,7 @@ function mount(): ReturnType<typeof createRoot> {
 
 async function bootstrap(): Promise<void> {
   document.documentElement.dataset.platform = getApi().platform
-  await initSettings()
+  await Promise.all([initSettings(), initVault()])
   mount().render(
     <StrictMode>
       <ErrorBoundary>

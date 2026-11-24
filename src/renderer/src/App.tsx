@@ -3,6 +3,7 @@ import { Redirect, Route, Router, Switch, useLocation } from 'wouter'
 import { useHashLocation } from 'wouter/use-hash-location'
 import { AppShell } from './app/AppShell'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { VaultGate } from './features/vault/VaultGate'
 import { ComingSoonPage } from './features/roadmap/ComingSoonPage'
 import { useResolvedTheme } from './lib/theme'
 import { useSettingsStore } from './stores/settings'
@@ -34,42 +35,44 @@ function PageBoundary({ children }: { children: ReactNode }) {
 export function App() {
   useDocumentAttributes()
   return (
-    <Router hook={useHashLocation}>
-      <AppShell>
-        <PageBoundary>
-          <Suspense fallback={null}>
-            <Switch>
-              <Route path="/">
-                <DashboardPage />
-              </Route>
-              <Route path="/transactions">
-                <ComingSoonPage section="transactions" />
-              </Route>
-              <Route path="/imports">
-                <ComingSoonPage section="imports" />
-              </Route>
-              <Route path="/analytics">
-                <ComingSoonPage section="analytics" />
-              </Route>
-              <Route path="/payslips">
-                <ComingSoonPage section="payslips" />
-              </Route>
-              <Route path="/documents">
-                <ComingSoonPage section="documents" />
-              </Route>
-              <Route path="/budgets">
-                <ComingSoonPage section="budgets" />
-              </Route>
-              <Route path="/settings">
-                <SettingsPage />
-              </Route>
-              <Route>
-                <Redirect to="/" />
-              </Route>
-            </Switch>
-          </Suspense>
-        </PageBoundary>
-      </AppShell>
-    </Router>
+    <VaultGate>
+      <Router hook={useHashLocation}>
+        <AppShell>
+          <PageBoundary>
+            <Suspense fallback={null}>
+              <Switch>
+                <Route path="/">
+                  <DashboardPage />
+                </Route>
+                <Route path="/transactions">
+                  <ComingSoonPage section="transactions" />
+                </Route>
+                <Route path="/imports">
+                  <ComingSoonPage section="imports" />
+                </Route>
+                <Route path="/analytics">
+                  <ComingSoonPage section="analytics" />
+                </Route>
+                <Route path="/payslips">
+                  <ComingSoonPage section="payslips" />
+                </Route>
+                <Route path="/documents">
+                  <ComingSoonPage section="documents" />
+                </Route>
+                <Route path="/budgets">
+                  <ComingSoonPage section="budgets" />
+                </Route>
+                <Route path="/settings">
+                  <SettingsPage />
+                </Route>
+                <Route>
+                  <Redirect to="/" />
+                </Route>
+              </Switch>
+            </Suspense>
+          </PageBoundary>
+        </AppShell>
+      </Router>
+    </VaultGate>
   )
 }

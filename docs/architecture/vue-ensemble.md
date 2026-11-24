@@ -62,9 +62,9 @@ flowchart LR
 ## Démarrage
 
 1. Avant `ready` : bac à sable global, enregistrement du schéma privé `app://`, verrou d'instance unique.
-2. Au `ready` : journal local, menu minimal, durcissement de la session et de chaque contenu web, protocole `app://` avec CSP, préférences, handlers IPC.
+2. Au `ready` : journal local, menu minimal, durcissement de la session et de chaque contenu web, protocole `app://` avec CSP, service de données, préférences, verrouillage automatique ; en mode session, déverrouillage du coffre par le trousseau ; handlers IPC.
 3. Création de la fenêtre avec le fond du thème résolu (pas de flash), affichage à `ready-to-show`.
-4. Le renderer charge les préférences par IPC, puis affiche l'interface.
+4. Le renderer charge les préférences et l'état du coffre par IPC, puis affiche l'écran du coffre (création ou déverrouillage) ou l'interface si le coffre est ouvert.
 
 ## Arborescence
 
@@ -76,6 +76,8 @@ fluxo/
 │  │  ├─ ipc/          Fabrique de handlers validés + enregistrement des canaux
 │  │  ├─ settings/     Lecture/écriture atomique, store des préférences
 │  │  ├─ logger/       Journal local + masquage des données personnelles
+│  │  ├─ vault/        Coffre côté main : trousseau (safeStorage), orchestration, verrouillage auto
+│  │  ├─ data/         Client du service de données (utilityProcess, MessagePort)
 │  │  ├─ window-state/ Taille et position de la fenêtre (adaptées aux écrans branchés)
 │  │  └─ fs/           Écriture atomique de petits fichiers
 │  ├─ data/            Service de données (utilityProcess) : RPC, base SQLCipher, coffre
@@ -84,7 +86,7 @@ fluxo/
 │  │  └─ src/
 │  │     ├─ app/       Coque : barre de titre, navigation, barre d'état
 │  │     ├─ components/ Composants d'interface réutilisables, logo, ErrorBoundary
-│  │     ├─ features/  Pages : tableau de bord, paramètres, pages à venir
+│  │     ├─ features/  Pages : tableau de bord, paramètres, coffre (création, déverrouillage), pages à venir
 │  │     ├─ lib/       API, formatage, thème, graphiques (ECharts)
 │  │     ├─ i18n/      Dictionnaires typés FR/EN
 │  │     ├─ stores/    État (Zustand)

@@ -12,7 +12,7 @@ export function StatusBar() {
       </span>
       <span className="flex items-center gap-1.5">
         <Lock size={12} aria-hidden />
-        {t.app.encryptionPending}
+        {t.app.encrypted}
       </span>
       <span className="ml-auto flex items-center gap-1.5">
         <Sparkles size={12} aria-hidden />

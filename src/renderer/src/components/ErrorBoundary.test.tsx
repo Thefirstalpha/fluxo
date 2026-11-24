@@ -1,16 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ERROR_REPORT_LIMITS, type FluxoApi } from '@shared/ipc'
+import { ERROR_REPORT_LIMITS } from '@shared/ipc'
 import { DEFAULT_SETTINGS } from '@shared/settings'
 import { toErrorReport } from '../lib/error-reporting'
 import { useSettingsStore } from '../stores/settings'
+import { installFakeApi as installApi } from '../test/fake-api'
 import { ErrorBoundary } from './ErrorBoundary'
 
 function installFakeApi() {
-  const reportError = vi.fn(() => Promise.resolve())
-  const api = { platform: 'linux', app: { reportError } } as unknown as FluxoApi
-  Object.defineProperty(window, 'fluxo', { value: api, configurable: true })
-  return { reportError }
+  return { reportError: installApi().app.reportError }
 }
 
 let shouldThrow = true

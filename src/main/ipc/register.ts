@@ -6,18 +6,26 @@ import { settingsPatchSchema } from '@shared/settings-schema'
 import { logger } from '../logger'
 import { isAllowedExternalUrl } from '../security/url'
 import type { SettingsStore } from '../settings/settings-store'
+import type { VaultManager } from '../vault/vault-manager'
 import { createHandleFactory, type TrustedSenderCheck } from './handle'
 import { createRateLimiter } from './rate-limit'
-import { errorReportSchema } from './schemas'
+import {
+  changePasswordSchema,
+  createVaultSchema,
+  currentPasswordSchema,
+  errorReportSchema,
+  unlockSchema,
+} from './schemas'
 
 interface IpcDependencies {
   settings: SettingsStore
+  vault: VaultManager
   isTrustedSender: TrustedSenderCheck
 }
 
 const noInput = z.undefined()
 
-export function registerIpcHandlers({ settings, isTrustedSender }: IpcDependencies): void {
+export function registerIpcHandlers({ settings, vault, isTrustedSender }: IpcDependencies): void {
   const handle = createHandleFactory(isTrustedSender)
 
   handle(IPC_CHANNELS.settingsGet, noInput, () => settings.get())
@@ -48,4 +56,22 @@ export function registerIpcHandlers({ settings, isTrustedSender }: IpcDependenci
     const details = [report.stack, report.componentStack].filter(Boolean).join('\n')
     logger.error(`Erreur de l’interface (${report.source}) : ${report.message}\n${details}`)
   })
+
+  // Coffre : les secrets saisis transitent vers le service de données, jamais vers le journal.
+  handle(IPC_CHANNELS.vaultGetStatus, noInput, () => vault.status())
+  handle(IPC_CHANNELS.vaultCreate, createVaultSchema, (input) => vault.create(input))
+  handle(IPC_CHANNELS.vaultUnlock, unlockSchema, (input) => vault.unlock(input))
+  handle(IPC_CHANNELS.vaultLock, noInput, () => vault.lock('demande de l’utilisateur'))
+  handle(IPC_CHANNELS.vaultChangePassword, changePasswordSchema, (input) =>
+    vault.changePassword(input),
+  )
+  handle(IPC_CHANNELS.vaultEnableSession, currentPasswordSchema, (input) =>
+    vault.enableSessionMode(input),
+  )
+  handle(IPC_CHANNELS.vaultCreateRecovery, currentPasswordSchema, (input) =>
+    vault.createRecoveryCode(input),
+  )
+  handle(IPC_CHANNELS.vaultRemoveRecovery, currentPasswordSchema, (input) =>
+    vault.removeRecoveryCode(input),
+  )
 }

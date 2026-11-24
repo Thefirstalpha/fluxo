@@ -6,7 +6,7 @@ Le format suit [Keep a Changelog 1.1.0](https://keepachangelog.com/fr/1.1.0/) et
 
 ## [Non publié]
 
-Jalon [M0 — Fondations](docs/planning/M0-fondations.md) : socle applicatif, interface et outillage. Aucune version n'est encore publiée.
+Jalons [M0 — Fondations](docs/planning/M0-fondations.md) (socle applicatif, interface, outillage) et [M1 — Coffre-fort local](docs/planning/M1-coffre-fort.md) (en cours). Aucune version n'est encore publiée.
 
 ### Ajouté
 
@@ -26,6 +26,8 @@ Jalon [M0 — Fondations](docs/planning/M0-fondations.md) : socle applicatif, in
 - Fichiers du dépôt public : licence MIT, mentions des composants tiers, guide de contribution, politique de sécurité, code de conduite, modèles de tickets et de demandes de fusion.
 - Intégration continue GitHub Actions : qualité, build et tests de bout en bout sur les trois systèmes, CodeQL, revue des dépendances, OpenSSF Scorecard, Dependabot, contrôle des budgets de poids, squelette de publication.
 
+- **Coffre chiffré** (M1) : au premier lancement, création d'une base chiffrée sur l'ordinateur, ouverte par la session du système (sans mot de passe) ou par un mot de passe maître ; code de récupération facultatif, affiché une seule fois ; changement de mot de passe et de mode dans les paramètres ; verrouillage depuis la barre de titre, à l'inactivité, au verrouillage de la session et à la mise en veille.
+
 ### Sécurité
 
 - Renderer isolé : `sandbox`, `contextIsolation`, pas de Node.js, balise `<webview>` désactivée, bac à sable activé pour toute l'application.
@@ -37,6 +39,7 @@ Jalon [M0 — Fondations](docs/planning/M0-fondations.md) : socle applicatif, in
 - Préférences écrites de façon atomique ; un fichier corrompu est mis de côté, jamais écrasé.
 - Journaux locaux avec rotation et masquage des IBAN, numéros de sécurité sociale, e-mails, numéros de carte et du dossier personnel.
 - Binaire durci par les fuses Electron (pas de `RUN_AS_NODE`, pas de `NODE_OPTIONS`, intégrité de l'archive ASAR, chargement depuis l'ASAR uniquement), entitlements macOS minimaux.
+- Base de données chiffrée au format SQLCipher 4 dans un processus dédié ; la clé n'est jamais affichée ni journalisée, enveloppée par le trousseau du système ou par Argon2id ; délais croissants après des échecs de déverrouillage.
 - Chaîne d'approvisionnement : scripts d'installation des dépendances bloqués par défaut, versions publiées depuis au moins 7 jours, aucune dépendance Git ou distante, versions exactes ; actions GitHub épinglées par empreinte et permissions minimales en CI.
 
 [Non publié]: https://github.com/Thefirstalpha/fluxo/commits/main

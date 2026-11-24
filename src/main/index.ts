@@ -1,6 +1,6 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { app, BrowserWindow, nativeTheme, session } from 'electron'
+import { app, BrowserWindow, nativeTheme, powerMonitor, session } from 'electron'
 import { IPC_CHANNELS } from '@shared/ipc'
 import { DataServiceClient } from './data/data-service'
 import { registerIpcHandlers } from './ipc/register'
@@ -12,6 +12,9 @@ import { hardenSession, hardenWebContents } from './security/hardening'
 import { matchesOrigin, type OriginMatcher } from './security/url'
 import { SettingsStore } from './settings/settings-store'
 import { applyThemePreference, resolvedTheme, syncWindowChrome } from './theme'
+import { startAutoLock } from './vault/auto-lock'
+import { electronSecureStorage } from './vault/secure-storage'
+import { VaultManager } from './vault/vault-manager'
 import { createMainWindow } from './window'
 import { readInitialBounds, trackWindowState } from './window-state/track'
 
@@ -94,15 +97,37 @@ async function start(): Promise<void> {
       .catch((error: unknown) => logger.error('Arrêt du service de données', error))
       .finally(() => app.exit(0))
   })
-  dataService
-    .call('status')
-    .then((status) => logger.info(`Coffre : ${status.state}.`))
-    .catch((error: unknown) => logger.error('Service de données indisponible', error))
 
-  // Préférences & IPC.
+  // Préférences.
   const settings = await SettingsStore.open(join(app.getPath('userData'), 'settings.json'))
   applyThemePreference(settings.get().theme)
-  registerIpcHandlers({ settings, isTrustedSender: isTrustedUrl })
+
+  // Coffre : état diffusé à l'interface, verrouillage automatique, déverrouillage en mode session.
+  const vault = new VaultManager(dataService, electronSecureStorage())
+  vault.onStatusChange((status) => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.webContents.send(IPC_CHANNELS.vaultStatusChanged, status)
+    }
+  })
+  dataService.onExit(() => {
+    vault
+      .publish()
+      .catch((error: unknown) => logger.error('Service de données indisponible', error))
+  })
+  startAutoLock({
+    power: powerMonitor,
+    settings: () => settings.get(),
+    lock: (reason) => vault.lock(reason),
+    onError: (error) => logger.error('Verrouillage automatique impossible', error),
+  })
+  try {
+    await vault.unlockAtStartup()
+    logger.info(`Coffre : ${(await vault.status()).state}.`)
+  } catch (error) {
+    logger.error('Service de données indisponible', error)
+  }
+
+  registerIpcHandlers({ settings, vault, isTrustedSender: isTrustedUrl })
 
   settings.onChange((next) => {
     applyThemePreference(next.theme)

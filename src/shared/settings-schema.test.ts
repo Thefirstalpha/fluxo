@@ -8,7 +8,12 @@ describe('settingsFileSchema (lecture tolérante)', () => {
   })
 
   it('remplace une valeur invalide sans perdre les autres', () => {
-    const parsed = settingsFileSchema.parse({ theme: 'neon', locale: 'en-US', hideAmounts: 'yes' })
+    const parsed = settingsFileSchema.parse({
+      theme: 'neon',
+      locale: 'en-US',
+      hideAmounts: 'yes',
+      autoLockMinutes: 7,
+    })
     expect(parsed).toEqual({ ...DEFAULT_SETTINGS, locale: 'en-US' })
   })
 
@@ -22,11 +27,16 @@ describe('settingsFileSchema (lecture tolérante)', () => {
 describe('settingsPatchSchema (entrée du renderer, stricte)', () => {
   it('accepte une mise à jour partielle valide', () => {
     expect(settingsPatchSchema.parse({ theme: 'dark' })).toEqual({ theme: 'dark' })
+    expect(settingsPatchSchema.parse({ autoLockMinutes: 30, lockOnSystemLock: false })).toEqual({
+      autoLockMinutes: 30,
+      lockOnSystemLock: false,
+    })
   })
 
   it.each([
     [{ theme: 'neon' }],
     [{ hideAmounts: 'true' }],
+    [{ autoLockMinutes: 7 }],
     [{ schemaVersion: 2 }],
     [{ __proto__: { polluted: true }, theme: 'light', extra: 1 }],
     ['dark'],

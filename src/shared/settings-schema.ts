@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+  AUTO_LOCK_MINUTES,
   CURRENCIES,
   DEFAULT_SETTINGS,
   LOCALES,
@@ -19,6 +20,10 @@ export const settingsFileSchema = z.object({
   currency: z.enum(CURRENCIES).catch(DEFAULT_SETTINGS.currency),
   hideAmounts: z.boolean().catch(DEFAULT_SETTINGS.hideAmounts),
   contentProtection: z.boolean().catch(DEFAULT_SETTINGS.contentProtection),
+  autoLockMinutes: z
+    .union(AUTO_LOCK_MINUTES.map((value) => z.literal(value)))
+    .catch(DEFAULT_SETTINGS.autoLockMinutes),
+  lockOnSystemLock: z.boolean().catch(DEFAULT_SETTINGS.lockOnSystemLock),
 }) satisfies z.ZodType<Settings>
 
 /**
@@ -31,4 +36,6 @@ export const settingsPatchSchema = z.strictObject({
   currency: z.enum(CURRENCIES).optional(),
   hideAmounts: z.boolean().optional(),
   contentProtection: z.boolean().optional(),
+  autoLockMinutes: z.union(AUTO_LOCK_MINUTES.map((value) => z.literal(value))).optional(),
+  lockOnSystemLock: z.boolean().optional(),
 }) satisfies z.ZodType<SettingsPatch>

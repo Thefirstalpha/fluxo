@@ -116,14 +116,30 @@ Le modèle simplifié actuel (`src/shared/payslip.ts`) en est un sous-ensemble ;
 
 Fichier `settings.json` dans le dossier de données de l'application, validé par `src/shared/settings-schema.ts` :
 
-| Clé                 | Valeurs                               | Défaut   |
-| ------------------- | ------------------------------------- | -------- |
-| `schemaVersion`     | `1`                                   | `1`      |
-| `theme`             | `system` · `light` · `dark`           | `system` |
-| `locale`            | `fr-FR` · `en-US`                     | `fr-FR`  |
-| `currency`          | `EUR` · `CHF` · `USD` · `GBP` · `CAD` | `EUR`    |
-| `hideAmounts`       | booléen                               | `false`  |
-| `contentProtection` | booléen                               | `false`  |
+| Clé                 | Valeurs                                 | Défaut   |
+| ------------------- | --------------------------------------- | -------- |
+| `schemaVersion`     | `1`                                     | `1`      |
+| `theme`             | `system` · `light` · `dark`             | `system` |
+| `locale`            | `fr-FR` · `en-US`                       | `fr-FR`  |
+| `currency`          | `EUR` · `CHF` · `USD` · `GBP` · `CAD`   | `EUR`    |
+| `hideAmounts`       | booléen                                 | `false`  |
+| `contentProtection` | booléen                                 | `false`  |
+| `autoLockMinutes`   | `0` (jamais) · `5` · `15` · `30` · `60` | `15`     |
+| `lockOnSystemLock`  | booléen                                 | `true`   |
+
+Les préférences restent hors de la base : elles sont lues avant le déverrouillage (thème et langue de l'écran du coffre, délai de verrouillage) et ne contiennent aucune donnée personnelle ([ADR-028](decisions.md#adr-028--clés-du-coffre--clé-aléatoire-enveloppée-session-ou-mot-de-passe-code-de-récupération)).
+
+## Fichiers du coffre
+
+Dossier `vault/` du dossier de données de l'application (droits limités à l'utilisateur) :
+
+| Fichier                       | Contenu                                                                                                                                                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fluxo.db` (+ `-wal`, `-shm`) | Base SQLite chiffrée au format SQLCipher 4, clé brute de 256 bits                                                                                                                                                                                 |
+| `keystore.json`               | Enveloppe de la clé : format, version, identifiant du coffre (UUID), date de création, mode (`session` ou `password`), enveloppe de session (`safeStorage`), enveloppe mot de passe et enveloppe du code de récupération (Argon2id + AES-256-GCM) |
+| `lockout.json`                | Compteur d'échecs de déverrouillage et date du dernier échec (absent après un succès)                                                                                                                                                             |
+
+Une base sans enveloppe (création interrompue) est renommée en `*.orphan-<horodatage>` à la création suivante, jamais supprimée.
 
 ## Données dérivées
 

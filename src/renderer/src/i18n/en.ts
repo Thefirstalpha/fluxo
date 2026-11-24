@@ -14,7 +14,7 @@ export const en: Dictionary = {
   app: {
     tagline: 'Your finances, kept local.',
     localData: '100% local data',
-    encryptionPending: 'Database encryption: milestone M1',
+    encrypted: 'Encrypted database',
     demoMode: 'Demo mode',
   },
   error: {
@@ -122,6 +122,83 @@ export const en: Dictionary = {
       checksKo: (count: number) => `${count} inconsistency(ies) found`,
     },
   },
+  vault: {
+    loading: 'Opening the vault…',
+    lock: 'Lock the vault',
+    setup: {
+      title: 'Create your vault',
+      description:
+        'Your data stays on this computer, in an encrypted database. Choose how to unlock it.',
+      protection: 'Unlocking',
+      sessionTitle: 'With my session (recommended)',
+      sessionDescription:
+        'Fluxo opens without a password while you are signed in to your session: the key is protected by the system keychain.',
+      sessionUnavailable: {
+        'no-secure-storage':
+          'No secure keychain (GNOME Keyring, KWallet…) is available on this system: a master password is required.',
+        unavailable: 'The system keychain is unavailable: a master password is required.',
+      },
+      passwordTitle: 'With a master password',
+      passwordDescription:
+        'Best if you share this computer: the password is asked every time Fluxo opens.',
+      password: 'Master password',
+      confirm: 'Confirm password',
+      passwordHint: (min: number) =>
+        `At least ${min} characters. A phrase of several words is safer and easier to remember.`,
+      recovery: 'Create a recovery code',
+      recoveryHint:
+        'Recommended: it is the only way to get your data back if you forget the password or if the system keychain is reset.',
+      create: 'Create my vault',
+      working: 'Please wait…',
+    },
+    recoveryCode: {
+      title: 'Your recovery code',
+      description:
+        'Write it down or print it and keep it somewhere safe, away from this computer. It will never be shown again.',
+      warning:
+        'Without this code, a forgotten password means lost data: nobody, not even Fluxo’s authors, can recover it.',
+      copy: 'Copy',
+      copied: 'Copied',
+      print: 'Print',
+      confirm: 'I have stored this code safely',
+      continue: 'Continue',
+    },
+    unlock: {
+      title: 'Vault locked',
+      descriptionSession: 'Your data is encrypted. Unlock to continue.',
+      descriptionPassword: 'Enter your master password to unlock your data.',
+      unlock: 'Unlock',
+      password: 'Master password',
+      useRecovery: 'Forgot your password? Use the recovery code',
+      recoveryCode: 'Recovery code',
+      recoveryHint: 'Upper case, lower case, spaces and dashes are all accepted.',
+      backToPassword: 'Back to the usual unlocking',
+      noRecovery:
+        'No recovery code was created for this vault: without the password, it cannot be opened.',
+      sessionFailed:
+        'The system keychain could not open the vault (another session, or a reset keychain?). Use the recovery code.',
+    },
+    newPassword: {
+      title: 'Choose a new password',
+      description:
+        'You opened the vault with the recovery code. Set a new master password to continue.',
+      save: 'Save the password',
+    },
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    errors: {
+      tooShort: (min: number) => `The password must be at least ${min} characters long.`,
+      tooLong: 'This password is too long.',
+      mismatch: 'The two passwords do not match.',
+      wrongPassword: 'Wrong password.',
+      wrongRecovery: 'Wrong recovery code.',
+      lockedOut: (seconds: number) => `Too many attempts. Try again in ${seconds} s.`,
+      sessionUnavailable: 'The system keychain is not available.',
+      corrupt:
+        'The database is damaged and cannot be opened. It has not been modified; a backup will be able to replace it.',
+      generic: 'The operation failed. Details are recorded in the local log.',
+    },
+  },
   settings: {
     title: 'Settings',
     subtitle: 'Appearance, region and privacy',
@@ -143,6 +220,37 @@ export const en: Dictionary = {
       contentProtection: 'Block screenshots',
       contentProtectionHint:
         'Excludes the window from screenshots and screen sharing (Windows and macOS).',
+    },
+    security: {
+      title: 'Vault security',
+      description:
+        'Encrypted database (SQLCipher, AES-256). The key never leaves this computer and is never displayed.',
+      mode: 'Unlocking',
+      modeSession: 'With the system session (keychain)',
+      modePassword: 'With a master password',
+      switchToPassword: 'Require a master password',
+      switchToSession: 'Open with my session',
+      changePassword: 'Change password',
+      currentPassword: 'Current password',
+      newPassword: 'New password',
+      confirmPassword: 'Confirm the new password',
+      apply: 'Confirm',
+      cancel: 'Cancel',
+      recoveryTitle: 'Recovery code',
+      recoveryOn: 'A recovery code exists for this vault.',
+      recoveryOff:
+        'No recovery code: a forgotten password or a lost keychain would make your data unrecoverable.',
+      createRecovery: 'Create a code',
+      regenerateRecovery: 'Replace the code',
+      removeRecovery: 'Remove the code',
+      autoLock: 'Automatic lock after inactivity',
+      autoLockHint: 'Keyboard and mouse inactivity, as measured by the system.',
+      autoLockNever: 'Never',
+      autoLockMinutes: (minutes: number) => `${minutes} min`,
+      lockOnSystemLock: 'Lock with the system session',
+      lockOnSystemLockHint: 'When you lock your session or put the computer to sleep.',
+      lockNow: 'Lock now',
+      saved: 'Change saved.',
     },
     about: {
       title: 'About',

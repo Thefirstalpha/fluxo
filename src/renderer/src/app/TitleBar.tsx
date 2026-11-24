@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Moon, Search, Sun, SunMoon } from 'lucide-react'
+import { Eye, EyeOff, Lock, Moon, Search, Sun, SunMoon } from 'lucide-react'
 import type { ThemePreference } from '@shared/settings'
 import { LogoMark, Wordmark } from '../components/Logo'
 import { Button } from '../components/ui/Button'
@@ -65,6 +65,16 @@ export function TitleBar() {
           className="h-7 w-7"
         >
           <ThemeIcon size={16} aria-hidden />
+        </Button>
+        <Button
+          variant="ghost"
+          iconOnly
+          aria-label={t.vault.lock}
+          title={t.vault.lock}
+          onClick={() => void getApi().vault.lock()}
+          className="h-7 w-7"
+        >
+          <Lock size={16} aria-hidden />
         </Button>
       </div>
     </header>

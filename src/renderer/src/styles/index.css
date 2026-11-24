@@ -67,6 +67,24 @@
     background: transparent;
   }
 
+  /* Impression : seul le code de récupération est imprimé. */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .fx-print-area,
+    .fx-print-area * {
+      visibility: visible;
+    }
+    .fx-print-area {
+      position: absolute;
+      inset: 2cm 2cm auto;
+      border: 1px solid #000;
+      color: #000;
+      background: #fff;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

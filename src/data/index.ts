@@ -20,13 +20,14 @@ process.parentPort.once('message', (event) => {
     process.exit(1)
   }
   const log = createPortLogger(port)
-  try {
-    const vault = new Vault(resolveVaultPaths(event.data.vaultDirectory), log)
-    serveMethods(port, createMethods(vault), log)
-    process.on('exit', () => vault.lock())
-    log('info', 'Service de données prêt.')
-  } catch (error) {
-    log('error', `Service de données : démarrage impossible (${describeError(error)}).`)
-    process.exit(1)
-  }
+  Vault.open(resolveVaultPaths(event.data.vaultDirectory), log)
+    .then((vault) => {
+      serveMethods(port, createMethods(vault), log)
+      process.on('exit', () => vault.lock())
+      log('info', 'Service de données prêt.')
+    })
+    .catch((error: unknown) => {
+      log('error', `Service de données : démarrage impossible (${describeError(error)}).`)
+      process.exit(1)
+    })
 })

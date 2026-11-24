@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ERROR_REPORT_LIMITS } from '@shared/ipc'
-import { errorReportSchema } from './schemas'
+import { createVaultSchema, errorReportSchema, unlockSchema } from './schemas'
 
 describe('errorReportSchema', () => {
   it('accepte un rapport complet', () => {
@@ -24,5 +24,24 @@ describe('errorReportSchema', () => {
         message: 'x'.repeat(ERROR_REPORT_LIMITS.message + 1),
       }).success,
     ).toBe(false)
+  })
+})
+
+describe('schémas du coffre', () => {
+  it('acceptent les entrées prévues', () => {
+    expect(createVaultSchema.parse({ mode: 'session' })).toEqual({ mode: 'session' })
+    expect(unlockSchema.parse({ method: 'password', password: 'x' })).toEqual({
+      method: 'password',
+      password: 'x',
+    })
+  })
+
+  it('refusent une clé fournie par le renderer ou un champ inconnu', () => {
+    expect(unlockSchema.safeParse({ method: 'key', key: new Uint8Array(32) }).success).toBe(false)
+    expect(createVaultSchema.safeParse({ mode: 'session', key: 'abc' }).success).toBe(false)
+    expect(createVaultSchema.safeParse({ mode: 'password' }).success).toBe(false)
+    expect(unlockSchema.safeParse({ method: 'recovery', code: 'x'.repeat(201) }).success).toBe(
+      false,
+    )
   })
 })
