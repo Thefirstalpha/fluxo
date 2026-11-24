@@ -37,16 +37,18 @@ function isCorruption(error: unknown): boolean {
  * par page), avec une clé brute : pas de dérivation PBKDF2, la clé est déjà aléatoire.
  * Le format SQLCipher garde les données lisibles par des outils standard (avec la clé).
  *
- * Un contrôle rapide de la structure (`quick_check`) est fait à chaque ouverture.
+ * Un contrôle rapide de la structure (`quick_check`) est fait à l'ouverture, sauf si l'appelant
+ * le planifie lui-même (`check: false` : le coffre le fait au plus une fois par jour, ADR-033).
  *
  * Réglages : WAL (lectures concurrentes, écritures atomiques), synchronisation complète
  * (une opération validée survit à une coupure), clés étrangères, effacement sécurisé
- * des pages libérées, fichiers temporaires en mémoire (jamais en clair sur le disque).
+ * des pages libérées, fichiers temporaires en mémoire (jamais en clair sur le disque),
+ * cache de pages de 32 Mio (ADR-033).
  */
 export function openEncryptedDatabase(
   file: string,
   key: Uint8Array,
-  { create }: { create: boolean },
+  { create, check = true }: { create: boolean; check?: boolean },
 ): Db {
   if (key.length !== DATABASE_KEY_BYTES) throw new Error('Longueur de clé invalide')
   const db = new Database(file, { fileMustExist: !create })
@@ -66,20 +68,28 @@ export function openEncryptedDatabase(
     db.pragma('foreign_keys = ON')
     db.pragma('secure_delete = ON')
     db.pragma('temp_store = MEMORY')
-    let healthy: boolean
-    try {
-      healthy = checkDatabase(db)
-    } catch (error) {
-      // Page altérée : l'authentification HMAC échoue pendant le contrôle lui-même.
-      if (isCorruption(error)) throw new CorruptDatabaseError()
-      throw error
-    }
-    if (!healthy) throw new CorruptDatabaseError()
+    // Cache de pages déchiffrées : 32 Mio au plus, rempli à l'usage, libéré à la fermeture
+    // (verrouillage). En deçà, une base de 50 000 opérations redéchiffre sans cesse ses pages.
+    db.pragma('cache_size = -32768')
+    if (check) assertHealthy(db)
     return db
   } catch (error) {
     db.close()
     throw error
   }
+}
+
+/** `quick_check` : lève `CorruptDatabaseError` si la structure ou une page est altérée. */
+export function assertHealthy(db: Db): void {
+  let healthy: boolean
+  try {
+    healthy = checkDatabase(db)
+  } catch (error) {
+    // Page altérée : l'authentification HMAC échoue pendant le contrôle lui-même.
+    if (isCorruption(error)) throw new CorruptDatabaseError()
+    throw error
+  }
+  if (!healthy) throw new CorruptDatabaseError()
 }
 
 /** Contrôle rapide de la structure (au démarrage) ; `integrity_check` complet avant sauvegarde. */

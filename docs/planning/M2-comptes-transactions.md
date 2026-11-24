@@ -1,6 +1,6 @@
 # M2 — Comptes & transactions
 
-> **Statut : 🟡 En cours** (démarré le 24/11/2026 — lot 1 livré) · Taille : L · Dépend de : M1 · Version : 0.3
+> **Statut : 🟡 En cours** (démarré le 24/11/2026 — lots 1 et 2 livrés ; le lot 2 est un service de données, son interface arrive au lot 4) · Taille : L · Dépend de : M1 · Version : 0.3
 
 ## Objectif
 
@@ -37,14 +37,14 @@ Le registre de toutes les opérations : **rapide, fiable, agréable au clavier**
 
 ### Lot 2 — Transactions
 
-- [ ] Saisie, modification, suppression **sur les comptes en saisie manuelle uniquement** ; sur un compte à relevé, montant, date et compte sont figés et seules les annotations changent (refus validé côté service, testé) ; date d'opération et date de valeur ; montant signé en centimes ; libellé bancaire brut et libellé affiché ; tiers ; notes. `Besoin`
-- [ ] **Ventilation** avec contrôle que la somme des parts égale le montant. `Besoin`
-- [ ] **Virements internes** : paire d'opérations liées, exclues des revenus et dépenses. `Socle`
-- [ ] **Virement vers un compte d'épargne classé comme épargne** (catégorie de type `épargne`, pas `transfert`) : visible dans le taux d'épargne de la synthèse mensuelle (M5), distingué d'un virement neutre entre deux comptes courants. `Besoin`
-- [ ] Statuts : en attente, pointée, rapprochée. `Proposition`
-- [ ] **Étiquettes multiples par ventilation** (une part peut porter plusieurs étiquettes, indépendamment de sa catégorie), notes, favoris. `Proposition`
-- [ ] Vue **Étiquettes** : liste des étiquettes avec total et nombre d'opérations, filtre transverse aux catégories (ex. toutes les dépenses « Abonnement téléphonique »). `Proposition`
-- [ ] Multi-devises : montant d'origine + montant converti (taux saisi) ; synthèses dans la devise de référence. `Proposition`
+- [x] Saisie, modification, suppression **sur les comptes en saisie manuelle uniquement** ; sur un compte à relevé, montant, date et compte sont figés et seules les annotations changent (refus validé côté service, testé) ; date d'opération et date de valeur ; montant signé en centimes ; libellé bancaire brut et libellé affiché ; tiers ; notes. `Besoin`
+- [x] **Ventilation** avec contrôle que la somme des parts égale le montant (parts non nulles, catégories actives ; une part unique suit un changement de montant, une ventilation multiple doit être refaite). `Besoin`
+- [x] **Virements internes** : paire d'opérations liées, exclues des revenus et dépenses — création entre comptes manuels, contrepartie d'une opération importée (retrait au distributeur → espèces), liaison de deux opérations existantes, déliaison. `Socle`
+- [x] **Virement vers un compte d'épargne classé comme épargne** (catégorie de type `épargne`, pas `transfert`) : visible dans le taux d'épargne de la synthèse mensuelle (M5), distingué d'un virement neutre entre deux comptes courants. `Besoin`
+- [x] Statuts : en attente, pointée, rapprochée (y compris en masse). `Proposition`
+- [x] **Étiquettes multiples par ventilation** (une part peut porter plusieurs étiquettes, indépendamment de sa catégorie), notes, favoris ; tiers créés à la volée. `Proposition`
+- [ ] Vue **Étiquettes** : liste des étiquettes avec total et nombre d'opérations, filtre transverse aux catégories (ex. toutes les dépenses « Abonnement téléphonique »). Service prêt (totaux, filtre) ; vue au lot 4. `Proposition`
+- [ ] Multi-devises : montant d'origine + montant converti (taux saisi) ; synthèses dans la devise de référence. Stockage prêt (montant dans la devise du compte, contre-valeur facultative) ; saisie du taux au lot 4, synthèses au M5. `Proposition`
 
 ### Lot 3 — Catégories
 

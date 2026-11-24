@@ -52,6 +52,7 @@ import {
   type Keystore,
 } from './crypto/keystore'
 import {
+  assertHealthy,
   checkDatabase,
   closeDatabase,
   CorruptDatabaseError,
@@ -106,6 +107,13 @@ export interface VaultOptions {
 
 /** Intervalle des sauvegardes automatiques. */
 export const AUTO_BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Intervalle du contrôle rapide de la structure au déverrouillage (ADR-033) : il lit toute la
+ * base (≈ 10 ms par Mo). Chaque page lue reste authentifiée (HMAC) et une sauvegarde est
+ * toujours précédée d'un contrôle complet.
+ */
+export const QUICK_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000
 
 interface PendingRestore {
   token: string
@@ -309,7 +317,8 @@ export class Vault {
 
     let db: Db
     try {
-      db = openEncryptedDatabase(this.paths.database, key, { create: false })
+      db = openEncryptedDatabase(this.paths.database, key, { create: false, check: false })
+      this.checkIfDue(db)
     } catch (error) {
       key.fill(0)
       if (error instanceof WrongKeyError) {
@@ -377,6 +386,29 @@ export class Vault {
       },
     })
     if (result.to !== result.from) this.log('info', `Schéma v${result.from} → v${result.to}.`)
+  }
+
+  /** Contrôle rapide au plus une fois par jour (la date du dernier est dans `meta`). */
+  private checkIfDue(db: Db): void {
+    try {
+      let last: string | null = null
+      try {
+        last = readMeta(db, 'last_quick_check')
+      } catch {
+        // Lecture impossible : le contrôle complet tranchera (base altérée ou non).
+      }
+      const elapsed = last ? this.now().getTime() - Date.parse(last) : Number.POSITIVE_INFINITY
+      if (elapsed >= 0 && elapsed < QUICK_CHECK_INTERVAL_MS) return
+      assertHealthy(db)
+      writeMeta(db, 'last_quick_check', this.now().toISOString())
+    } catch (error) {
+      try {
+        closeDatabase(db)
+      } catch {
+        // Base altérée : la fermeture peut échouer à son tour, l'erreur d'origine prime.
+      }
+      throw error
+    }
   }
 
   private adopt(db: Db, key: Buffer, viaRecovery: boolean): void {

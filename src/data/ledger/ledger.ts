@@ -13,6 +13,18 @@ import {
 } from './accounts'
 import { auditChanges, ChangeSet } from './changes'
 import { databaseRuleError, LedgerFailure } from './failure'
+import { getTransactionDetail, listTransactions, summarizeTransactions } from './queries'
+import { createTag, deleteTag, listPayees, listTags, updateTag } from './tags'
+import {
+  categorizeTransactions,
+  createTransaction,
+  deleteTransactions,
+  setSplits,
+  setStatus,
+  tagTransactions,
+  updateTransaction,
+} from './transactions'
+import { createCounterpart, createTransfer, linkTransfer, unlinkTransfer } from './transfers'
 
 type Handlers = { [M in LedgerMethod]: (input: ParsedLedgerInputs[M]) => LedgerOutputs[M] }
 
@@ -41,6 +53,41 @@ export class Ledger {
       accountRevealIban: (input) => revealIban(db, input),
       accountsReorder: (input) =>
         write('account-reorder', (changes) => reorderAccounts(changes, input)),
+
+      transactionsList: (input) => listTransactions(db, input),
+      transactionsSummary: (input) => summarizeTransactions(db, input),
+      transactionGet: (input) => getTransactionDetail(db, input),
+      transactionCreate: (input) =>
+        write('transaction-create', (changes) => createTransaction(changes, input, this.now())),
+      transactionUpdate: (input) =>
+        write('transaction-update', (changes) => updateTransaction(changes, input, this.now())),
+      transactionsDelete: (input) =>
+        write('transaction-delete', (changes) => deleteTransactions(changes, input, this.now())),
+      transactionSetSplits: (input) =>
+        write('transaction-splits', (changes) => setSplits(changes, input, this.now())),
+      transactionsCategorize: (input) =>
+        write('transaction-categorize', (changes) =>
+          categorizeTransactions(changes, input, this.now()),
+        ),
+      transactionsTag: (input) =>
+        write('transaction-tag', (changes) => tagTransactions(changes, input, this.now())),
+      transactionsSetStatus: (input) =>
+        write('transaction-status', (changes) => setStatus(changes, input, this.now())),
+
+      transferCreate: (input) =>
+        write('transfer-create', (changes) => createTransfer(changes, input, this.now())),
+      transferCounterpart: (input) =>
+        write('transfer-counterpart', (changes) => createCounterpart(changes, input, this.now())),
+      transferLink: (input) =>
+        write('transfer-link', (changes) => linkTransfer(changes, input, this.now())),
+      transferUnlink: (input) =>
+        write('transfer-unlink', (changes) => unlinkTransfer(changes, input, this.now())),
+
+      tagsList: () => listTags(db),
+      tagCreate: (input) => write('tag-create', (changes) => createTag(changes, input, this.now())),
+      tagUpdate: (input) => write('tag-update', (changes) => updateTag(changes, input)),
+      tagDelete: (input) => write('tag-delete', (changes) => deleteTag(changes, input)),
+      payeesList: (input) => listPayees(db, input),
     }
   }
 

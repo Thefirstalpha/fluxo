@@ -97,7 +97,7 @@ export function seedDemoVault(
       'INSERT INTO split (id, transaction_id, category_id, amount, position) VALUES (?, ?, ?, ?, 0)',
     )
     const linkTransfer = db.prepare('UPDATE transactions SET transfer_id = ? WHERE id = ?')
-    let pendingSavings: string | null = null
+    const pendingTransfer = new Map<DemoCategoryId, string>()
     for (const transaction of ledger.transactions) {
       const account = accounts.get(transaction.account)
       const category = categories.get(transaction.category)
@@ -114,14 +114,15 @@ export function seedDemoVault(
         stamp,
       )
       insertSplit.run(uuidv7(), id, category, transaction.amount)
-      // Les deux écritures d'un virement d'épargne se suivent : on les relie.
-      if (transaction.category === 'savings') {
-        if (pendingSavings) {
-          linkTransfer.run(id, pendingSavings)
-          linkTransfer.run(pendingSavings, id)
-          pendingSavings = null
+      // Les deux écritures d'un virement (épargne, retrait d'espèces) se suivent : on les relie.
+      if (transaction.category === 'savings' || transaction.category === 'transfer') {
+        const pending = pendingTransfer.get(transaction.category)
+        if (pending) {
+          linkTransfer.run(id, pending)
+          linkTransfer.run(pending, id)
+          pendingTransfer.delete(transaction.category)
         } else {
-          pendingSavings = id
+          pendingTransfer.set(transaction.category, id)
         }
       }
     }

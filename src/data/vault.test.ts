@@ -313,3 +313,30 @@ describe('Vault — schéma et migrations', () => {
     expect(second.status().state).toBe('locked')
   })
 })
+
+describe('Vault — contrôle de la structure', () => {
+  it('fait le contrôle rapide au plus une fois par jour au déverrouillage (ADR-033)', async () => {
+    let now = new Date('2026-11-24T08:00:00.000Z')
+    const vault = await openVault({ now: () => now })
+    await vault.create({ mode: 'password', password: PASSWORD })
+    const lastCheck = () =>
+      vault
+        .database()
+        .prepare("SELECT value FROM meta WHERE key = 'last_quick_check'")
+        .pluck()
+        .get()
+    vault.lock()
+    await vault.unlock({ method: 'password', password: PASSWORD })
+    expect(lastCheck()).toBe('2026-11-24T08:00:00.000Z')
+
+    vault.lock()
+    now = new Date('2026-11-24T20:00:00.000Z')
+    await vault.unlock({ method: 'password', password: PASSWORD })
+    expect(lastCheck()).toBe('2026-11-24T08:00:00.000Z')
+
+    vault.lock()
+    now = new Date('2026-11-25T09:00:00.000Z')
+    await vault.unlock({ method: 'password', password: PASSWORD })
+    expect(lastCheck()).toBe('2026-11-25T09:00:00.000Z')
+  })
+})

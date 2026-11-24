@@ -122,13 +122,20 @@ Migration `src/data/db/schema-v2.ts` ([ADR-032](decisions.md#adr-032--registre--
 | Élément                  | Détail                                                                                                                                                               |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account`                | + `color` (emplacement de la palette validée, `#rrggbb`), `icon` (liste fermée) ; trigger : mode de suivi figé dès qu'il existe une opération                        |
-| `transactions`           | + `favorite` ; index couvrant des soldes (compte, date, montant, statut) à la place de l'index (compte, date) ; index du lien de virement                            |
+| `transactions`           | + `favorite` ; index couvrant des soldes (compte, date, montant, statut) à la place de l'index (compte, date) ; index du montant (tri) et du lien de virement        |
 | `category`               | triggers : deux niveaux au plus (un parent n'a pas de parent, une catégorie qui a des enfants n'en devient pas un)                                                   |
 | `saved_filter`           | filtres enregistrés du registre (nom unique, filtre JSON)                                                                                                            |
 | `transaction_search_key` | clé entière stable de chaque opération pour l'index plein texte (le `rowid` implicite peut changer au `VACUUM`)                                                      |
 | `transactions_fts`       | FTS5 sans contenu : libellé affiché, libellé bancaire, note, nom du tiers ; accents et casse ignorés ; tenu à jour par triggers (opérations et renommage d'un tiers) |
 
 Le pack de catégories France (deux niveaux, `src/shared/ledger/category-pack.ts`) est créé avec chaque coffre, dans la langue de l'interface.
+
+Conventions du registre (M2, service `src/data/ledger/`) :
+
+- **Ventilation** : une opération sans part est « non catégorisée » ; une part unique sans catégorie, sans note ni étiquette équivaut à aucune part. Sinon Σ des parts = montant, chaque part non nulle.
+- **Virement** : deux opérations de montants opposés, sur deux comptes distincts de même devise, liées l'une à l'autre (`transfer_id` réciproque). Les deux sont classées dans la première catégorie active de type `épargne` si un seul des comptes est un compte d'épargne ou de placement, sinon de type `transfert`. Supprimer une opération saisie délie sa contrepartie.
+- **Tiers** : créé à la volée à partir d'un nom (sans distinction de casse).
+- **Opération importée** : seules les annotations changent (libellé personnalisé, tiers, note, statut, favori, contre-valeur, ventilation, étiquettes, lien de virement).
 
 ## Bulletin de paie (France)
 
@@ -181,7 +188,7 @@ Une base sans enveloppe (création interrompue) est renommée en `*.orphan-<horo
 
 Le coffre de démonstration vit à part, dans `demo-vault/` (même structure), recréé à chaque entrée et supprimé à la sortie ([ADR-031](decisions.md#adr-031--coffre-de-démonstration-séparé-et-jetable)).
 
-Clés de la table `meta` : `vault_id`, `created_at`, `backup_directory` (dossier choisi, absent = dossier par défaut), `backup_auto` (`0` pour désactiver la sauvegarde automatique).
+Clés de la table `meta` : `vault_id`, `created_at`, `backup_directory` (dossier choisi, absent = dossier par défaut), `backup_auto` (`0` pour désactiver la sauvegarde automatique), `last_quick_check` (dernier contrôle rapide de la structure, [ADR-033](decisions.md#adr-033--contrôle-dintégrité-quotidien-et-cache-de-pages)).
 
 ### Sauvegarde (`.fluxo-backup`)
 

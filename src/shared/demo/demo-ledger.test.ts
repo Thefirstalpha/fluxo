@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { EXPENSE_CATEGORY_IDS } from '../categories'
 import { sum } from '../money'
-import { generateDemoLedger, splitAmount } from './demo-ledger'
+import { DEMO_ACCOUNTS, generateDemoLedger, splitAmount } from './demo-ledger'
 
 const ledger = generateDemoLedger({ endMonth: '2026-11', count: 18 })
 
@@ -27,9 +27,20 @@ describe('generateDemoLedger', () => {
     }
   })
 
-  it('les virements d’épargne s’annulent (ni dépense ni revenu)', () => {
+  it('les virements d’épargne et internes s’annulent (ni dépense ni revenu)', () => {
     const savings = ledger.transactions.filter((t) => t.category === 'savings')
     expect(sum(savings.map((t) => t.amount))).toBe(0)
+    const transfers = ledger.transactions.filter((t) => t.category === 'transfer')
+    expect(transfers.length).toBeGreaterThan(0)
+    expect(sum(transfers.map((t) => t.amount))).toBe(0)
+  })
+
+  it('le compte espèces reste positif (retraits au distributeur)', () => {
+    let balance = DEMO_ACCOUNTS.find((a) => a.key === 'cash')?.openingBalance ?? 0
+    for (const transaction of ledger.transactions.filter((t) => t.account === 'cash')) {
+      balance += transaction.amount
+      expect(balance, transaction.date).toBeGreaterThanOrEqual(0)
+    }
   })
 
   it('produit des dates valides, triées, et des montants entiers non nuls', () => {

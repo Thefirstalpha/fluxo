@@ -2,7 +2,15 @@
  * Contrat du registre : une méthode = un canal IPC = une fonction du preload (`window.fluxo.ledger`).
  * Module sans zod (le preload l'importe) : les schémas d'entrée vivent dans `schemas.ts`.
  */
-import type { AccountSummary, LedgerResult } from './model'
+import type {
+  AccountSummary,
+  LedgerResult,
+  PayeeSummary,
+  TagSummary,
+  TransactionDetail,
+  TransactionPage,
+  TransactionSummary,
+} from './model'
 import type { LedgerInputs } from './schemas'
 
 /** Résultat de chaque méthode. */
@@ -15,6 +23,26 @@ export interface LedgerOutputs {
   /** IBAN en clair (copie), ou `null` si le compte n'en a pas. */
   accountRevealIban: string | null
   accountsReorder: null
+  transactionsList: TransactionPage
+  transactionsSummary: TransactionSummary
+  transactionGet: TransactionDetail
+  transactionCreate: { id: string }
+  transactionUpdate: null
+  transactionsDelete: { count: number }
+  transactionSetSplits: null
+  /** `skipped` : opérations ventilées sur plusieurs catégories, laissées telles quelles. */
+  transactionsCategorize: { updated: number; skipped: number }
+  transactionsTag: { updated: number }
+  transactionsSetStatus: { updated: number }
+  transferCreate: { fromId: string; toId: string }
+  transferCounterpart: { id: string }
+  transferLink: null
+  transferUnlink: null
+  tagsList: TagSummary[]
+  tagCreate: { id: string }
+  tagUpdate: null
+  tagDelete: null
+  payeesList: PayeeSummary[]
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -30,6 +58,25 @@ export const LEDGER_METHODS = [
   'accountDelete',
   'accountRevealIban',
   'accountsReorder',
+  'transactionsList',
+  'transactionsSummary',
+  'transactionGet',
+  'transactionCreate',
+  'transactionUpdate',
+  'transactionsDelete',
+  'transactionSetSplits',
+  'transactionsCategorize',
+  'transactionsTag',
+  'transactionsSetStatus',
+  'transferCreate',
+  'transferCounterpart',
+  'transferLink',
+  'transferUnlink',
+  'tagsList',
+  'tagCreate',
+  'tagUpdate',
+  'tagDelete',
+  'payeesList',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -41,6 +88,11 @@ void exhaustive
 export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'accountsList',
   'accountRevealIban',
+  'transactionsList',
+  'transactionsSummary',
+  'transactionGet',
+  'tagsList',
+  'payeesList',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

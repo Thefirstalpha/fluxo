@@ -31,6 +31,7 @@ CREATE INDEX transactions_transfer ON transactions (transfer_id) WHERE transfer_
 CREATE INDEX transactions_account_balance
   ON transactions (account_id, booking_date, amount, status);
 DROP INDEX transactions_account_date;
+CREATE INDEX transactions_amount ON transactions (amount);
 
 CREATE TRIGGER account_tracking_mode_locked
 BEFORE UPDATE OF tracking_mode ON account

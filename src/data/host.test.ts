@@ -87,10 +87,22 @@ describe('coffre de démonstration', () => {
       'create',
       'seed',
     ])
-    // Les virements d'épargne sont reliés deux à deux.
+    // Les virements (épargne, retraits d'espèces) sont reliés deux à deux.
     expect(
       db.prepare('SELECT count(*) FROM transactions WHERE transfer_id IS NOT NULL').pluck().get(),
-    ).toBe(ledger.transactions.filter((t) => t.category === 'savings').length)
+    ).toBe(
+      ledger.transactions.filter((t) => t.category === 'savings' || t.category === 'transfer')
+        .length,
+    )
+    expect(
+      db
+        .prepare(
+          `SELECT count(*) FROM transactions a JOIN transactions b ON b.id = a.transfer_id
+           WHERE b.transfer_id <> a.id OR a.amount + b.amount <> 0 OR a.account_id = b.account_id`,
+        )
+        .pluck()
+        .get(),
+    ).toBe(0)
   })
 
   it('refuse clés, sauvegardes et effacement pendant la démonstration', async () => {

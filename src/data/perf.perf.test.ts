@@ -1,9 +1,10 @@
 import { randomBytes } from 'node:crypto'
+import { statSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { closeDatabase, openEncryptedDatabase, type Db } from './db/connection'
+import { checkDatabase, closeDatabase, openEncryptedDatabase, type Db } from './db/connection'
 import { migrate } from './db/migrations'
 import { seedLargeDataset } from './demo/large-dataset'
 import { Ledger } from './ledger/ledger'
@@ -51,12 +52,17 @@ afterAll(async () => {
 })
 
 describe(`coffre à ${COUNT} opérations`, () => {
-  it('ouverture (clé, contrôle rapide, migrations) < 500 ms', () => {
+  it('ouverture (clé, migrations) < 500 ms ; contrôle quotidien mesuré à part', () => {
     const start = performance.now()
-    db = openEncryptedDatabase(file, key, { create: false })
+    db = openEncryptedDatabase(file, key, { create: false, check: false })
     migrate(db)
     const elapsed = performance.now() - start
     report['ouverture'] = `${elapsed.toFixed(1)} ms`
+    const check = performance.now()
+    checkDatabase(db)
+    // Au plus une fois par jour au déverrouillage (ADR-033) : proportionnel à la taille.
+    report['contrôle quick_check (quotidien)'] = `${(performance.now() - check).toFixed(1)} ms`
+    report['taille de la base'] = `${Math.round(statSync(file).size / 1024)} Ko`
     expect(elapsed).toBeLessThan(500)
   })
 
@@ -110,6 +116,40 @@ describe(`coffre à ${COUNT} opérations`, () => {
       const elapsed = median(run)
       report[name] = `${elapsed.toFixed(2)} ms`
       expect(elapsed, name).toBeLessThan(20)
+    }
+  })
+
+  it('registre : page, recherche et filtres < 100 ms (médiane)', () => {
+    const ledger = new Ledger(db)
+    const category = db
+      .prepare('SELECT id FROM category ORDER BY id LIMIT 1')
+      .pluck()
+      .get() as string
+    const first = ledger.run('transactionsList', { filter: {} })
+    const cursor = first.ok ? first.value.nextCursor : null
+    const queries: Record<string, () => unknown> = {
+      'registre : première page (200)': () => ledger.run('transactionsList', { filter: {} }),
+      'registre : page suivante (curseur)': () =>
+        ledger.run('transactionsList', { filter: {}, cursor }),
+      'registre : recherche « loyer »': () =>
+        ledger.run('transactionsList', { filter: { search: 'loyer' } }),
+      'registre : recherche d’un montant': () =>
+        ledger.run('transactionsList', { filter: { search: '45,90' } }),
+      'registre : catégorie + période': () =>
+        ledger.run('transactionsList', {
+          filter: { categoryIds: [category], from: '2026-01-01', to: '2026-06-30' },
+        }),
+      'registre : non catégorisées': () =>
+        ledger.run('transactionsList', { filter: { categoryIds: ['none'] } }),
+      'registre : tri par montant': () =>
+        ledger.run('transactionsList', { filter: {}, sort: 'amount-desc' }),
+      'registre : synthèse du filtre': () =>
+        ledger.run('transactionsSummary', { filter: { categoryIds: [category] } }),
+    }
+    for (const [name, run] of Object.entries(queries)) {
+      const elapsed = median(run, 9)
+      report[name] = `${elapsed.toFixed(2)} ms`
+      expect(elapsed, name).toBeLessThan(100)
     }
   })
 })

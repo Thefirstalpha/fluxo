@@ -6,7 +6,15 @@
 import { z } from 'zod'
 import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
-import { ACCOUNT_TYPES, LEDGER_ICONS, PALETTE, TRACKING_MODES } from './model'
+import {
+  ACCOUNT_TYPES,
+  LEDGER_ICONS,
+  PALETTE,
+  TRACKING_MODES,
+  TRANSACTION_SORTS,
+  TRANSACTION_STATUSES,
+  UNCATEGORIZED,
+} from './model'
 
 /** Montant maximal accepté (en centimes) : 10 milliards, bien en deçà des entiers sûrs. */
 export const MAX_AMOUNT = 1_000_000_000_000
@@ -60,6 +68,45 @@ const accountDraftSchema = z.strictObject({
 
 const byId = z.strictObject({ id: idSchema })
 
+/** Lots d'identifiants (édition en masse) : bornés. */
+const ids = (max = 5_000) => z.array(idSchema).min(1).max(max)
+
+const splitSchema = z.strictObject({
+  categoryId: idSchema.nullable(),
+  amount: amountSchema,
+  note: optionalText(2000),
+  tagIds: z.array(idSchema).max(50),
+})
+
+const filterSchema = z.strictObject({
+  accountIds: z.array(idSchema).max(500).optional(),
+  from: isoDateSchema.optional(),
+  to: isoDateSchema.optional(),
+  search: z.string().max(200).optional(),
+  categoryIds: z
+    .array(z.union([idSchema, z.literal(UNCATEGORIZED)]))
+    .max(500)
+    .optional(),
+  tagIds: z.array(idSchema).max(50).optional(),
+  minAmount: amountSchema.optional(),
+  maxAmount: amountSchema.optional(),
+  direction: z.enum(['in', 'out']).optional(),
+  statuses: z.array(z.enum(TRANSACTION_STATUSES)).max(3).optional(),
+  favorite: z.boolean().optional(),
+})
+
+const transactionFields = {
+  bookingDate: isoDateSchema,
+  valueDate: isoDateSchema.nullable(),
+  amount: amountSchema,
+  convertedAmount: amountSchema.nullable(),
+  payee: optionalText(200),
+  note: optionalText(2000),
+  status: z.enum(TRANSACTION_STATUSES),
+}
+
+const tagDraft = z.strictObject({ name: requiredText(60), color: z.enum(PALETTE).nullable() })
+
 export const LEDGER_INPUTS = {
   accountsList: z.strictObject({
     includeArchived: z.boolean().optional(),
@@ -72,6 +119,68 @@ export const LEDGER_INPUTS = {
   accountDelete: byId,
   accountRevealIban: byId,
   accountsReorder: z.strictObject({ ids: z.array(idSchema).min(1).max(500) }),
+
+  transactionsList: z.strictObject({
+    filter: filterSchema,
+    sort: z.enum(TRANSACTION_SORTS).optional(),
+    cursor: z.string().max(200).nullable().optional(),
+    limit: z.int().min(1).max(1_000).optional(),
+  }),
+  transactionsSummary: z.strictObject({ filter: filterSchema }),
+  transactionGet: byId,
+  /** Saisie (comptes en saisie manuelle uniquement, ADR-026). */
+  transactionCreate: z.strictObject({
+    accountId: idSchema,
+    label: requiredText(500),
+    ...transactionFields,
+    splits: z.array(splitSchema).max(100).optional(),
+  }),
+  /**
+   * Modification. Sur une opération importée, seules les annotations changent (libellé
+   * personnalisé, tiers, note, statut, favori, contre-valeur) ; `labelRaw`, montant, dates et
+   * compte sont réservés aux opérations saisies.
+   */
+  transactionUpdate: z.strictObject({
+    id: idSchema,
+    patch: z
+      .strictObject({
+        accountId: idSchema,
+        labelRaw: requiredText(500),
+        customLabel: optionalText(500),
+        favorite: z.boolean(),
+        ...transactionFields,
+      })
+      .partial(),
+  }),
+  transactionsDelete: z.strictObject({ ids: ids(1_000) }),
+  transactionSetSplits: z.strictObject({ id: idSchema, splits: z.array(splitSchema).max(100) }),
+  transactionsCategorize: z.strictObject({ ids: ids(), categoryId: idSchema.nullable() }),
+  transactionsTag: z.strictObject({
+    ids: ids(),
+    add: z.array(idSchema).max(50),
+    remove: z.array(idSchema).max(50),
+  }),
+  transactionsSetStatus: z.strictObject({ ids: ids(), status: z.enum(TRANSACTION_STATUSES) }),
+
+  /** Virement entre deux comptes en saisie manuelle : deux opérations liées. */
+  transferCreate: z.strictObject({
+    fromAccountId: idSchema,
+    toAccountId: idSchema,
+    bookingDate: isoDateSchema,
+    amount: amountSchema.refine((value) => value > 0),
+    label: requiredText(500),
+  }),
+  /** Contrepartie d'une opération (souvent importée) sur un compte en saisie manuelle. */
+  transferCounterpart: z.strictObject({ transactionId: idSchema, accountId: idSchema }),
+  /** Relie deux opérations existantes de montants opposés (ex. deux relevés). */
+  transferLink: z.strictObject({ ids: z.tuple([idSchema, idSchema]) }),
+  transferUnlink: byId,
+
+  tagsList: z.strictObject({}),
+  tagCreate: tagDraft,
+  tagUpdate: z.strictObject({ id: idSchema, patch: tagDraft.partial() }),
+  tagDelete: byId,
+  payeesList: z.strictObject({ search: z.string().max(200).optional() }),
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

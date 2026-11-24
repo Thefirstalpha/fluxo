@@ -137,6 +137,110 @@ export interface AccountSummary {
   lastTransactionDate: string | null
 }
 
+// ——— Opérations ——————————————————————————————————————————————————————————
+
+/** Part d'une opération (ventilation). Σ des parts = montant de l'opération. */
+export interface SplitInput {
+  categoryId: string | null
+  amount: MinorUnits
+  note: string | null
+  tagIds: string[]
+}
+
+export interface Split extends SplitInput {
+  id: string
+}
+
+/** Ligne du registre (liste). */
+export interface TransactionRow {
+  id: string
+  accountId: string
+  bookingDate: string
+  valueDate: string | null
+  /** Montant signé dans la devise du compte (négatif : sortie). */
+  amount: MinorUnits
+  currency: string
+  /** Contre-valeur dans la devise de référence (compte en devise étrangère, taux saisi). */
+  convertedAmount: MinorUnits | null
+  /** Libellé affiché : personnalisé, sinon libellé bancaire. */
+  label: string
+  labelRaw: string
+  /** Libellé personnalisé (`null` : celui de la banque). */
+  customLabel: string | null
+  payee: string | null
+  status: TransactionStatus
+  nature: TransactionNature
+  note: string | null
+  favorite: boolean
+  /** Opération venue d'un relevé (import) : montant, date et compte figés (ADR-026). */
+  imported: boolean
+  transferId: string | null
+  transferAccountId: string | null
+  /** Catégorie de chaque part, dans l'ordre (vide : non catégorisée). */
+  categoryIds: (string | null)[]
+  /** Étiquettes de toutes les parts (sans doublon). */
+  tagIds: string[]
+  splitCount: number
+}
+
+export interface TransactionDetail extends TransactionRow {
+  splits: Split[]
+}
+
+export const TRANSACTION_SORTS = ['date-desc', 'date-asc', 'amount-desc', 'amount-asc'] as const
+export type TransactionSort = (typeof TRANSACTION_SORTS)[number]
+
+/** Valeur spéciale du filtre de catégories : opérations non catégorisées. */
+export const UNCATEGORIZED = 'none'
+
+export interface TransactionFilter {
+  accountIds?: string[]
+  from?: string
+  to?: string
+  /** Texte libre (libellés, note, tiers ; accents ignorés) ou montant (« 45,90 »). */
+  search?: string
+  /** Catégories (une catégorie parente inclut ses sous-catégories) ou `UNCATEGORIZED`. */
+  categoryIds?: string[]
+  /** Toutes les étiquettes demandées (sur une même opération). */
+  tagIds?: string[]
+  /** Bornes sur la valeur absolue du montant (le sens se choisit avec `direction`). */
+  minAmount?: MinorUnits
+  maxAmount?: MinorUnits
+  direction?: 'in' | 'out'
+  statuses?: TransactionStatus[]
+  favorite?: boolean
+}
+
+export interface TransactionPage {
+  rows: TransactionRow[]
+  /** Curseur de la page suivante (`null` : fin de liste). */
+  nextCursor: string | null
+}
+
+export interface TransactionSummary {
+  count: number
+  /** Σ des montants (devise de chaque compte : à n'additionner que pour une même devise). */
+  total: MinorUnits
+  inflow: MinorUnits
+  outflow: MinorUnits
+  currencies: string[]
+}
+
+export interface TagSummary {
+  id: string
+  name: string
+  color: PaletteColor | null
+  /** Σ des parts étiquetées (dépenses négatives). */
+  total: MinorUnits
+  transactionCount: number
+}
+
+export interface PayeeSummary {
+  id: string
+  name: string
+  transactionCount: number
+}
+
 // ——— Résultats ———————————————————————————————————————————————————————————
 
 /** Échecs attendus d'une requête du registre (les erreurs inattendues restent des exceptions). */

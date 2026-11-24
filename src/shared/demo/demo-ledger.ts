@@ -1,5 +1,5 @@
 import { EXPENSE_CATEGORY_IDS, type ExpenseCategoryId } from '../categories'
-import type { MinorUnits } from '../money'
+import { sum, type MinorUnits } from '../money'
 import { parseMonth } from '../months'
 import type { Locale } from '../settings'
 import { generateDemoMonths, type DemoOptions, type MonthlySummary } from './demo-data'
@@ -12,7 +12,7 @@ import { generateDemoMonths, type DemoOptions, type MonthlySummary } from './dem
 
 export type DemoAccountKey = 'checking' | 'savings' | 'cash'
 export type DemoIncomeCategoryId = 'salary' | 'refunds'
-export type DemoCategoryId = ExpenseCategoryId | DemoIncomeCategoryId | 'savings'
+export type DemoCategoryId = ExpenseCategoryId | DemoIncomeCategoryId | 'savings' | 'transfer'
 
 export interface DemoAccount {
   key: DemoAccountKey
@@ -45,6 +45,9 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
 
 /** Virement mensuel vers le livret (catégorie « épargne » : ni dépense, ni revenu). */
 const MONTHLY_SAVINGS: MinorUnits = 20_000
+
+/** Les retraits d'espèces se font par multiples de 20 €. */
+const CASH_WITHDRAWAL_STEP: MinorUnits = 2_000
 
 /** Libellés bancaires fictifs, par catégorie (aucune enseigne réelle). */
 const LABELS: Record<ExpenseCategoryId, readonly string[]> = {
@@ -179,6 +182,33 @@ export function generateDemoLedger(options: DemoOptions): DemoLedger {
           category,
         })
       })
+    }
+
+    // Retrait au distributeur (virement interne courant → espèces, deux écritures) : couvre les
+    // dépenses en espèces du mois, arrondi à 20 € (ni dépense ni revenu).
+    const cashSpent = -sum(
+      transactions
+        .filter((t) => t.account === 'cash' && t.date.startsWith(month))
+        .map((t) => t.amount),
+    )
+    if (cashSpent > 0) {
+      const withdrawal = Math.ceil(cashSpent / CASH_WITHDRAWAL_STEP) * CASH_WITHDRAWAL_STEP
+      transactions.push(
+        {
+          account: 'checking',
+          date: day(month, 1),
+          amount: -withdrawal,
+          label: 'RETRAIT DAB CENTRE VILLE',
+          category: 'transfer',
+        },
+        {
+          account: 'cash',
+          date: day(month, 1),
+          amount: withdrawal,
+          label: 'Retrait au distributeur',
+          category: 'transfer',
+        },
+      )
     }
 
     // Épargne : virement du compte courant vers le livret (deux écritures).
