@@ -14,6 +14,38 @@ interface SignalRule {
 
 const PAYSLIP_RULES: readonly SignalRule[] = [
   { pattern: /\bbulletin\s+de\s+(?:paie|salaire)\b/i, label: 'bulletin de paie', weight: 4 },
+  {
+    pattern: /\bsolde\s+de\s+tout\s+compte\b|\bre[cç]u\s+pour\s+solde\b/i,
+    label: 'solde de tout compte',
+    weight: 4.5,
+  },
+  {
+    pattern:
+      /\bindemnit[eé]\s+(?:compensatrice\s+de\s+cong[eé]s|de\s+(?:licenciement|rupture|pr[eé]carit[eé]|fin\s+de\s+contrat))\b/i,
+    label: 'indemnité fin de contrat',
+    weight: 3.5,
+  },
+  {
+    pattern: /\bdate\s+d['’](?:entr[eé]e|embauche)\b|\bdate\s+de\s+sortie\b/i,
+    label: 'dates contrat',
+    weight: 2,
+  },
+  {
+    pattern: /\bsolde\s+de\s+tout\s+compte\b|\bre[cç]u\s+pour\s+solde\b/i,
+    label: 'solde de tout compte',
+    weight: 4.5,
+  },
+  {
+    pattern:
+      /\bindemnit[eé]\s+(?:compensatrice\s+de\s+cong[eé]s|de\s+(?:licenciement|rupture|pr[eé]carit[eé]|fin\s+de\s+contrat))\b/i,
+    label: 'indemnité fin de contrat',
+    weight: 3.5,
+  },
+  {
+    pattern: /\bdate\s+d['’](?:entr[eé]e|embauche)\b|\bdate\s+de\s+sortie\b/i,
+    label: 'dates contrat',
+    weight: 2,
+  },
   { pattern: /\bpayslip\b/i, label: 'payslip', weight: 4 },
   { pattern: /\bmontant\s+net\s+social\b|\bnet\s+social\b/i, label: 'net social', weight: 3 },
   {

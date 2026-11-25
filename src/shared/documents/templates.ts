@@ -1,5 +1,10 @@
 import type { MinorUnits } from '../money'
-import { checkPayslipDetailed, type PayslipLineInput } from '../payslip'
+import {
+  checkPayslipDetailed,
+  type ContractType,
+  type ExecutiveStatus,
+  type PayslipLineInput,
+} from '../payslip'
 import type {
   DocumentBox,
   ExtractedOtherDraft,
@@ -250,9 +255,28 @@ function detectPayslipPeriod(lines: readonly VisualLine[]): {
   return { value: null, zone: null }
 }
 
+function lastDayOfMonth(period: string | null): string | null {
+  if (!period) return null
+  const m = period.match(/^(\d{4})-(\d{2})$/)
+  if (!m) return null
+  const year = Number.parseInt(m[1]!, 10)
+  const month = Number.parseInt(m[2]!, 10)
+  if (!Number.isFinite(year) || month < 1 || month > 12) return null
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  return `${m[1]}-${m[2]}-${String(lastDay).padStart(2, '0')}`
+}
+
+function cleanFieldValue(raw: string): string | null {
+  const cleaned = raw
+    .split(/\b(?:SIRET|Statut|Entr[eé]e?|Sortie|Anciennet[eé]|Coef|Classification|Matricule)\b/i)[0]
+    ?.replace(/\s+/g, ' ')
+    .trim()
+  return cleaned && cleaned.length >= 2 ? cleaned.slice(0, 120) : null
+}
+
 /**
- * Extraction déterministe d'un bulletin de paie français (M6/M7) à partir des pages extraites.
- * Retourne chaque montant en centimes entiers, la confiance par champ et sa `SourceZone`.
+ * Extraction déterministe d'un bulletin de paie français ou solde de tout compte (M6/M7).
+ * Extrait société (nom/SIRET), début/fin de contrat, poste, lignes variables/STC et montants.
  */
 export function extractFrenchPayslip(pages: readonly ExtractedPage[]): ExtractedPayslipDraft {
   const lines = reconstructLines(pages)
@@ -265,23 +289,40 @@ export function extractFrenchPayslip(pages: readonly ExtractedPage[]): Extracted
   // Employeur & SIRET.
   let employerSiret: string | null = null
   let employerName: string | null = null
-  for (const line of lines) {
+  let siretLineIndex = -1
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
     if (!employerSiret) {
       const siretMatch = line.text.match(/\bSIRET\s*[:.]?\s*([\d\s.]{14,20})/i)
       if (siretMatch) {
         const digits = siretMatch[1]!.replace(/[\s.]/g, '').slice(0, 14)
         if (/^\d{14}$/.test(digits)) {
           employerSiret = digits
+          siretLineIndex = i
           setZone('employerSiret', 0.96, zoneOf(line))
         }
       }
     }
     if (!employerName) {
-      const empExplicit = line.text.match(/^(?:Employeur|Soci[eé]t[eé]|Entreprise)\s*[:]\s*(.+)$/i)
+      const empExplicit = line.text.match(
+        /^(?:Employeur|Soci[eé]t[eé]|Entreprise|Raison\s+sociale)\s*[:]\s*(.+)$/i,
+      )
       if (empExplicit && empExplicit[1]!.trim().length >= 2) {
         employerName = empExplicit[1]!.trim().slice(0, 120)
         setZone('employerName', 0.92, zoneOf(line))
       }
+    }
+  }
+  if (!employerName && siretLineIndex > 0) {
+    const above = lines[siretLineIndex - 1]
+    if (
+      above &&
+      !/bulletin|solde|salaire|siret|nir|matricule|adresse|page/i.test(above.text) &&
+      above.text.length >= 3 &&
+      above.text.length <= 80
+    ) {
+      employerName = above.text
+      setZone('employerName', 0.78, zoneOf(above))
     }
   }
   if (!employerName) {
@@ -289,13 +330,104 @@ export function extractFrenchPayslip(pages: readonly ExtractedPage[]): Extracted
       (line) =>
         line.page === 1 &&
         line.y < 0.25 &&
-        !/bulletin|salaire|siret|nir|n°|matricule|adresse|page/i.test(line.text) &&
+        !/bulletin|solde\s+de\s+tout\s+compte|salaire|siret|nir|n°|matricule|adresse|page/i.test(
+          line.text,
+        ) &&
         line.text.length >= 3 &&
         line.text.length <= 80,
     )
     if (firstHeader) {
       employerName = firstHeader.text
       setZone('employerName', 0.65, zoneOf(firstHeader))
+    }
+  }
+
+  // Métadonnées contrat & solde de tout compte.
+  let contractStartDate: string | null = null
+  let contractEndDate: string | null = null
+  let contractTitle: string | null = null
+  let contractType: ContractType | null = null
+  let executiveStatus: ExecutiveStatus | null = null
+  let collectiveAgreement: string | null = null
+  let isFinalSettlement = false
+
+  for (const line of lines) {
+    if (
+      /\bsolde\s+de\s+tout\s+compte\b|\bre[cç]u\s+pour\s+solde(?:\s+de\s+tout\s+compte)?\b|\bindemnit[eé]\s+(?:compensatrice\s+de\s+cong[eé]s|de\s+(?:licenciement|rupture|pr[eé]carit[eé]|fin\s+de\s+contrat))\b/i.test(
+        line.text,
+      )
+    ) {
+      isFinalSettlement = true
+      setZone('isFinalSettlement', 0.95, zoneOf(line))
+    }
+
+    if (
+      !contractStartDate &&
+      /\b(?:date\s+(?:d['’]\s*)?(?:entr[eé]e?|embauche|anciennet[eé])|entr[eé]e?\s+(?:le|[:.])|d[eé]but\s+(?:de\s+|du\s+)?contrat|anciennet[eé](?!\p{L}))/iu.test(
+        line.text,
+      )
+    ) {
+      const afterLabel =
+        line.text.split(
+          /\b(?:entr[eé]e?|embauche|d[eé]but\s+(?:de\s+|du\s+)?contrat|anciennet[eé])\b/i,
+        )[1] ?? line.text
+      const d = parseFrenchDate(afterLabel) ?? parseFrenchDate(line.text)
+      if (d) {
+        contractStartDate = d
+        setZone('contractStartDate', 0.93, zoneOf(line))
+      }
+    }
+
+    if (
+      !contractEndDate &&
+      /\b(?:date\s+(?:de\s+)?(?:sortie|d[eé]part|rupture|fin)|sortie?\s+(?:le|[:.])|fin\s+(?:de\s+|du\s+)?contrat|d[eé]part\s+le|cessation\s+d['’]activit[eé])\b/i.test(
+        line.text,
+      )
+    ) {
+      const afterLabel =
+        line.text.split(
+          /\b(?:sortie?|fin\s+(?:de\s+|du\s+)?contrat|d[eé]part|rupture|cessation)\b/i,
+        )[1] ?? line.text
+      const d = parseFrenchDate(afterLabel) ?? parseFrenchDate(line.text)
+      if (d) {
+        contractEndDate = d
+        setZone('contractEndDate', 0.94, zoneOf(line))
+      }
+    }
+
+    if (!contractTitle) {
+      const m = line.text.match(
+        /\b(?:emploi|poste|fonction|intitul[eé]\s+du\s+poste|qualification)\s*[:]\s*(.+)$/i,
+      )
+      if (m) {
+        const cleaned = cleanFieldValue(m[1]!)
+        if (cleaned) {
+          contractTitle = cleaned
+          setZone('contractTitle', 0.85, zoneOf(line))
+        }
+      }
+    }
+
+    if (!contractType) {
+      if (/\bcdd\b/i.test(line.text)) contractType = 'cdd'
+      else if (/\bint[eé]rim(?:aire)?\b/i.test(line.text)) contractType = 'interim'
+      else if (/\bapprentissage\b|\balternance\b/i.test(line.text)) contractType = 'apprenticeship'
+      else if (/\bcdi\b/i.test(line.text)) contractType = 'cdi'
+    }
+
+    if (!executiveStatus) {
+      if (/\bnon[\s-]?cadre\b/i.test(line.text)) executiveStatus = 'non_cadre'
+      else if (/\bstatut\s*[:]\s*cadre\b|\bcadre\b/i.test(line.text)) executiveStatus = 'cadre'
+    }
+
+    if (!collectiveAgreement) {
+      const m = line.text.match(
+        /\b(?:convention\s+collective(?:\s+nationale)?|ccn|idcc)\s*[:.]?\s*(.+)$/i,
+      )
+      if (m) {
+        const cleaned = cleanFieldValue(m[1]!)
+        if (cleaned) collectiveAgreement = cleaned
+      }
     }
   }
 
@@ -396,6 +528,18 @@ export function extractFrenchPayslip(pages: readonly ExtractedPage[]): Extracted
   const extractedLines: PayslipLineInput[] = []
   let afterTaxAdjustments = 0
   const variablePatterns: { kind: string; pattern: RegExp; taxable: boolean }[] = [
+    {
+      kind: 'holiday-bonus',
+      pattern:
+        /\b(?:iccp|indemnit[eé]\s+compensatrice\s+(?:de\s+)?cong[eé]s\s+pay[eé]s|cong[eé]s\s+pay[eé]s\s+non\s+pris)\b/i,
+      taxable: true,
+    },
+    {
+      kind: 'other',
+      pattern:
+        /\b(?:indemnit[eé]\s+(?:de\s+)?(?:licenciement|rupture(?:\s+conventionnelle)?|pr[eé]carit[eé]|fin\s+de\s+(?:contrat|cdd|mission)|pr[eé]avis))\b/i,
+      taxable: true,
+    },
     { kind: 'on-call', pattern: /\bastreintes?(?!\p{L})/iu, taxable: true },
     { kind: 'overtime', pattern: /\bheures?\s+suppl[eé]mentaires?(?!\p{L})/iu, taxable: true },
     {
@@ -461,18 +605,25 @@ export function extractFrenchPayslip(pages: readonly ExtractedPage[]): Extracted
     }
   }
 
-  const baseSalary = baseMatch?.value ?? grossMatch?.value ?? 0
-  const gross = grossMatch?.value ?? baseSalary
+  const variableSum = extractedLines
+    .filter((l) => l.section === 'variable')
+    .reduce((acc, l) => acc + l.employeeAmount, 0)
+  const rawGross = grossMatch?.value ?? 0
+  const baseSalary =
+    baseMatch?.value ?? (variableSum > 0 ? Math.max(0, rawGross - variableSum) : rawGross)
+  const gross = grossMatch?.value ?? baseSalary + variableSum
   const employeeContributions = empContribMatch?.value ?? 0
   const employerContributions = erContribMatch?.value ?? 0
-  const netBeforeTax =
-    netBeforeTaxMatch?.value ??
-    (gross > 0 && employeeContributions > 0 ? gross - employeeContributions : 0)
+  const netBeforeTax = netBeforeTaxMatch?.value ?? (gross > 0 ? gross - employeeContributions : 0)
   const taxableNet = taxableNetMatch?.value ?? netBeforeTax
   const withholdingTax = pasMatch?.value ?? 0
   const netPaid =
     netPaidMatch?.value ??
     (netBeforeTax > 0 ? netBeforeTax - withholdingTax + afterTaxAdjustments : 0)
+
+  if (isFinalSettlement && !contractEndDate) {
+    contractEndDate = paymentDate ?? lastDayOfMonth(periodMatch.value)
+  }
 
   if (baseMatch) setZone('baseSalary', 0.93, baseMatch.zone)
   if (grossMatch) setZone('gross', 0.95, grossMatch.zone)
@@ -491,8 +642,10 @@ export function extractFrenchPayslip(pages: readonly ExtractedPage[]): Extracted
   const missingFields: string[] = []
   if (!periodMatch.value) missingFields.push('period')
   if (!grossMatch) missingFields.push('gross')
-  if (!empContribMatch) missingFields.push('employeeContributions')
-  if (!taxableNetMatch) missingFields.push('taxableNet')
+  if (!empContribMatch && !(isFinalSettlement && gross === netBeforeTax)) {
+    missingFields.push('employeeContributions')
+  }
+  if (!taxableNetMatch && !isFinalSettlement) missingFields.push('taxableNet')
   if (!netPaidMatch) missingFields.push('netPaid')
 
   const issues = checkPayslipDetailed({
@@ -532,6 +685,13 @@ export function extractFrenchPayslip(pages: readonly ExtractedPage[]): Extracted
     kind: 'payslip',
     employerName,
     employerSiret,
+    contractTitle,
+    contractType,
+    executiveStatus,
+    collectiveAgreement,
+    contractStartDate,
+    contractEndDate,
+    isFinalSettlement,
     period: periodMatch.value,
     paymentDate,
     currency: 'EUR',

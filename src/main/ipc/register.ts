@@ -12,6 +12,7 @@ import {
   aiPreviewAssistSchema,
   aiPreviewCategorizeSchema,
   anthropicApiKeySchema,
+  documentCommitPayslipBatchSchema,
   documentCommitPayslipSchema,
   documentCommitStatementSchema,
   documentIdSchema,
@@ -185,6 +186,7 @@ export function registerIpcHandlers({
 
   // Documents, OCR local et passage IA anonymisé (M7).
   handle(IPC_CHANNELS.documentsPickFile, noInput, () => documents.pickFile())
+  handle(IPC_CHANNELS.documentsPickFiles, noInput, () => documents.pickFiles())
   handle(IPC_CHANNELS.documentsStagePath, z.string().min(1).max(4096), (path) =>
     documents.stagePath(path),
   )
@@ -201,6 +203,9 @@ export function registerIpcHandlers({
   )
   handle(IPC_CHANNELS.documentsCommitPayslip, documentCommitPayslipSchema, (input) =>
     documents.commitPayslip(input),
+  )
+  handle(IPC_CHANNELS.documentsCommitPayslipBatch, documentCommitPayslipBatchSchema, (input) =>
+    documents.commitPayslipBatch(input.documentIds),
   )
   handle(IPC_CHANNELS.documentsCommitStatement, documentCommitStatementSchema, (input) =>
     documents.commitStatement(input),

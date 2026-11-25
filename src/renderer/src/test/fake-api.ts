@@ -571,6 +571,9 @@ export function createFakeApi() {
       pickFile: vi.fn((): ReturnType<FluxoApi['documents']['pickFile']> =>
         Promise.resolve({ ok: false, reason: 'cancelled' }),
       ),
+      pickFiles: vi.fn((): ReturnType<FluxoApi['documents']['pickFiles']> =>
+        Promise.resolve([{ ok: false, reason: 'cancelled' }]),
+      ),
       registerDroppedFile: vi.fn((): ReturnType<FluxoApi['documents']['registerDroppedFile']> =>
         Promise.resolve({ ok: false, reason: 'invalid-file' }),
       ),
@@ -590,6 +593,17 @@ export function createFakeApi() {
       ),
       commitPayslip: vi.fn((): ReturnType<FluxoApi['documents']['commitPayslip']> =>
         Promise.resolve({ ok: false, reason: 'not-found' }),
+      ),
+      commitPayslipBatch: vi.fn((): ReturnType<FluxoApi['documents']['commitPayslipBatch']> =>
+        Promise.resolve({
+          committedCount: 0,
+          createdEmployers: 0,
+          createdContracts: 0,
+          updatedContracts: 0,
+          skippedCount: 0,
+          failedIds: [],
+          results: [],
+        }),
       ),
       commitStatement: vi.fn((): ReturnType<FluxoApi['documents']['commitStatement']> =>
         Promise.resolve({ ok: false, reason: 'not-found' }),

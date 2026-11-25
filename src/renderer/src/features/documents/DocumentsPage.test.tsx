@@ -13,6 +13,13 @@ function samplePayslipDetail(overrides: Partial<ExtractedPayslipDraft> = {}): Do
     kind: 'payslip',
     employerName: 'Atelier Fluxo',
     employerSiret: '81234567800024',
+    contractTitle: 'Développeur Full-Stack',
+    contractType: 'cdi',
+    executiveStatus: 'cadre',
+    collectiveAgreement: 'Syntec',
+    contractStartDate: '2026-01-05',
+    contractEndDate: null,
+    isFinalSettlement: false,
     period: '2026-11',
     paymentDate: '2026-11-28',
     currency: 'EUR',
@@ -96,12 +103,14 @@ describe('DocumentsPage (M7)', () => {
     const api = installFakeApi()
     const detail = samplePayslipDetail()
 
-    api.documents.pickFile.mockResolvedValue({
-      ok: true,
-      document: detail,
-      duplicateOf: null,
-      ocrMissingLanguage: null,
-    })
+    api.documents.pickFiles.mockResolvedValue([
+      {
+        ok: true,
+        document: detail,
+        duplicateOf: null,
+        ocrMissingLanguage: null,
+      },
+    ])
     api.documents.list.mockResolvedValueOnce([]).mockResolvedValue([detail])
     api.documents.get.mockResolvedValue(detail)
     api.documents.commitPayslip.mockResolvedValue({
@@ -119,9 +128,10 @@ describe('DocumentsPage (M7)', () => {
     renderWithQuery(<DocumentsPage />)
     expect(await screen.findByText(/Aucun document déposé/i)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /Choisir un document/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Choisir des documents/i }))
 
     expect(await screen.findByText('Contrôles arithmétiques M6 conformes.')).toBeInTheDocument()
+    expect(screen.getByLabelText(/Début de contrat/i)).toHaveValue('2026-01-05')
     expect(
       screen.getByRole('button', { name: /Exporter l’original avant purge/i }),
     ).toBeInTheDocument()
@@ -129,6 +139,52 @@ describe('DocumentsPage (M7)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Enregistrer ce bulletin/i }))
     await waitFor(() => expect(api.documents.commitPayslip).toHaveBeenCalledTimes(1))
     expect(await screen.findByText(/Bulletin enregistré dans Salaires/i)).toBeInTheDocument()
+  })
+
+  it('propose le tout-en-un par lot pour plusieurs bulletins et un solde de tout compte', async () => {
+    const api = installFakeApi()
+    const monthly = samplePayslipDetail({ period: '2025-01', contractStartDate: '2025-01-06' })
+    const stcBase = samplePayslipDetail({
+      period: '2025-05',
+      contractStartDate: '2025-01-06',
+      contractEndDate: '2025-05-31',
+      isFinalSettlement: true,
+    })
+    const stc = {
+      ...stcBase,
+      id: '01950000-0000-7000-8000-000000000002',
+      fileName: 'solde-tout-compte-mai-2025.pdf',
+    }
+
+    api.documents.list.mockResolvedValue([monthly, stc])
+    api.documents.get.mockResolvedValue(stc)
+    api.documents.commitPayslipBatch.mockResolvedValue({
+      committedCount: 2,
+      createdEmployers: 1,
+      createdContracts: 1,
+      updatedContracts: 1,
+      skippedCount: 0,
+      failedIds: [],
+      results: [],
+    })
+
+    renderWithQuery(<DocumentsPage />)
+    const batchBtn = await screen.findByRole('button', {
+      name: /Tout enregistrer \(2 bulletins \/ STC\)/i,
+    })
+    expect(screen.getByRole('switch', { name: /Solde de tout compte/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    expect(screen.getByLabelText(/Fin de contrat/i)).toHaveValue('2025-05-31')
+
+    fireEvent.click(batchBtn)
+    await waitFor(() =>
+      expect(api.documents.commitPayslipBatch).toHaveBeenCalledWith([monthly.id, stc.id]),
+    )
+    expect(
+      await screen.findByText(/2 bulletin\(s\) enregistré\(s\) · 1 société\(s\) créée\(s\)/i),
+    ).toBeInTheDocument()
   })
 
   it('propose le consentement IA explicite (ADR-022) uniquement quand l’extraction signale un besoin', async () => {

@@ -18,13 +18,14 @@ import type {
   ExtractedStatementDraft,
   SourceZone,
 } from '@shared/documents/model'
-import { DOCUMENT_KINDS } from '@shared/documents/model'
+import { DOCUMENT_KINDS, normalizeCompanyName } from '@shared/documents/model'
 import type { AccountSummary } from '@shared/ledger/model'
 import { checkPayslipDetailed, type ContractSummary } from '@shared/payslip'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { SelectField, TextField } from '../../components/ui/Field'
+import { Switch } from '../../components/ui/Switch'
 import { useT } from '../../i18n'
 import { useFormatters } from '../../lib/format'
 
@@ -73,6 +74,9 @@ export function DocumentReviewPane({
     contractId: string | null
     employerName?: string
     employerSiret?: string | null
+    contractTitle?: string
+    contractStartDate?: string | null
+    contractEndDate?: string | null
     draft: ExtractedPayslipDraft
   }) => void
   onCommitStatement: (payload: { accountId: string; draft: ExtractedStatementDraft }) => void
@@ -86,7 +90,25 @@ export function DocumentReviewPane({
 
   const [draft, setDraft] = useState<ExtractedDocumentDraft | null>(detail.draft)
   const [activeZone, setActiveZone] = useState<SourceZone | null>(null)
-  const [selectedContractId, setSelectedContractId] = useState<string>(contracts[0]?.id ?? '')
+  const [selectedContractId, setSelectedContractId] = useState<string>(() => {
+    if (detail.draft?.kind !== 'payslip') return ''
+    const empTarget = detail.draft.employerName
+      ? normalizeCompanyName(detail.draft.employerName)
+      : ''
+    const titleTarget = detail.draft.contractTitle
+      ? normalizeCompanyName(detail.draft.contractTitle)
+      : ''
+    const active = contracts.filter((c) => !c.archived)
+    if (empTarget) {
+      const sameEmployer = active.filter((c) => normalizeCompanyName(c.employerName) === empTarget)
+      if (titleTarget) {
+        const matchTitle = sameEmployer.find((c) => normalizeCompanyName(c.title) === titleTarget)
+        if (matchTitle) return matchTitle.id
+      }
+      if (sameEmployer.length > 0) return sameEmployer[0]!.id
+    }
+    return ''
+  })
   const [selectedAccountId, setSelectedAccountId] = useState<string>(
     accounts.find((a) => !a.archived && a.trackingMode !== 'valuation')?.id ?? '',
   )
@@ -298,6 +320,31 @@ export function DocumentReviewPane({
                   onChange={(v) => setDraft({ ...draft, employerName: v || null })}
                 />
                 <TextField
+                  label={rv.payslipFields.contractTitle}
+                  value={draft.contractTitle ?? ''}
+                  disabled={readOnly}
+                  onFocus={() => setActiveZone(draft.fieldZones.contractTitle?.sourceZone ?? null)}
+                  onChange={(v) => setDraft({ ...draft, contractTitle: v || null })}
+                />
+                <TextField
+                  label={rv.payslipFields.contractStartDate}
+                  value={draft.contractStartDate ?? ''}
+                  disabled={readOnly}
+                  onFocus={() =>
+                    setActiveZone(draft.fieldZones.contractStartDate?.sourceZone ?? null)
+                  }
+                  onChange={(v) => setDraft({ ...draft, contractStartDate: v || null })}
+                />
+                <TextField
+                  label={rv.payslipFields.contractEndDate}
+                  value={draft.contractEndDate ?? ''}
+                  disabled={readOnly}
+                  onFocus={() =>
+                    setActiveZone(draft.fieldZones.contractEndDate?.sourceZone ?? null)
+                  }
+                  onChange={(v) => setDraft({ ...draft, contractEndDate: v || null })}
+                />
+                <TextField
                   label={rv.payslipFields.period}
                   value={draft.period ?? ''}
                   disabled={readOnly}
@@ -370,6 +417,20 @@ export function DocumentReviewPane({
                 />
               </div>
 
+              {!readOnly ? (
+                <div className="rounded-lg border border-border bg-surface-2 px-3">
+                  <Switch
+                    checked={draft.isFinalSettlement}
+                    label={rv.payslipFields.isFinalSettlement}
+                    onChange={(checked) => setDraft({ ...draft, isFinalSettlement: checked })}
+                  />
+                </div>
+              ) : draft.isFinalSettlement ? (
+                <div className="flex items-center gap-2">
+                  <Badge tone="accent">{rv.payslipFields.finalSettlementBadge}</Badge>
+                </div>
+              ) : null}
+
               <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs">
                 {payslipErrors.length === 0 ? (
                   <>
@@ -406,6 +467,9 @@ export function DocumentReviewPane({
                         contractId: selectedContractId || null,
                         employerName: draft.employerName ?? undefined,
                         employerSiret: draft.employerSiret,
+                        contractTitle: draft.contractTitle ?? undefined,
+                        contractStartDate: draft.contractStartDate,
+                        contractEndDate: draft.contractEndDate,
                         draft,
                       })
                     }

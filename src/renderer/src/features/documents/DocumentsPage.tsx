@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Download, FileScan, ShieldCheck, Upload } from 'lucide-react'
+import { Check, Download, FileScan, ShieldCheck, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState, type DragEvent } from 'react'
 import type {
   AiConfigPublic,
@@ -83,39 +83,95 @@ export default function DocumentsPage() {
     setDetail(full)
   }
 
-  const handleStageOutcome = async (res: DocumentStageOutcome) => {
+  const applyStageOutcomes = async (outcomes: DocumentStageOutcome[]) => {
     setBusy(false)
-    if (!res.ok) {
-      if (res.reason !== 'cancelled') setError(dt.errors[res.reason])
-      return
+    let firstError: string | null = null
+    let duplicateName: string | null = null
+    let lastDoc: DocumentDetail | null = null
+    let lastOcrLang: OcrLanguage | null = null
+
+    for (const res of outcomes) {
+      if (!res.ok) {
+        if (res.reason !== 'cancelled' && !firstError) firstError = dt.errors[res.reason]
+        continue
+      }
+      lastDoc = res.document
+      if (res.ocrMissingLanguage) lastOcrLang = res.ocrMissingLanguage
+      if (res.duplicateOf) duplicateName = res.duplicateOf.fileName
     }
-    setError(null)
-    setMissingOcrLang(res.ocrMissingLanguage)
-    if (res.duplicateOf) {
-      setNotice(dt.duplicateNotice(res.duplicateOf.fileName))
-    } else {
-      setNotice(null)
+
+    setError(firstError)
+    setMissingOcrLang(lastOcrLang)
+    if (lastDoc) {
+      setNotice(duplicateName ? dt.duplicateNotice(duplicateName) : null)
+      await refreshQueue(lastDoc.id)
+      setDetail(lastDoc)
+    } else if (duplicateName) {
+      setNotice(dt.duplicateNotice(duplicateName))
     }
-    await refreshQueue(res.document.id)
-    setDetail(res.document)
   }
 
-  const handlePickFile = async () => {
+  const handleStageOutcome = async (res: DocumentStageOutcome) => {
+    await applyStageOutcomes([res])
+  }
+
+  const handlePickFiles = async () => {
     setBusy(true)
     setError(null)
-    const res = await getApi().documents.pickFile()
-    await handleStageOutcome(res)
+    try {
+      const outcomes = await getApi().documents.pickFiles()
+      await applyStageOutcomes(outcomes)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleDrop = async (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setDragging(false)
-    const file = event.dataTransfer.files[0]
-    if (!file) return
+    const files = Array.from(event.dataTransfer.files)
+    if (files.length === 0) return
     setBusy(true)
     setError(null)
-    const res = await getApi().documents.registerDroppedFile(file)
-    await handleStageOutcome(res)
+    try {
+      const outcomes: DocumentStageOutcome[] = []
+      for (const file of files) {
+        outcomes.push(await getApi().documents.registerDroppedFile(file))
+      }
+      await applyStageOutcomes(outcomes)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const pendingPayslips = queue.filter(
+    (item) => item.kind === 'payslip' && item.status !== 'committed' && item.status !== 'rejected',
+  )
+
+  const handleCommitPayslipBatch = async () => {
+    if (pendingPayslips.length === 0) return
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await getApi().documents.commitPayslipBatch(pendingPayslips.map((d) => d.id))
+      await queryClient.invalidateQueries({ queryKey: ['ledger'] })
+      await refreshQueue(detail?.id)
+      if (res.committedCount > 0) {
+        setNotice(
+          dt.batchCommittedNotice(
+            res.committedCount,
+            res.createdEmployers,
+            res.createdContracts,
+            res.updatedContracts,
+          ),
+        )
+      }
+      if (res.skippedCount > 0 || res.failedIds.length > 0) {
+        setError(dt.batchPartialNotice(res.committedCount, res.skippedCount))
+      }
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleInstallOcr = async () => {
@@ -198,7 +254,7 @@ export default function DocumentsPage() {
             <p className="text-sm font-medium text-fg">{dt.dropzoneTitle}</p>
             <p className="text-xs text-muted">{dt.dropzoneHint}</p>
           </div>
-          <Button variant="primary" disabled={busy} onClick={() => void handlePickFile()}>
+          <Button variant="primary" disabled={busy} onClick={() => void handlePickFiles()}>
             <FileScan size={14} aria-hidden />
             {busy ? dt.analyzing : dt.chooseFile}
           </Button>
@@ -238,29 +294,46 @@ export default function DocumentsPage() {
       ) : (
         <>
           <Card title={dt.queueTitle}>
-            <div className="flex flex-wrap gap-2">
-              {queue.map((item) => {
-                const selected = item.id === (detail?.id ?? selectedId)
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => void selectDoc(item.id)}
-                    className={cx(
-                      'flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-colors',
-                      selected
-                        ? 'border-pink bg-surface-2 text-fg'
-                        : 'border-border bg-surface text-fg-2',
-                    )}
+            <div className="space-y-3">
+              {pendingPayslips.length > 1 ? (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs">
+                  <span className="text-fg-2">
+                    {busy ? dt.committingBatch : dt.commitBatch(pendingPayslips.length)}
+                  </span>
+                  <Button
+                    variant="primary"
+                    disabled={busy}
+                    onClick={() => void handleCommitPayslipBatch()}
                   >
-                    <span className="font-medium">{item.fileName}</span>
-                    <Badge tone={item.status === 'needs_review' ? 'accent' : 'neutral'}>
-                      {dt.statuses[item.status]}
-                    </Badge>
-                    <span className="text-muted">{dt.kinds[item.kind]}</span>
-                  </button>
-                )
-              })}
+                    <Check size={14} aria-hidden />
+                    {dt.commitBatch(pendingPayslips.length)}
+                  </Button>
+                </div>
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                {queue.map((item) => {
+                  const selected = item.id === (detail?.id ?? selectedId)
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => void selectDoc(item.id)}
+                      className={cx(
+                        'flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-colors',
+                        selected
+                          ? 'border-pink bg-surface-2 text-fg'
+                          : 'border-border bg-surface text-fg-2',
+                      )}
+                    >
+                      <span className="font-medium">{item.fileName}</span>
+                      <Badge tone={item.status === 'needs_review' ? 'accent' : 'neutral'}>
+                        {dt.statuses[item.status]}
+                      </Badge>
+                      <span className="text-muted">{dt.kinds[item.kind]}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </Card>
 

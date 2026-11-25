@@ -1704,11 +1704,23 @@ export const fr = {
     title: 'Documents & OCR',
     subtitle:
       'Déposez vos bulletins de paie ou relevés PDF : extraction locale d’abord, relecture côte à côte et zéro rétention d’original par défaut.',
-    dropzoneTitle: 'Glissez un bulletin de paie ou relevé (PDF, PNG, JPEG)',
+    dropzoneTitle: 'Glissez un ou plusieurs bulletins / STC ou relevés (PDF, PNG, JPEG)',
     dropzoneHint:
-      'Jusqu’à 32 Mio · 600 pages max · Déduplication automatique par empreinte SHA-256.',
-    chooseFile: 'Choisir un document…',
+      'Sélection multiple possible · Jusqu’à 32 Mio · 600 pages max · Déduplication automatique SHA-256.',
+    chooseFile: 'Choisir des documents…',
     analyzing: 'Extraction isolée en cours…',
+    commitBatch: (count: number) =>
+      count > 1 ? `Tout enregistrer (${count} bulletins / STC)` : 'Enregistrer ce bulletin / STC',
+    committingBatch: 'Enregistrement du lot et mise à jour des contrats…',
+    batchCommittedNotice: (
+      committed: number,
+      employers: number,
+      contracts: number,
+      updated: number,
+    ) =>
+      `${committed} bulletin(s) enregistré(s) · ${employers} société(s) créée(s) · ${contracts} contrat(s) créé(s) · ${updated} contrat(s) mis à jour.`,
+    batchPartialNotice: (committed: number, skipped: number) =>
+      `${committed} bulletin(s) enregistré(s), ${skipped} ignoré(s) ou à vérifier.`,
     duplicateNotice: (name: string) =>
       `Document déjà présent dans le coffre (empreinte SHA-256 identique à « ${name} »).`,
     ocrMissingBanner: (lang: string) =>
@@ -1763,9 +1775,14 @@ export const fr = {
         `Relevé intégré (${count} opération(s) importée(s)) et original purgé.`,
       payslipFields: {
         contract: 'Contrat cible',
-        newContractAuto: 'Créer un employeur + contrat automatiquement',
+        newContractAuto: 'Associer / créer société & contrat automatiquement',
         employerName: 'Employeur détecté',
         employerSiret: 'SIRET',
+        contractTitle: 'Intitulé de poste / contrat',
+        contractStartDate: 'Début de contrat (AAAA-MM-JJ)',
+        contractEndDate: 'Fin de contrat / sortie (AAAA-MM-JJ)',
+        isFinalSettlement: 'Solde de tout compte (clôt le contrat)',
+        finalSettlementBadge: 'Solde de tout compte',
         period: 'Période (AAAA-MM)',
         paymentDate: 'Date de paiement (AAAA-MM-JJ)',
         baseSalary: 'Salaire de base (€)',

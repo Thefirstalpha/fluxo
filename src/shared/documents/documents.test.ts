@@ -198,4 +198,62 @@ describe('classifyDocument & templates déterministes', () => {
     expect(stmt.balanceDiscrepancy).toBe(0)
     expect(stmt.needsAiAssist).toBe(false)
   })
+
+  it('extrait un solde de tout compte (STC) avec dates d’entrée/sortie, poste et indemnités', () => {
+    const page = pageFromLines([
+      'Employeur : Nova Conseil SAS',
+      'SIRET : 901 234 567 00018',
+      'REÇU POUR SOLDE DE TOUT COMPTE — Mai 2025',
+      'Emploi : Ingénieure Produit Senior',
+      'Convention collective : Syntec',
+      'Date d’entrée : 06/01/2025',
+      'Date de sortie : 31/05/2025',
+      'Payé le 31/05/2025',
+      'Salaire de base 151,67 h        3 200,00 €',
+      'Indemnité compensatrice de congés payés   800,00 €',
+      'Indemnité de rupture conventionnelle    2 000,00 €',
+      'Salaire brut                    6 000,00 €',
+      'Total cotisations salariales      880,00 €',
+      'Net à payer avant impôt         5 120,00 €',
+      'Net imposable                   3 400,00 €',
+      'Prélèvement à la source (8,00 %)  272,00 €',
+      'Net payé au salarié             4 848,00 €',
+    ])
+
+    const cls = classifyDocument([page], 'solde-de-tout-compte-mai-2025.pdf')
+    expect(cls.kind).toBe('payslip')
+
+    const draft = extractFrenchPayslip([page])
+    expect(draft.isFinalSettlement).toBe(true)
+    expect(draft.employerName).toBe('Nova Conseil SAS')
+    expect(draft.employerSiret).toBe('90123456700018')
+    expect(draft.contractTitle).toBe('Ingénieure Produit Senior')
+    expect(draft.collectiveAgreement).toBe('Syntec')
+    expect(draft.contractStartDate).toBe('2025-01-06')
+    expect(draft.contractEndDate).toBe('2025-05-31')
+    expect(draft.period).toBe('2025-05')
+    expect(draft.gross).toBe(600_000)
+    expect(draft.netPaid).toBe(484_800)
+    expect(
+      draft.lines.some((l) => l.itemKind === 'holiday-bonus' && l.employeeAmount === 80_000),
+    ).toBe(true)
+    expect(draft.lines.some((l) => l.itemKind === 'other' && l.employeeAmount === 200_000)).toBe(
+      true,
+    )
+    expect(draft.needsAiAssist).toBe(false)
+
+    // Variante abrégée sans apostrophe ni préposition (« Date entree / Date sortie »).
+    const compactStc = extractFrenchPayslip([
+      pageFromLines([
+        'Employeur : Nova Conseil SAS',
+        'RECU POUR SOLDE DE TOUT COMPTE - Mai 2025',
+        'Date entree : 06/01/2025',
+        'Date sortie : 29/05/2025',
+        'Paye le 31/05/2025',
+        'Net paye au salarie 2 864,00 EUR',
+      ]),
+    ])
+    expect(compactStc.contractStartDate).toBe('2025-01-06')
+    expect(compactStc.contractEndDate).toBe('2025-05-29')
+  })
 })

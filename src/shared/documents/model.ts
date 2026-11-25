@@ -1,5 +1,5 @@
 import type { MinorUnits } from '../money'
-import type { PayslipLineInput } from '../payslip'
+import type { ContractType, ExecutiveStatus, PayslipLineInput } from '../payslip'
 
 /** Formats MIME pris en charge par la boîte de dépôt documentaire (M7). */
 export const DOCUMENT_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg'] as const
@@ -89,6 +89,13 @@ export interface ExtractedPayslipDraft {
   kind: 'payslip'
   employerName: string | null
   employerSiret: string | null
+  contractTitle: string | null
+  contractType: ContractType | null
+  executiveStatus: ExecutiveStatus | null
+  collectiveAgreement: string | null
+  contractStartDate: string | null
+  contractEndDate: string | null
+  isFinalSettlement: boolean
   period: string | null
   paymentDate: string | null
   currency: string
@@ -275,6 +282,8 @@ export interface DocumentCommitPayslipInput {
   employerName?: string
   employerSiret?: string | null
   contractTitle?: string
+  contractStartDate?: string | null
+  contractEndDate?: string | null
   draft: ExtractedPayslipDraft
   linkTransactionId?: string | null
   notes?: string | null
@@ -284,6 +293,16 @@ export interface DocumentCommitStatementInput {
   documentId: string
   accountId: string
   draft: ExtractedStatementDraft
+}
+
+export interface DocumentBatchPayslipCommitOutcome {
+  committedCount: number
+  createdEmployers: number
+  createdContracts: number
+  updatedContracts: number
+  skippedCount: number
+  failedIds: string[]
+  results: DocumentCommitOutcome[]
 }
 
 export type DocumentCommitOutcome =
@@ -352,3 +371,13 @@ export type OcrDownloadOutcome =
 export type DocumentOriginalExportOutcome =
   | { ok: true; fileName: string }
   | { ok: false; reason: 'cancelled' | 'no-original' | 'vault-locked' }
+
+/** Normalise une raison sociale ou un intitulé de contrat pour la déduplication. */
+export function normalizeCompanyName(raw: string): string {
+  return raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+}

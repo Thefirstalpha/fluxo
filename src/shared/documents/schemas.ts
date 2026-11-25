@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { CONTRACT_TYPES, EXECUTIVE_STATUSES } from '../payslip'
 import {
   AI_LOCAL_MODES,
   AI_PROVIDERS,
@@ -52,6 +53,44 @@ export const extractedPayslipDraftSchema = z.strictObject({
   kind: z.literal('payslip'),
   employerName: z.string().max(200).nullable(),
   employerSiret: z.string().max(20).nullable(),
+  contractTitle: z
+    .string()
+    .max(200)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  contractType: z
+    .enum(CONTRACT_TYPES)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  executiveStatus: z
+    .enum(EXECUTIVE_STATUSES)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  collectiveAgreement: z
+    .string()
+    .max(200)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  contractStartDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  contractEndDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  isFinalSettlement: z
+    .boolean()
+    .optional()
+    .transform((v) => v ?? false),
   period: z
     .string()
     .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
@@ -192,16 +231,34 @@ export const documentUpdateDraftSchema = z.strictObject({
   draft: extractedDocumentDraftSchema,
 })
 
+export const documentStagePathsSchema = z.strictObject({
+  paths: z.array(z.string().min(1).max(4096)).min(1).max(200),
+})
+
 export const documentCommitPayslipSchema = z.strictObject({
   documentId: idSchema,
   contractId: idSchema.nullable(),
   employerName: z.string().trim().max(200).optional(),
   employerSiret: z.string().trim().max(20).nullable().optional(),
   contractTitle: z.string().trim().max(200).optional(),
+  contractStartDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  contractEndDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   draft: extractedPayslipDraftSchema,
   linkTransactionId: idSchema.nullable().optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
 }) satisfies z.ZodType<DocumentCommitPayslipInput>
+
+export const documentCommitPayslipBatchSchema = z.strictObject({
+  documentIds: z.array(idSchema).min(1).max(200),
+})
 
 export const documentCommitStatementSchema = z.strictObject({
   documentId: idSchema,
@@ -239,6 +296,18 @@ export const anthropicApiKeySchema = z.strictObject({
 /** Schéma JSON structuré demandé à Claude / Ollama pour compléter un bulletin de paie. */
 export const aiPayslipStructuredOutputSchema = z.strictObject({
   employerName: z.string().nullable(),
+  contractTitle: z.string().nullable().optional(),
+  contractStartDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  contractEndDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  isFinalSettlement: z.boolean().optional(),
   period: z
     .string()
     .regex(/^\d{4}-(0[1-9]|1[0-2])$/)

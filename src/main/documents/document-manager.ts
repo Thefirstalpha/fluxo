@@ -9,6 +9,7 @@ import type {
   AiConfigPublic,
   AiSendLogEntry,
   AiSendPreview,
+  DocumentBatchPayslipCommitOutcome,
   DocumentCommitOutcome,
   DocumentCommitPayslipInput,
   DocumentCommitStatementInput,
@@ -43,6 +44,10 @@ import type { DataServiceClient } from '../data/data-service'
 import type { VaultManager } from '../vault/vault-manager'
 import type { AiConfigStore } from './ai/config-store'
 import { AiGateway } from './ai/gateway'
+import {
+  resolveOrUpdateContractForPayslip,
+  type ContractResolutionResult,
+} from './contract-resolver'
 import type { AiSecretStore } from './ai/secrets'
 import { readBoundedDocumentFile, StagedOriginalBytesStore } from './file-guard'
 import type { OcrModelManager } from './model-manager'
@@ -110,12 +115,12 @@ export class DocumentManager {
     this.pagesCache.delete(documentId)
   }
 
-  async pickFile(): Promise<DocumentStageOutcome> {
+  private async openDocumentDialog(multi: boolean): Promise<string[] | null> {
     const l = this.labels()
     const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
     const options: Electron.OpenDialogOptions = {
       title: l.chooseDocumentFile,
-      properties: ['openFile'],
+      properties: multi ? ['openFile', 'multiSelections'] : ['openFile'],
       filters: [
         { name: l.documentFilterAll, extensions: ['pdf', 'png', 'jpg', 'jpeg'] },
         { name: l.pdfFilter, extensions: ['pdf'] },
@@ -125,10 +130,28 @@ export class DocumentManager {
     const result = window
       ? await dialog.showOpenDialog(window, options)
       : await dialog.showOpenDialog(options)
-    if (result.canceled || !result.filePaths[0]) {
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths
+  }
+
+  async pickFile(): Promise<DocumentStageOutcome> {
+    const paths = await this.openDocumentDialog(false)
+    if (!paths || !paths[0]) {
       return { ok: false, reason: 'cancelled' }
     }
-    return this.stagePath(result.filePaths[0])
+    return this.stagePath(paths[0])
+  }
+
+  async pickFiles(): Promise<DocumentStageOutcome[]> {
+    const paths = await this.openDocumentDialog(true)
+    if (!paths) {
+      return [{ ok: false, reason: 'cancelled' }]
+    }
+    const outcomes: DocumentStageOutcome[] = []
+    for (const filePath of paths) {
+      outcomes.push(await this.stagePath(filePath))
+    }
+    return outcomes
   }
 
   async stagePath(rawPath: string): Promise<DocumentStageOutcome> {
@@ -381,40 +404,25 @@ export class DocumentManager {
     return { ok: true, fileName: original.fileName }
   }
 
-  async commitPayslip(input: DocumentCommitPayslipInput): Promise<DocumentCommitOutcome> {
+  private async commitPayslipWithStats(input: DocumentCommitPayslipInput): Promise<{
+    outcome: DocumentCommitOutcome
+    resolved?: ContractResolutionResult
+  }> {
     const docRes = await this.service.call('documentGet', { id: input.documentId })
-    if (!docRes.ok || !docRes.value) return { ok: false, reason: 'not-found' }
+    if (!docRes.ok || !docRes.value) return { outcome: { ok: false, reason: 'not-found' } }
     const doc = docRes.value
 
-    let contractId = input.contractId
-    if (!contractId) {
-      const empName = (input.employerName || input.draft.employerName || 'Employeur').trim()
-      const empRes = await this.vault.ledger('employerCreate', {
-        name: empName.slice(0, 200),
-        siret: input.employerSiret ?? input.draft.employerSiret ?? null,
-        address: null,
-      })
-      if (!empRes.ok) return { ok: false, reason: 'commit-failed' }
-      const cRes = await this.vault.ledger('contractCreate', {
-        employerId: empRes.value.id,
-        title: (input.contractTitle || 'Contrat principal').trim().slice(0, 200),
-        contractType: 'cdi',
-        executiveStatus: 'cadre',
-        workTime: 'full_time',
-        workTimeRatioMicros: 1_000_000,
-        monthlyHoursHundredths: input.draft.baseHoursHundredths ?? 15_167,
-        collectiveAgreement: null,
-        classification: null,
-        startDate: `${input.draft.period ?? '2026-01'}-01`,
-        endDate: null,
-        defaultBaseSalary: input.draft.baseSalary,
-        currency: input.draft.currency,
-        countryPack: 'fr',
-        employeeNir: null,
-      })
-      if (!cRes.ok) return { ok: false, reason: 'commit-failed' }
-      contractId = cRes.value.id
-    }
+    const resolved = await resolveOrUpdateContractForPayslip(this.vault, {
+      contractId: input.contractId,
+      employerName: input.employerName,
+      employerSiret: input.employerSiret,
+      contractTitle: input.contractTitle,
+      contractStartDate: input.contractStartDate,
+      contractEndDate: input.contractEndDate,
+      draft: input.draft,
+    })
+    if (!resolved) return { outcome: { ok: false, reason: 'commit-failed' } }
+    const contractId = resolved.contractId
 
     const sourceOrigin: PayslipSourceOrigin =
       doc.extractionMethod === 'ai-claude'
@@ -423,7 +431,11 @@ export class DocumentManager {
           ? 'ia:local'
           : 'document'
 
-    const period = input.draft.period ?? new Date().toISOString().slice(0, 7)
+    const period =
+      input.draft.period ??
+      input.draft.paymentDate?.slice(0, 7) ??
+      input.draft.contractEndDate?.slice(0, 7) ??
+      new Date().toISOString().slice(0, 7)
     const saved = await this.vault.ledger('payslipSave', {
       contractId,
       period,
@@ -457,7 +469,7 @@ export class DocumentManager {
       notes: input.notes ?? null,
       lines: input.draft.lines,
     })
-    if (!saved.ok) return { ok: false, reason: 'commit-failed' }
+    if (!saved.ok) return { outcome: { ok: false, reason: 'commit-failed' } }
 
     const committed = await this.service.call('documentMarkCommitted', {
       id: doc.id,
@@ -465,15 +477,108 @@ export class DocumentManager {
       linkedEntityId: saved.value.id,
       draft: input.draft,
     })
-    if (!committed.ok) return { ok: false, reason: 'commit-failed' }
+    if (!committed.ok) return { outcome: { ok: false, reason: 'commit-failed' } }
 
     // ADR-018 : purge immédiate des octets originaux en RAM après intégration.
     this.purgeStaged(doc.id)
     return {
-      ok: true,
-      document: committed.value,
-      linkedEntityType: 'payslip',
-      linkedEntityId: saved.value.id,
+      outcome: {
+        ok: true,
+        document: committed.value,
+        linkedEntityType: 'payslip',
+        linkedEntityId: saved.value.id,
+      },
+      resolved,
+    }
+  }
+
+  async commitPayslip(input: DocumentCommitPayslipInput): Promise<DocumentCommitOutcome> {
+    const res = await this.commitPayslipWithStats(input)
+    return res.outcome
+  }
+
+  async commitPayslipBatch(documentIds: string[]): Promise<DocumentBatchPayslipCommitOutcome> {
+    const eligible: Array<{ id: string; draft: ExtractedPayslipDraft }> = []
+    let skippedCount = 0
+    const failedIds: string[] = []
+    const results: DocumentCommitOutcome[] = []
+
+    for (const documentId of documentIds) {
+      const docRes = await this.service.call('documentGet', { id: documentId })
+      if (!docRes.ok || !docRes.value) {
+        failedIds.push(documentId)
+        skippedCount += 1
+        continue
+      }
+      const doc = docRes.value
+      if (
+        doc.status === 'committed' ||
+        doc.status === 'rejected' ||
+        doc.draft?.kind !== 'payslip'
+      ) {
+        skippedCount += 1
+        continue
+      }
+      const draft = doc.draft
+      const fallbackPeriod =
+        draft.period ?? draft.paymentDate?.slice(0, 7) ?? draft.contractEndDate?.slice(0, 7) ?? null
+      if (!fallbackPeriod) {
+        failedIds.push(documentId)
+        skippedCount += 1
+        continue
+      }
+      eligible.push({
+        id: documentId,
+        draft: draft.period ? draft : { ...draft, period: fallbackPeriod },
+      })
+    }
+
+    // Traitement chronologique ascendant pour créer la date d'entrée sur les premiers bulletins
+    // puis clôturer avec la date de sortie du solde de tout compte.
+    eligible.sort((a, b) => {
+      const pa = a.draft.period ?? '9999-12'
+      const pb = b.draft.period ?? '9999-12'
+      if (pa !== pb) return pa.localeCompare(pb)
+      return (a.draft.isFinalSettlement ? 1 : 0) - (b.draft.isFinalSettlement ? 1 : 0)
+    })
+
+    let committedCount = 0
+    let createdEmployers = 0
+    let createdContracts = 0
+    let updatedContracts = 0
+
+    for (const item of eligible) {
+      const { outcome, resolved } = await this.commitPayslipWithStats({
+        documentId: item.id,
+        contractId: null,
+        employerName: item.draft.employerName ?? undefined,
+        employerSiret: item.draft.employerSiret,
+        contractTitle: item.draft.contractTitle ?? undefined,
+        contractStartDate: item.draft.contractStartDate,
+        contractEndDate: item.draft.contractEndDate,
+        draft: item.draft,
+      })
+      results.push(outcome)
+      if (!outcome.ok) {
+        failedIds.push(item.id)
+        continue
+      }
+      committedCount += 1
+      if (resolved) {
+        if (resolved.createdEmployer) createdEmployers += 1
+        if (resolved.createdContract) createdContracts += 1
+        if (resolved.updatedContract) updatedContracts += 1
+      }
+    }
+
+    return {
+      committedCount,
+      createdEmployers,
+      createdContracts,
+      updatedContracts,
+      skippedCount,
+      failedIds,
+      results,
     }
   }
 
@@ -739,6 +844,10 @@ export class DocumentManager {
         ])
         return {
           employerName: parsed.employerName,
+          contractTitle: parsed.contractTitle,
+          contractStartDate: parsed.contractStartDate,
+          contractEndDate: parsed.contractEndDate,
+          isFinalSettlement: parsed.isFinalSettlement,
           period: parsed.period,
           paymentDate: parsed.paymentDate,
           baseSalaryCents: parsed.baseSalary,
@@ -800,6 +909,13 @@ export class DocumentManager {
       kind: 'payslip',
       employerName: aiData.employerName ?? prev?.employerName ?? null,
       employerSiret: prev?.employerSiret ?? null,
+      contractTitle: aiData.contractTitle ?? prev?.contractTitle ?? null,
+      contractType: prev?.contractType ?? null,
+      executiveStatus: prev?.executiveStatus ?? null,
+      collectiveAgreement: prev?.collectiveAgreement ?? null,
+      contractStartDate: aiData.contractStartDate ?? prev?.contractStartDate ?? null,
+      contractEndDate: aiData.contractEndDate ?? prev?.contractEndDate ?? null,
+      isFinalSettlement: aiData.isFinalSettlement ?? prev?.isFinalSettlement ?? false,
       period: aiData.period ?? prev?.period ?? null,
       paymentDate: aiData.paymentDate ?? prev?.paymentDate ?? null,
       currency: prev?.currency ?? 'EUR',

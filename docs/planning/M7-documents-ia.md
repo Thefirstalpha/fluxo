@@ -25,7 +25,7 @@ Architecture détaillée : [analyse de documents & IA](../architecture/ia.md).
 
 ### Lot 1 — Boîte de dépôt & stockage
 
-- [x] Glisser-déposer PDF/PNG/JPEG ; empreinte SHA-256 (dédoublonnage) ; file de traitement avec états (en attente, extrait, à relire, enregistré, rejeté). `Besoin`
+- [x] Glisser-déposer PDF/PNG/JPEG (simple et **multi-fichiers**) ; empreinte SHA-256 (dédoublonnage) ; file de traitement avec états (en attente, extrait, à relire, enregistré, rejeté). `Besoin`
 - [x] **Pas de conservation de l'original par défaut** ([ADR-018](../architecture/decisions.md#adr-018--pas-de-conservation-des-documents-sources-par-défaut)) : le fichier déposé est supprimé après extraction et validation ; seules les données structurées et l'empreinte (anti-doublon) restent. `Besoin`
 - [x] **Export facultatif immédiat** du fichier original, proposé juste après l'extraction, avant sa suppression. `Proposition`
 
@@ -34,7 +34,8 @@ Architecture détaillée : [analyse de documents & IA](../architecture/ia.md).
 - [x] Texte des PDF avec **pdf.js** dans un processus isolé (évaluation de code désactivée, aucune ressource distante). `Besoin`
 - [x] **OCR** (tesseract.js, français/anglais) pour les scans ; données de langue téléchargées à la demande avec empreinte vérifiée. `Besoin`
 - [x] Classification du document (relevé, bulletin, autre) par heuristiques. `Socle`
-- [x] **Modèles déterministes** pour les formats fréquents (principaux logiciels de paie, relevés des grandes banques). `Socle`
+- [x] **Modèles déterministes** pour les formats fréquents (principaux logiciels de paie, **soldes de tout compte avec dates d'entrée/sortie**, relevés des grandes banques). `Socle`
+- [x] **Création et mise à jour automatiques employeur/contrat** lors d'un import simple ou en lot : déduplication par SIRET ou raison sociale normalisée, enrichissement des dates de début et de fin de contrat depuis les bulletins et soldes de tout compte. `Besoin`
 
 ### Lot 3 — Extraction par IA
 

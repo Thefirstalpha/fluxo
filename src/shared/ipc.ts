@@ -6,6 +6,7 @@ import type {
   AiConfigPublic,
   AiSendLogEntry,
   AiSendPreview,
+  DocumentBatchPayslipCommitOutcome,
   DocumentCommitOutcome,
   DocumentCommitPayslipInput,
   DocumentCommitStatementInput,
@@ -97,6 +98,7 @@ export const IPC_CHANNELS = {
   analyticsExportImage: 'fluxo:analytics:export-image',
   analyticsExportMonthlyPdf: 'fluxo:analytics:export-monthly-pdf',
   documentsPickFile: 'fluxo:documents:pick-file',
+  documentsPickFiles: 'fluxo:documents:pick-files',
   documentsStagePath: 'fluxo:documents:stage-path',
   documentsRerunExtraction: 'fluxo:documents:rerun-extraction',
   documentsList: 'fluxo:documents:list',
@@ -104,6 +106,7 @@ export const IPC_CHANNELS = {
   documentsUpdateDraft: 'fluxo:documents:update-draft',
   documentsExportOriginal: 'fluxo:documents:export-original',
   documentsCommitPayslip: 'fluxo:documents:commit-payslip',
+  documentsCommitPayslipBatch: 'fluxo:documents:commit-payslip-batch',
   documentsCommitStatement: 'fluxo:documents:commit-statement',
   documentsReject: 'fluxo:documents:reject',
   documentsDelete: 'fluxo:documents:delete',
@@ -240,6 +243,7 @@ export interface FluxoApi {
   /** Boîte de dépôt documentaire, OCR local et passage IA anonymisé (M7). */
   readonly documents: {
     pickFile(): Promise<DocumentStageOutcome>
+    pickFiles(): Promise<DocumentStageOutcome[]>
     registerDroppedFile(file: File): Promise<DocumentStageOutcome>
     stagePath(path: string): Promise<DocumentStageOutcome>
     rerunExtraction(input: {
@@ -255,6 +259,7 @@ export interface FluxoApi {
     }): Promise<DocumentListItem | null>
     exportOriginal(documentId: string): Promise<DocumentOriginalExportOutcome>
     commitPayslip(input: DocumentCommitPayslipInput): Promise<DocumentCommitOutcome>
+    commitPayslipBatch(documentIds: string[]): Promise<DocumentBatchPayslipCommitOutcome>
     commitStatement(input: DocumentCommitStatementInput): Promise<DocumentCommitOutcome>
     reject(documentId: string): Promise<DocumentListItem | null>
     delete(documentId: string): Promise<boolean>

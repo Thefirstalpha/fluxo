@@ -1684,10 +1684,23 @@ export const en: Dictionary = {
     title: 'Documents & OCR',
     subtitle:
       'Drop payslips or PDF statements: local extraction first, side-by-side review, and zero original retention by default.',
-    dropzoneTitle: 'Drop a payslip or statement (PDF, PNG, JPEG)',
-    dropzoneHint: 'Up to 32 MiB · max 600 pages · Automatic SHA-256 deduplication.',
-    chooseFile: 'Choose document…',
+    dropzoneTitle: 'Drop one or more payslips / final settlements or statements (PDF, PNG, JPEG)',
+    dropzoneHint:
+      'Multi-file supported · Up to 32 MiB · max 600 pages · Automatic SHA-256 deduplication.',
+    chooseFile: 'Choose documents…',
     analyzing: 'Extracting in isolated worker…',
+    commitBatch: (count: number) =>
+      count > 1 ? `Save all (${count} payslips / settlements)` : 'Save payslip / settlement',
+    committingBatch: 'Saving batch & updating employer contracts…',
+    batchCommittedNotice: (
+      committed: number,
+      employers: number,
+      contracts: number,
+      updated: number,
+    ) =>
+      `${committed} payslip(s) saved · ${employers} employer(s) created · ${contracts} contract(s) created · ${updated} contract(s) updated.`,
+    batchPartialNotice: (committed: number, skipped: number) =>
+      `${committed} payslip(s) saved, ${skipped} skipped or needing review.`,
     duplicateNotice: (name: string) =>
       `Document already exists in the vault (identical SHA-256 to “${name}”).`,
     ocrMissingBanner: (lang: string) =>
@@ -1741,9 +1754,14 @@ export const en: Dictionary = {
         `Statement imported (${count} transaction(s)) and original bytes purged.`,
       payslipFields: {
         contract: 'Target contract',
-        newContractAuto: 'Create employer & contract automatically',
+        newContractAuto: 'Auto-match / create employer & contract',
         employerName: 'Detected employer',
         employerSiret: 'SIRET',
+        contractTitle: 'Job / contract title',
+        contractStartDate: 'Contract start date (YYYY-MM-DD)',
+        contractEndDate: 'Contract end / exit date (YYYY-MM-DD)',
+        isFinalSettlement: 'Final settlement (closes contract)',
+        finalSettlementBadge: 'Final settlement',
         period: 'Period (YYYY-MM)',
         paymentDate: 'Payment date (YYYY-MM-DD)',
         baseSalary: 'Base salary (€)',

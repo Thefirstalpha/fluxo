@@ -5,6 +5,7 @@ import type {
   AiConfigPublic,
   AiSendLogEntry,
   AiSendPreview,
+  DocumentBatchPayslipCommitOutcome,
   DocumentCommitOutcome,
   DocumentDetail,
   DocumentListItem,
@@ -172,6 +173,8 @@ const api: FluxoApi = {
   documents: Object.freeze({
     pickFile: () =>
       ipcRenderer.invoke(IPC_CHANNELS.documentsPickFile) as Promise<DocumentStageOutcome>,
+    pickFiles: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsPickFiles) as Promise<DocumentStageOutcome[]>,
     registerDroppedFile: (file: File) => {
       const filePath = webUtils.getPathForFile(file)
       if (!filePath) return Promise.resolve({ ok: false as const, reason: 'invalid-file' as const })
@@ -206,6 +209,10 @@ const api: FluxoApi = {
         IPC_CHANNELS.documentsCommitPayslip,
         input,
       ) as Promise<DocumentCommitOutcome>,
+    commitPayslipBatch: (documentIds) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsCommitPayslipBatch, {
+        documentIds,
+      }) as Promise<DocumentBatchPayslipCommitOutcome>,
     commitStatement: (input) =>
       ipcRenderer.invoke(
         IPC_CHANNELS.documentsCommitStatement,
