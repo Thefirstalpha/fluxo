@@ -1,6 +1,6 @@
 # M6 — Salaires & bulletins de paie
 
-> **Statut : ⬜ À venir** (aperçu 🟡 sur le tableau de bord) · Taille : XL · Dépend de : M2 (peut avancer en parallèle de M3–M5) · Version : 0.7
+> **Statut : ✅ Livré** (25 novembre 2026) · Taille : XL · Dépend de : M2 · Version : 0.7
 
 ## Objectif
 
@@ -23,28 +23,28 @@ Le **vrai détail des salaires** : du brut au net payé, chaque cotisation, l'im
 
 ### Lot 1 — Modèle complet (France)
 
-- [ ] **Employeurs** (raison sociale, SIRET facultatif) et **contrats** (CDI/CDD/intérim, cadre/non-cadre, temps plein/partiel, convention collective, date d'entrée). `Besoin`
-- [ ] **Bulletin** : période, date de paiement, salaire de base (taux horaire × heures ou forfait), absences. `Besoin`
-- [ ] **Éléments variables typés** : astreintes, heures supplémentaires (25 %, 50 %, défiscalisées), 13ᵉ mois, prime de vacances, ancienneté, objectifs, indemnités (transport, télétravail), avantages en nature. `Besoin`
-- [ ] **Cotisations ligne à ligne** : base, taux et montant salarial, taux et montant patronal ; regroupements (santé, retraite de base et complémentaire, chômage, CSG/CRDS déductible et non déductible, prévoyance, mutuelle). `Besoin`
-- [ ] **Totaux** : brut, total des cotisations salariales et patronales, net à payer avant impôt, net imposable, **montant net social**, **prélèvement à la source** (taux personnalisé ou non, base, montant), net payé. `Besoin`
-- [ ] **Cumuls annuels** (brut, net imposable, prélèvement, heures). `Besoin`
-- [ ] Architecture **« pack pays »** : règles de validation et libellés propres à chaque pays, France en premier. `Socle`
+- [x] **Employeurs** (raison sociale, SIRET facultatif) et **contrats** (CDI/CDD/intérim, cadre/non-cadre, temps plein/partiel, convention collective, date d'entrée). `Besoin`
+- [x] **Bulletin** : période, date de paiement, salaire de base (taux horaire × heures ou forfait), absences. `Besoin`
+- [x] **Éléments variables typés** : astreintes, heures supplémentaires (25 %, 50 %, défiscalisées), 13ᵉ mois, prime de vacances, ancienneté, objectifs, indemnités (transport, télétravail), avantages en nature. `Besoin`
+- [x] **Cotisations ligne à ligne** : base, taux et montant salarial, taux et montant patronal ; regroupements (santé, retraite de base et complémentaire, chômage, CSG/CRDS déductible et non déductible, prévoyance, mutuelle). `Besoin`
+- [x] **Totaux** : brut, total des cotisations salariales et patronales, net à payer avant impôt, net imposable, **montant net social**, **prélèvement à la source** (taux personnalisé ou non, base, montant), net payé. `Besoin`
+- [x] **Cumuls annuels** (brut, net imposable, prélèvement, heures). `Besoin`
+- [x] Architecture **« pack pays »** : règles de validation et libellés propres à chaque pays, France en premier. `Socle`
 
 ### Lot 2 — Saisie & contrôles
 
-- [ ] Formulaire par sections ; **duplication du mois précédent** ; saisie des seuls totaux possible (détail facultatif). `Besoin`
-- [ ] Contrôles en direct, chacun expliqué : sommes, prélèvement = taux × net imposable, net payé, cumuls = somme des mois, plausibilité des taux. `Socle`
-- [ ] Données sensibles du bulletin (NIR, adresse) chiffrées et masquées à l'affichage. `Socle`
+- [x] Formulaire par sections ; **duplication du mois précédent** ; saisie des seuls totaux possible (détail facultatif). `Besoin`
+- [x] Contrôles en direct, chacun expliqué : sommes, prélèvement = taux × net imposable, net payé, cumuls = somme des mois, plausibilité des taux. `Socle`
+- [x] Données sensibles du bulletin (NIR, adresse) chiffrées et masquées à l'affichage. `Socle`
 
 ### Lot 3 — Comprendre
 
-- [ ] Vue bulletin **« du brut au net »** : barre segmentée (net payé, cotisations, impôt) et détail repliable des cotisations. `Besoin`
-- [ ] **Tableau de bord salaire** : évolution brut / net / net imposable, taux de prélèvement dans le temps, part des éléments variables, astreintes cumulées, 13ᵉ mois, comparaisons annuelles ; chaque graphique avec vue tableau. `Besoin`
-- [ ] **Coût employeur** (brut + cotisations patronales). `Proposition`
-- [ ] **Rapprochement bulletin ↔ virement** : opération correspondant au net payé (± 1 €, ± 5 jours), alerte en cas d'écart. `Proposition`
-- [ ] **Simulateur** : effet d'une augmentation brute, d'un changement de taux, d'heures supplémentaires. `Proposition`
-- [ ] **Récapitulatif annuel** : cumul du net imposable, utile pour vérifier la déclaration pré-remplie. `Proposition`
+- [x] Vue bulletin **« du brut au net »** : barre segmentée (net payé, cotisations, impôt) et détail repliable des cotisations. `Besoin`
+- [x] **Tableau de bord salaire** : évolution brut / net / net imposable, taux de prélèvement dans le temps, part des éléments variables, astreintes cumulées, 13ᵉ mois, comparaisons annuelles ; chaque graphique avec vue tableau. `Besoin`
+- [x] **Coût employeur** (brut + cotisations patronales). `Proposition`
+- [x] **Rapprochement bulletin ↔ virement** : opération correspondant au net payé (± 1 €, ± 5 jours), alerte en cas d'écart. `Proposition`
+- [x] **Simulateur** : effet d'une augmentation brute, d'un changement de taux, d'heures supplémentaires. `Proposition`
+- [x] **Récapitulatif annuel** : cumul du net imposable, utile pour vérifier la déclaration pré-remplie. `Proposition`
 
 ## Sécurité & confidentialité
 

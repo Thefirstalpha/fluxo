@@ -13,6 +13,15 @@ import type {
   TransferMatchCandidate,
 } from '../categorization/model'
 import type {
+  ContractSummary,
+  EmployerSummary,
+  PayslipDetail,
+  PayslipDuplicateDraft,
+  PayslipListItem,
+  PayslipTransferCandidate,
+  SalaryDashboardOverview,
+} from '../payslip'
+import type {
   AccountSummary,
   AuditEntrySummary,
   CategorySummary,
@@ -97,6 +106,25 @@ export interface LedgerOutputs {
   analyticsOverview: AnalyticsOverview
   analyticsAnomalies: AnalyticsAnomaly[]
   analyticsCsvData: { csv: string; rowCount: number }
+  employersList: EmployerSummary[]
+  employerCreate: { id: string }
+  employerUpdate: null
+  employerDelete: null
+  employerRevealAddress: string | null
+  contractsList: ContractSummary[]
+  contractCreate: { id: string }
+  contractUpdate: null
+  contractDelete: null
+  contractRevealNir: string | null
+  payslipsList: PayslipListItem[]
+  payslipGet: PayslipDetail
+  payslipSave: PayslipDetail
+  payslipDelete: null
+  payslipDuplicatePrevious: PayslipDuplicateDraft
+  payslipRevealSensitive: { nir: string | null; address: string | null }
+  payslipTransferCandidates: PayslipTransferCandidate[]
+  payslipLinkTransaction: PayslipDetail
+  salaryDashboard: SalaryDashboardOverview
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -165,6 +193,25 @@ export const LEDGER_METHODS = [
   'analyticsOverview',
   'analyticsAnomalies',
   'analyticsCsvData',
+  'employersList',
+  'employerCreate',
+  'employerUpdate',
+  'employerDelete',
+  'employerRevealAddress',
+  'contractsList',
+  'contractCreate',
+  'contractUpdate',
+  'contractDelete',
+  'contractRevealNir',
+  'payslipsList',
+  'payslipGet',
+  'payslipSave',
+  'payslipDelete',
+  'payslipDuplicatePrevious',
+  'payslipRevealSensitive',
+  'payslipTransferCandidates',
+  'payslipLinkTransaction',
+  'salaryDashboard',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -195,6 +242,16 @@ export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'analyticsOverview',
   'analyticsAnomalies',
   'analyticsCsvData',
+  'employersList',
+  'employerRevealAddress',
+  'contractsList',
+  'contractRevealNir',
+  'payslipsList',
+  'payslipGet',
+  'payslipDuplicatePrevious',
+  'payslipRevealSensitive',
+  'payslipTransferCandidates',
+  'salaryDashboard',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

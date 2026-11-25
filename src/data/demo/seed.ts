@@ -7,6 +7,7 @@ import {
 } from '@shared/demo/demo-ledger'
 import { CATEGORY_PACK_FR } from '@shared/ledger/category-pack'
 import type { LedgerIcon, PaletteColor } from '@shared/ledger/model'
+import { buildDefaultContributionLines } from '@shared/payslip'
 import type { Locale } from '@shared/settings'
 import { uuidv7 } from '@shared/uuid'
 import { recordAudit } from '../db/audit'
@@ -99,6 +100,7 @@ export function seedDemoVault(
     )
     const linkTransfer = db.prepare('UPDATE transactions SET transfer_id = ? WHERE id = ?')
     const pendingTransfer = new Map<DemoCategoryId, string>()
+    const salaryTxByMonth = new Map<string, { id: string; date: string }>()
     for (const transaction of ledger.transactions) {
       const account = accounts.get(transaction.account)
       const category = categories.get(transaction.category)
@@ -115,6 +117,9 @@ export function seedDemoVault(
         stamp,
       )
       insertSplit.run(uuidv7(), id, category, transaction.amount)
+      if (transaction.category === 'salary') {
+        salaryTxByMonth.set(transaction.date.slice(0, 7), { id, date: transaction.date })
+      }
       // Les deux écritures d'un virement (épargne, retrait d'espèces) se suivent : on les relie.
       if (transaction.category === 'savings' || transaction.category === 'transfer') {
         const pending = pendingTransfer.get(transaction.category)
@@ -128,6 +133,168 @@ export function seedDemoVault(
       }
     }
     backfillSavingsLinkedCategories(db, now)
+
+    // Bulletins de démonstration M6 reliés aux virements de salaire.
+    if (ledger.months.length > 0) {
+      const employerId = uuidv7()
+      const contractId = uuidv7()
+      const firstMonth = ledger.months[0]!.month
+      db.prepare(
+        `INSERT INTO employer (id, name, siret, address, archived, created_at, updated_at)
+         VALUES (?, ?, '12345678900014', '10 Avenue des Nations, 75001 Paris', 0, ?, ?)`,
+      ).run(
+        employerId,
+        locale === 'en-US' ? 'Example Corp SAS' : 'Entreprise Exemple SAS',
+        stamp,
+        stamp,
+      )
+      db.prepare(
+        `INSERT INTO contract (id, employer_id, title, contract_type, executive_status, work_time,
+           work_time_ratio_micros, monthly_hours_hundredths, collective_agreement, classification,
+           start_date, end_date, default_base_salary, currency, country_pack, employee_nir,
+           archived, created_at, updated_at)
+         VALUES (?, ?, ?, 'cdi', 'cadre', 'full_time', 1000000, 15167, 'Syntec', 'Position 2.2 · Coef 130',
+           ?, NULL, ?, 'EUR', 'fr', NULL, 0, ?, ?)`,
+      ).run(
+        contractId,
+        employerId,
+        locale === 'en-US' ? 'Software Engineer — Permanent' : 'Ingénieur logiciel — CDI',
+        `${firstMonth}-01`,
+        ledger.months[0]!.payslip.baseSalary,
+        stamp,
+        stamp,
+      )
+
+      const insertPayslip = db.prepare(
+        `INSERT INTO payslip (id, contract_id, period, payment_date, country_pack, currency, totals_only,
+           base_hours_hundredths, hourly_rate, base_salary, gross, employee_contributions, employer_contributions,
+           net_before_tax, taxable_net, social_net, withholding_rate_micros, withholding_personalized,
+           withholding_base, withholding_tax, other_adjustments, net_paid, ytd_gross, ytd_taxable_net,
+           ytd_withholding, ytd_hours_hundredths, employee_nir, employee_address, transaction_id,
+           source_origin, notes, created_at, updated_at)
+         VALUES (?, ?, ?, ?, 'fr', 'EUR', 0, 15167, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, 'demo', NULL, ?, ?)`,
+      )
+      const insertPayslipLine = db.prepare(
+        `INSERT INTO payslip_line (id, payslip_id, section, item_kind, label, quantity_hundredths,
+           base_amount, employee_rate_micros, employee_amount, employer_rate_micros, employer_amount,
+           taxable, position)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+
+      let ytdYear = ''
+      let ytdGross = 0
+      let ytdTaxable = 0
+      let ytdTax = 0
+      let ytdHours = 0
+
+      for (const summary of ledger.months) {
+        const yr = summary.month.slice(0, 4)
+        if (yr !== ytdYear) {
+          ytdYear = yr
+          ytdGross = 0
+          ytdTaxable = 0
+          ytdTax = 0
+          ytdHours = 0
+        }
+        const p = summary.payslip
+        ytdGross += p.gross
+        ytdTaxable += p.taxableNet
+        ytdTax += p.withholdingTax
+        ytdHours += 15_167
+
+        const payslipId = uuidv7()
+        const tx = salaryTxByMonth.get(summary.month)
+        const contribTemplate = buildDefaultContributionLines(p.gross)
+        // Ajuste la dernière ligne pour que Σ cotisations salariales == p.employeeContributions exactement.
+        const rawEmpSum = contribTemplate.reduce((acc, l) => acc + l.employeeAmount, 0)
+        if (contribTemplate.length > 0) {
+          const last = contribTemplate[contribTemplate.length - 1]!
+          last.employeeAmount += p.employeeContributions - rawEmpSum
+        }
+        const employerContributions = contribTemplate.reduce((acc, l) => acc + l.employerAmount, 0)
+
+        insertPayslip.run(
+          payslipId,
+          contractId,
+          p.period,
+          tx?.date ?? null,
+          p.baseSalary,
+          p.gross,
+          p.employeeContributions,
+          employerContributions,
+          p.netBeforeTax,
+          p.taxableNet,
+          p.netBeforeTax,
+          Math.round(p.withholdingRate * 1_000_000),
+          p.withholdingTax,
+          p.otherAdjustments,
+          p.netPaid,
+          ytdGross,
+          ytdTaxable,
+          ytdTax,
+          ytdHours,
+          tx?.id ?? null,
+          stamp,
+          stamp,
+        )
+
+        let pos = 0
+        for (const extra of p.extras) {
+          insertPayslipLine.run(
+            uuidv7(),
+            payslipId,
+            'variable',
+            extra.kind,
+            extra.kind,
+            null,
+            null,
+            null,
+            extra.amount,
+            null,
+            0,
+            1,
+            pos++,
+          )
+        }
+        for (const c of contribTemplate) {
+          insertPayslipLine.run(
+            uuidv7(),
+            payslipId,
+            'contribution',
+            c.itemKind,
+            c.label,
+            null,
+            c.baseAmount,
+            c.employeeRateMicros,
+            c.employeeAmount,
+            c.employerRateMicros,
+            c.employerAmount,
+            c.taxable ? 1 : 0,
+            pos++,
+          )
+        }
+        if (p.otherAdjustments !== 0) {
+          insertPayslipLine.run(
+            uuidv7(),
+            payslipId,
+            'after_tax',
+            'meal-vouchers',
+            locale === 'en-US'
+              ? 'Meal vouchers (employee share)'
+              : 'Titres-restaurant (part salariale)',
+            null,
+            null,
+            null,
+            p.otherAdjustments,
+            null,
+            0,
+            0,
+            pos,
+          )
+        }
+      }
+    }
+
     recordAudit(
       db,
       {

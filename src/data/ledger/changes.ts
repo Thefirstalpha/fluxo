@@ -1,6 +1,7 @@
 import type { Db } from '../db/connection'
 import { recordAudit, type AuditInput } from '../db/audit'
 import { maskIban } from '@shared/ledger/iban'
+import { maskAddress, maskNir } from '@shared/payslip'
 
 /**
  * Écritures du registre : toute modification passe par un `ChangeSet`, qui garde l'image
@@ -19,6 +20,10 @@ export const TRACKED_TABLES = {
   split: { key: ['id'], entity: 'split' },
   split_tag: { key: ['split_id', 'tag_id'], entity: 'split' },
   rule: { key: ['id'], entity: 'rule' },
+  employer: { key: ['id'], entity: 'employer' },
+  contract: { key: ['id'], entity: 'contract' },
+  payslip: { key: ['id'], entity: 'payslip' },
+  payslip_line: { key: ['id'], entity: 'payslip_line' },
   saved_filter: { key: ['id'], entity: null },
 } as const satisfies Record<string, { key: readonly string[]; entity: AuditInput['entity'] | null }>
 
@@ -148,11 +153,25 @@ export class ChangeSet {
   }
 }
 
-/** Image d'une ligne pour le journal : l'IBAN n'y figure que masqué. */
+/** Image d'une ligne pour le journal : IBAN, NIR et adresses n'y figurent que masqués. */
 function auditImage(table: TrackedTable, row: Row | null): Row | undefined {
   if (!row) return undefined
   if (table === 'account' && typeof row.iban === 'string') {
     return { ...row, iban: maskIban(row.iban) }
+  }
+  if (table === 'employer' && typeof row.address === 'string') {
+    return { ...row, address: maskAddress(row.address) }
+  }
+  if (table === 'contract' && typeof row.employee_nir === 'string') {
+    return { ...row, employee_nir: maskNir(row.employee_nir) }
+  }
+  if (table === 'payslip') {
+    const next = { ...row }
+    if (typeof next.employee_nir === 'string') next.employee_nir = maskNir(next.employee_nir)
+    if (typeof next.employee_address === 'string') {
+      next.employee_address = maskAddress(next.employee_address)
+    }
+    return next
   }
   return row
 }

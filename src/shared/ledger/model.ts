@@ -300,6 +300,10 @@ export const AUDIT_ENTITIES = [
   'split',
   'import_batch',
   'rule',
+  'employer',
+  'contract',
+  'payslip',
+  'payslip_line',
 ] as const
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number]
 

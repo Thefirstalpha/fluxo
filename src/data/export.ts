@@ -23,6 +23,10 @@ export const EXPORTED_TABLES = [
   'classifier_state',
   'categorization_suggestion',
   'recurring_dismissed',
+  'employer',
+  'contract',
+  'payslip',
+  'payslip_line',
   'saved_filter',
   'audit_entry',
 ] as const

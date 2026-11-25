@@ -37,6 +37,27 @@ import { getDashboardSummary } from './dashboard'
 import { databaseRuleError, fail, LedgerFailure } from './failure'
 import { HISTORY_LIMIT, listAuditEntries, statusOfHistory, type HistoryEntry } from './history'
 import { getTransactionDetail, listTransactions, summarizeTransactions } from './queries'
+import {
+  createContract,
+  createEmployer,
+  deleteContract,
+  deleteEmployer,
+  deletePayslip,
+  duplicatePreviousPayslip,
+  getPayslipDetail,
+  getSalaryDashboardOverview,
+  linkPayslipTransaction,
+  listContracts,
+  listEmployers,
+  listPayslips,
+  listPayslipTransferCandidates,
+  revealContractNir,
+  revealEmployerAddress,
+  revealPayslipSensitive,
+  savePayslip,
+  updateContract,
+  updateEmployer,
+} from './payslips'
 import { detectSubscriptions, detectTransferCandidates, dismissPriceAlert } from './recurring'
 import {
   applyRulesRetroactively,
@@ -186,6 +207,35 @@ export class Ledger {
       analyticsOverview: (input) => getAnalyticsOverview(db, input, this.now()),
       analyticsAnomalies: (input) => getAnalyticsAnomaliesForFilter(db, input, this.now()),
       analyticsCsvData: (input) => buildFilteredAnalyticsCsv(db, input),
+
+      employersList: (input) => listEmployers(db, input),
+      employerCreate: (input) =>
+        write('employer-create', (changes) => createEmployer(changes, input, this.now())),
+      employerUpdate: (input) =>
+        write('employer-update', (changes) => updateEmployer(changes, input, this.now())),
+      employerDelete: (input) =>
+        write('employer-delete', (changes) => deleteEmployer(changes, input.id)),
+      employerRevealAddress: (input) => revealEmployerAddress(db, input.id),
+      contractsList: (input) => listContracts(db, input),
+      contractCreate: (input) =>
+        write('contract-create', (changes) => createContract(changes, input, this.now())),
+      contractUpdate: (input) =>
+        write('contract-update', (changes) => updateContract(changes, input, this.now())),
+      contractDelete: (input) =>
+        write('contract-delete', (changes) => deleteContract(changes, input.id)),
+      contractRevealNir: (input) => revealContractNir(db, input.id),
+      payslipsList: (input) => listPayslips(db, input),
+      payslipGet: (input) => getPayslipDetail(db, input.id),
+      payslipSave: (input) =>
+        write('payslip-save', (changes) => savePayslip(changes, input, this.now())),
+      payslipDelete: (input) =>
+        write('payslip-delete', (changes) => deletePayslip(changes, input.id)),
+      payslipDuplicatePrevious: (input) => duplicatePreviousPayslip(db, input),
+      payslipRevealSensitive: (input) => revealPayslipSensitive(db, input.id),
+      payslipTransferCandidates: (input) => listPayslipTransferCandidates(db, input.id),
+      payslipLinkTransaction: (input) =>
+        write('payslip-link', (changes) => linkPayslipTransaction(changes, input, this.now())),
+      salaryDashboard: (input) => getSalaryDashboardOverview(db, input),
     }
   }
 

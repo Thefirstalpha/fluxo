@@ -5,6 +5,7 @@ import { SCHEMA_V3 } from './schema-v3'
 import { SCHEMA_V4 } from './schema-v4'
 import { SCHEMA_V5 } from './schema-v5'
 import { SCHEMA_V6 } from './schema-v6'
+import { SCHEMA_V7 } from './schema-v7'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
@@ -39,6 +40,11 @@ export const MIGRATIONS: readonly Migration[] = [
     version: 6,
     name: 'virements (catégories liées aux comptes, épargne nette)',
     up: SCHEMA_V6,
+  },
+  {
+    version: 7,
+    name: 'salaires (employeurs, contrats, bulletins de paie)',
+    up: SCHEMA_V7,
   },
 ]
 

@@ -6,6 +6,16 @@
 import { z } from 'zod'
 import { analyticsFilterSchema } from '../analytics/schemas'
 import { ruleConditionsSchema, ruleSaveSchema } from '../categorization/schemas'
+import {
+  CONTRACT_TYPES,
+  EXECUTIVE_STATUSES,
+  PAYSLIP_COUNTRY_PACKS,
+  PAYSLIP_LINE_SECTIONS,
+  PAYSLIP_SOURCE_ORIGINS,
+  WORK_TIMES,
+  isValidNir,
+  normalizeNir,
+} from '../payslip'
 import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
 import {
@@ -49,6 +59,95 @@ const optionalText = (max: number) =>
     .transform((value) => (value ? value : null))
 
 export const currencySchema = z.string().regex(/^[A-Z]{3}$/)
+
+const siretSchema = z
+  .string()
+  .max(30)
+  .nullable()
+  .transform((value) => (value ? value.replace(/\s+/g, '') : null))
+  .refine((value) => value === null || /^\d{14}$/.test(value), { message: 'siret' })
+
+const nirSchema = z
+  .string()
+  .max(40)
+  .nullable()
+  .transform((value) => (value ? normalizeNir(value) : null))
+  .refine((value) => value === null || isValidNir(value), { message: 'nir' })
+
+const monthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+const rateMicrosSchema = z.int().min(0).max(1_000_000)
+
+const payslipLineInputSchema = z.strictObject({
+  section: z.enum(PAYSLIP_LINE_SECTIONS),
+  itemKind: requiredText(60),
+  label: requiredText(200),
+  quantityHundredths: z.int().min(-100_000_000).max(100_000_000).nullable(),
+  baseAmount: amountSchema.nullable(),
+  employeeRateMicros: rateMicrosSchema.nullable(),
+  employeeAmount: amountSchema,
+  employerRateMicros: rateMicrosSchema.nullable(),
+  employerAmount: amountSchema,
+  taxable: z.boolean(),
+})
+
+const payslipSaveSchema = z.strictObject({
+  id: idSchema.optional(),
+  contractId: idSchema,
+  period: monthSchema,
+  paymentDate: isoDateSchema.nullable(),
+  countryPack: z.enum(PAYSLIP_COUNTRY_PACKS),
+  currency: currencySchema,
+  totalsOnly: z.boolean(),
+  baseHoursHundredths: z.int().min(0).max(100_000).nullable(),
+  hourlyRate: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  baseSalary: z.int().min(0).max(MAX_AMOUNT),
+  gross: z.int().min(0).max(MAX_AMOUNT),
+  employeeContributions: z.int().min(0).max(MAX_AMOUNT),
+  employerContributions: z.int().min(0).max(MAX_AMOUNT),
+  netBeforeTax: amountSchema,
+  taxableNet: amountSchema,
+  socialNet: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  withholdingRateMicros: rateMicrosSchema,
+  withholdingPersonalized: z.boolean(),
+  withholdingBase: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  withholdingTax: z.int().min(0).max(MAX_AMOUNT),
+  otherAdjustments: amountSchema,
+  netPaid: amountSchema,
+  ytdGross: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  ytdTaxableNet: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  ytdWithholding: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  ytdHoursHundredths: z.int().min(0).max(1_000_000).nullable(),
+  employeeNir: nirSchema,
+  employeeAddress: optionalText(400),
+  transactionId: idSchema.nullable().optional(),
+  sourceOrigin: z.enum(PAYSLIP_SOURCE_ORIGINS).optional(),
+  notes: optionalText(2000),
+  lines: z.array(payslipLineInputSchema).max(150),
+})
+
+const employerCreateSchema = z.strictObject({
+  name: requiredText(200),
+  siret: siretSchema,
+  address: optionalText(400),
+})
+
+const contractCreateSchema = z.strictObject({
+  employerId: idSchema,
+  title: requiredText(200),
+  contractType: z.enum(CONTRACT_TYPES),
+  executiveStatus: z.enum(EXECUTIVE_STATUSES),
+  workTime: z.enum(WORK_TIMES),
+  workTimeRatioMicros: z.int().min(1).max(1_000_000),
+  monthlyHoursHundredths: z.int().min(0).max(100_000).nullable(),
+  collectiveAgreement: optionalText(200),
+  classification: optionalText(120),
+  startDate: isoDateSchema,
+  endDate: isoDateSchema.nullable(),
+  defaultBaseSalary: z.int().min(0).max(MAX_AMOUNT).nullable(),
+  currency: currencySchema,
+  countryPack: z.enum(PAYSLIP_COUNTRY_PACKS),
+  employeeNir: nirSchema,
+})
 
 const ibanSchema = z
   .string()
@@ -289,6 +388,54 @@ export const LEDGER_INPUTS = {
   analyticsOverview: analyticsFilterSchema,
   analyticsAnomalies: analyticsFilterSchema,
   analyticsCsvData: analyticsFilterSchema,
+  employersList: z.strictObject({
+    includeArchived: z.boolean().optional(),
+  }),
+  employerCreate: employerCreateSchema,
+  employerUpdate: z.strictObject({
+    id: idSchema,
+    patch: employerCreateSchema.partial().extend({ archived: z.boolean().optional() }).strict(),
+  }),
+  employerDelete: byId,
+  employerRevealAddress: byId,
+  contractsList: z.strictObject({
+    employerId: idSchema.optional(),
+    includeArchived: z.boolean().optional(),
+  }),
+  contractCreate: contractCreateSchema,
+  contractUpdate: z.strictObject({
+    id: idSchema,
+    patch: contractCreateSchema.partial().extend({ archived: z.boolean().optional() }).strict(),
+  }),
+  contractDelete: byId,
+  contractRevealNir: byId,
+  payslipsList: z.strictObject({
+    contractId: idSchema.optional(),
+    year: z.int().min(1970).max(2100).optional(),
+    limit: z.int().min(1).max(500).optional(),
+  }),
+  payslipGet: byId,
+  payslipSave: payslipSaveSchema,
+  payslipDelete: byId,
+  payslipDuplicatePrevious: z
+    .strictObject({
+      sourcePayslipId: idSchema.optional(),
+      contractId: idSchema.optional(),
+      targetPeriod: monthSchema,
+    })
+    .refine((value) => value.sourcePayslipId !== undefined || value.contractId !== undefined, {
+      message: 'source',
+    }),
+  payslipRevealSensitive: byId,
+  payslipTransferCandidates: byId,
+  payslipLinkTransaction: z.strictObject({
+    id: idSchema,
+    transactionId: idSchema.nullable(),
+  }),
+  salaryDashboard: z.strictObject({
+    contractId: idSchema.optional(),
+    currency: currencySchema.optional(),
+  }),
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

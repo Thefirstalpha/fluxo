@@ -101,16 +101,16 @@ C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([
 
 | ID  | Fonctionnalité                                                                                    | Origine     | Jalon   | Statut |
 | --- | ------------------------------------------------------------------------------------------------- | ----------- | ------- | ------ |
-| G01 | Employeurs et contrats (statut, temps de travail)                                                 | Besoin      | M6      | ⬜     |
-| G02 | Bulletin détaillé : base, brut, cotisations, net avant impôt, net imposable, net social, net payé | Besoin      | M6      | 🟡     |
-| G03 | Éléments variables : astreintes, heures supplémentaires, 13ᵉ mois, primes, avantages              | Besoin      | M6      | 🟡     |
-| G04 | Prélèvement à la source : taux (%) et montant prélevé, historique des taux                        | Besoin      | M6      | 🟡     |
-| G06 | Cumuls annuels et contrôle avec le bulletin de décembre                                           | Besoin      | M6      | ⬜     |
-| G07 | Contrôles de cohérence arithmétique                                                               | Socle       | M0 → M6 | 🟡     |
-| G08 | Tableau de bord salaire : évolution brut/net, part variable, taux effectifs                       | Besoin      | M6      | ⬜     |
-| G09 | Rapprochement bulletin ↔ virement reçu                                                            | Proposition | M6      | ⬜     |
-| G10 | Coût employeur et cotisations patronales                                                          | Proposition | M6      | ⬜     |
-| G11 | Simulateur brut → net (augmentation, changement de taux)                                          | Proposition | M6      | ⬜     |
+| G01 | Employeurs et contrats (statut, temps de travail)                                                 | Besoin      | M6      | ✅     |
+| G02 | Bulletin détaillé : base, brut, cotisations, net avant impôt, net imposable, net social, net payé | Besoin      | M6      | ✅     |
+| G03 | Éléments variables : astreintes, heures supplémentaires, 13ᵉ mois, primes, avantages              | Besoin      | M6      | ✅     |
+| G04 | Prélèvement à la source : taux (%) et montant prélevé, historique des taux                        | Besoin      | M6      | ✅     |
+| G06 | Cumuls annuels et contrôle avec le bulletin de décembre                                           | Besoin      | M6      | ✅     |
+| G07 | Contrôles de cohérence arithmétique                                                               | Socle       | M0 → M6 | ✅     |
+| G08 | Tableau de bord salaire : évolution brut/net, part variable, taux effectifs                       | Besoin      | M6      | ✅     |
+| G09 | Rapprochement bulletin ↔ virement reçu                                                            | Proposition | M6      | ✅     |
+| G10 | Coût employeur et cotisations patronales                                                          | Proposition | M6      | ✅     |
+| G11 | Simulateur brut → net (augmentation, changement de taux)                                          | Proposition | M6      | ✅     |
 
 G05 (congés payés et RTT) a été retiré, jugé inutile ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)).
 

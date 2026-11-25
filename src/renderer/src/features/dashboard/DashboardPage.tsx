@@ -80,6 +80,7 @@ export default function DashboardPage() {
 
   const summary = useLedgerQuery('dashboardSummary', { currency, months: 18 })
   const accounts = useLedgerQuery('accountsList', { includeArchived: false })
+  const salaryOverview = useLedgerQuery('salaryDashboard', { currency })
   const demoMonths = getDemoMonths()
 
   const months = useMemo<DashboardMonthSummary[]>(() => {
@@ -140,6 +141,8 @@ export default function DashboardPage() {
     ? (demoMonths.find((m) => m.month === current.month)?.payslip ??
       demoMonths[demoMonths.length - 1]?.payslip)
     : undefined
+  const realPayslip = !demo ? salaryOverview.data?.latestPayslip : null
+  const dashboardPayslip = demoPayslip ?? realPayslip?.summary ?? undefined
 
   const activeAccounts = (accounts.data ?? []).filter((a) => !a.archived)
   const showEmptyRealNotice = !demo && summary.data !== undefined && !summary.data.hasTransactions
@@ -289,8 +292,8 @@ export default function DashboardPage() {
         />
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <CategoryCard current={current} previous={previous} />
-          {demo && demoPayslip ? (
-            <PayslipCard payslip={demoPayslip} />
+          {dashboardPayslip ? (
+            <PayslipCard payslip={dashboardPayslip} />
           ) : (
             <Card
               accent

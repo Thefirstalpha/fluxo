@@ -176,6 +176,30 @@ Migration `src/data/db/schema-v6.ts` ([ADR-038](decisions.md#adr-038--catégorie
 | `category.linked_account_id`       | clé étrangère facultative (`ON DELETE SET NULL`, index unique partiel) associant une sous-catégorie (`savings` / `transfer`) à un compte cible (« Transfert ↔ Livret A ») |
 | Triggers d'invalidation d'agrégats | `agg_dirty_category_linked_update` et `agg_dirty_account_type_update` déclenchent le recalcul de `monthly_category_aggregate` lors de ces changements                     |
 
+## Schéma v7 (M6 — Salaires & bulletins de paie)
+
+Migration `src/data/db/schema-v7.ts` ([ADR-039](decisions.md#adr-039--salaires--schéma-v7-pack-pays-france-arithmétique-entière-et-masquage-nir)) :
+
+| Élément        | Détail                                                                                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `employer`     | raison sociale, SIRET facultatif (14 chiffres), adresse chiffrée dans la base et masquée en lecture                                                                                     |
+| `contract`     | employeur, intitulé, type (`cdi`/`cdd`/`interim`/`apprenticeship`/`other`), cadre/non-cadre, quotité (millionièmes), heures (centièmes), convention collective, NIR chiffré et masqué   |
+| `payslip`      | contrat, période `AAAA-MM`, paiement, pack pays (`fr`), totaux en centimes, taux PAS en millionièmes, net social, cumuls annuels (`ytd_*`), `transaction_id` rapproché, origine d'audit |
+| `payslip_line` | lignes `variable` / `absence` / `contribution` / `after_tax`, regroupement France, base, taux et montants salarial/patronal                                                             |
+| `audit_entry`  | reconstruction pour inclure `employer`, `contract`, `payslip` et `payslip_line` (avec masquage automatique du NIR et de l'adresse)                                                      |
+
+## Schéma v7 (M6 — Salaires & bulletins de paie)
+
+Migration `src/data/db/schema-v7.ts` ([ADR-039](decisions.md#adr-039--salaires--schéma-v7-pack-pays-france-arithmétique-entière-et-masquage-nir)) :
+
+| Élément        | Détail                                                                                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `employer`     | raison sociale, SIRET facultatif (14 chiffres), adresse chiffrée dans la base et masquée en lecture                                                                                     |
+| `contract`     | employeur, intitulé, type (`cdi`/`cdd`/`interim`/`apprenticeship`/`other`), cadre/non-cadre, quotité (millionièmes), heures (centièmes), convention collective, NIR chiffré et masqué   |
+| `payslip`      | contrat, période `AAAA-MM`, paiement, pack pays (`fr`), totaux en centimes, taux PAS en millionièmes, net social, cumuls annuels (`ytd_*`), `transaction_id` rapproché, origine d'audit |
+| `payslip_line` | lignes `variable` / `absence` / `contribution` / `after_tax`, regroupement France, base, taux et montants salarial/patronal                                                             |
+| `audit_entry`  | reconstruction pour inclure `employer`, `contract`, `payslip` et `payslip_line` (avec masquage automatique du NIR et de l'adresse)                                                      |
+
 ## Bulletin de paie (France)
 
 | Section              | Champs                                                                                                                                              | Contrôles                                       |

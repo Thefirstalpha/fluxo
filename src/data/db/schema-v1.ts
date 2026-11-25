@@ -17,36 +17,42 @@
  */
 import {
   ACCOUNT_TYPES,
-  AUDIT_ENTITIES,
   CATEGORY_KINDS,
   TRACKING_MODES,
   TRANSACTION_NATURES,
   TRANSACTION_STATUSES,
 } from '@shared/ledger/model'
+export { AUDIT_ENTITIES } from '@shared/ledger/model'
+
+/** Entités d'audit existantes au schéma v1 (liste figée pour la migration historique v1). */
+const AUDIT_ENTITIES_V1 = [
+  'vault',
+  'account',
+  'category',
+  'payee',
+  'tag',
+  'transaction',
+  'split',
+  'import_batch',
+  'rule',
+] as const
 
 export const id = (column = 'id') => `${column} TEXT NOT NULL CHECK (length(${column}) = 36)`
-const date = (column: string) => `date(${column}) IS ${column}`
+export const date = (column: string) => `date(${column}) IS ${column}`
 export const timestamp = (column: string) =>
   `${column} TEXT NOT NULL CHECK (${column} GLOB '[0-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z')`
-const currency = (column = 'currency') =>
+export const currency = (column = 'currency') =>
   `${column} TEXT NOT NULL CHECK (${column} GLOB '[A-Z][A-Z][A-Z]')`
-const flag = (column: string, fallback: 0 | 1) =>
+export const flag = (column: string, fallback: 0 | 1) =>
   `${column} INTEGER NOT NULL DEFAULT ${fallback} CHECK (${column} IN (0, 1))`
-const text = (column: string, max: number, required = true) =>
+export const text = (column: string, max: number, required = true) =>
   required
     ? `${column} TEXT NOT NULL CHECK (length(${column}) BETWEEN 1 AND ${max})`
     : `${column} TEXT CHECK (${column} IS NULL OR length(${column}) <= ${max})`
 const color = (column = 'color') =>
   `${column} TEXT CHECK (${column} IS NULL OR ${column} GLOB '#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]')`
 
-export {
-  ACCOUNT_TYPES,
-  AUDIT_ENTITIES,
-  CATEGORY_KINDS,
-  TRACKING_MODES,
-  TRANSACTION_NATURES,
-  TRANSACTION_STATUSES,
-}
+export { ACCOUNT_TYPES, CATEGORY_KINDS, TRACKING_MODES, TRANSACTION_NATURES, TRANSACTION_STATUSES }
 export const IMPORT_FORMATS = ['csv', 'ofx', 'qfx', 'qif', 'camt053', 'demo'] as const
 export const IMPORT_STATES = ['pending', 'committed', 'reverted'] as const
 export const AUDIT_ACTIONS = [
@@ -222,7 +228,7 @@ CREATE TABLE rule (
 CREATE TABLE audit_entry (
   ${id()} PRIMARY KEY,
   ${timestamp('at')},
-  entity TEXT NOT NULL CHECK (entity IN (${list(AUDIT_ENTITIES)})),
+  entity TEXT NOT NULL CHECK (entity IN (${list(AUDIT_ENTITIES_V1)})),
   entity_id TEXT,
   action TEXT NOT NULL CHECK (action IN (${list(AUDIT_ACTIONS)})),
   origin TEXT NOT NULL CHECK (origin IN (${list(AUDIT_ORIGINS)})),
