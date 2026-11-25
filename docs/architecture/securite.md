@@ -52,13 +52,13 @@ Ces mesures sont couvertes par des tests unitaires (CSP, chemins, URL, masquage,
 
 ## Mesures prévues
 
-| Jalon | Mesure                                                                                                                                           |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| M0    | CodeQL, revue des dépendances, OpenSSF Scorecard, Dependabot (workflows écrits, actifs dès la création du dépôt GitHub) ; `SECURITY.md` en place |
-| M3    | Analyseurs dans un processus isolé, limites, protection XXE                                                                                      |
-| M4    | Expressions régulières bornées (ReDoS)                                                                                                           |
-| M7    | Clés d'API chiffrées côté main, anonymisation, consentement, pdf.js sans évaluation de code, aucune requête sans accord (test)                   |
-| M9    | Signature et notarisation, mises à jour vérifiées, SBOM et attestations de provenance, audit externe                                             |
+| Jalon | Mesure                                                                                                                                                                                                                                                                        |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M0    | CodeQL, revue des dépendances, OpenSSF Scorecard, Dependabot (workflows écrits, actifs dès la création du dépôt GitHub) ; `SECURITY.md` en place                                                                                                                              |
+| M3    | Analyseurs dans un processus isolé, limites, protection XXE                                                                                                                                                                                                                   |
+| M4    | Expressions régulières bornées (ReDoS)                                                                                                                                                                                                                                        |
+| M7    | Processus isolé `document-parser.js` sans clé/réseau/disque, limites 32 Mio / 600 pages, `pdfjs-dist` sans `eval` ni polices système, packs OCR vérifiés par SHA-256, clé IA chiffrée par `safeStorage`, anonymisation, aperçu et consentement obligatoire (implémenté en M7) |
+| M9    | Signature et notarisation, mises à jour vérifiées, SBOM et attestations de provenance, audit externe                                                                                                                                                                          |
 
 ## Chaîne d'approvisionnement
 

@@ -43,6 +43,7 @@ erDiagram
   PAYSLIP |o--o| TRANSACTION : "rapproché de"
   DOCUMENT |o--o| PAYSLIP : source
   DOCUMENT |o--o| IMPORT_BATCH : source
+  DOCUMENT |o--o{ AI_SEND_LOG : journalise
 ```
 
 | Entité                        | Champs principaux                                                                                                                                                                                                                                                                                                                                                                                                                                             | Jalon    |
@@ -188,17 +189,17 @@ Migration `src/data/db/schema-v7.ts` ([ADR-039](decisions.md#adr-039--salaires--
 | `payslip_line` | lignes `variable` / `absence` / `contribution` / `after_tax`, regroupement France, base, taux et montants salarial/patronal                                                             |
 | `audit_entry`  | reconstruction pour inclure `employer`, `contract`, `payslip` et `payslip_line` (avec masquage automatique du NIR et de l'adresse)                                                      |
 
-## Schéma v7 (M6 — Salaires & bulletins de paie)
+## Schéma v8 (M7 — Documents, OCR & IA)
 
-Migration `src/data/db/schema-v7.ts` ([ADR-039](decisions.md#adr-039--salaires--schéma-v7-pack-pays-france-arithmétique-entière-et-masquage-nir)) :
+Migration `src/data/db/schema-v8.ts` ([ADR-040](decisions.md#adr-040--documents-ocr-local-anonymisation-passerelle-ia-et-schéma-v8)) :
 
-| Élément        | Détail                                                                                                                                                                                  |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `employer`     | raison sociale, SIRET facultatif (14 chiffres), adresse chiffrée dans la base et masquée en lecture                                                                                     |
-| `contract`     | employeur, intitulé, type (`cdi`/`cdd`/`interim`/`apprenticeship`/`other`), cadre/non-cadre, quotité (millionièmes), heures (centièmes), convention collective, NIR chiffré et masqué   |
-| `payslip`      | contrat, période `AAAA-MM`, paiement, pack pays (`fr`), totaux en centimes, taux PAS en millionièmes, net social, cumuls annuels (`ytd_*`), `transaction_id` rapproché, origine d'audit |
-| `payslip_line` | lignes `variable` / `absence` / `contribution` / `after_tax`, regroupement France, base, taux et montants salarial/patronal                                                             |
-| `audit_entry`  | reconstruction pour inclure `employer`, `contract`, `payslip` et `payslip_line` (avec masquage automatique du NIR et de l'adresse)                                                      |
+| Élément                     | Détail                                                                                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document`                  | métadonnées (`kind`, `file_name`, `mime_type`, `sha256` unique, `page_count`, `status`, `extraction_method`, `confidence`, `extracted_json`, lien cible) |
+| `ai_send_log`               | journal métadonnées des envois IA (`provider`, `model`, `purpose`, `input_tokens`, `output_tokens`, `cost_micro_usd`, `payload_sha256`, caviardages)     |
+| `categorization_suggestion` | reconstruction pour inclure `source = 'ai'`                                                                                                              |
+| `import_batch`              | reconstruction pour inclure `format = 'pdf'` lors des relevés importés depuis `/documents`                                                               |
+| `audit_entry`               | reconstruction pour inclure `document` et `ai_send_log`                                                                                                  |
 
 ## Bulletin de paie (France)
 

@@ -46,43 +46,31 @@ interface AiProvider {
 
 Les modèles locaux ne sont **jamais** embarqués dans l'installeur : le modèle léger est téléchargé à la demande, comme les données de langue de l'OCR. Choix précis du modèle et du format (ONNX, GGUF…) : [Q2 des questions ouvertes](../planning/questions-ouvertes.md).
 
-## Fournisseur Claude (esquisse M7)
+## Fournisseur Claude (implémenté en M7)
 
-- **Modèle** : `claude-opus-5-5` par défaut, configurable ; `claude-haiku-5-5` sélectionnable pour les gros volumes (suggestions de catégories).
-- **Sorties structurées** : `client.messages.parse()` + `zodOutputFormat(schema)` ; `parsed_output` vaut `null` si la sortie ne respecte pas le schéma → rejet.
-- **PDF** : bloc `document` en base64 (≤ 32 Mo, ≤ 600 pages), placé avant la consigne.
-- **Refus** : vérifier `stop_reason === 'refusal'` avant de lire le contenu ; activer le repli côté serveur (paramètre `fallbacks`, bêta `server-side-fallback-2026-07-01`).
-- **Coûts** : mise en cache du prompt système stable ; comptage des jetons avant envoi (estimation affichée) ; API Batches (−50 %) pour les suggestions de catégories non urgentes.
-- **Erreurs** : classes typées du SDK (limite de débit, authentification…), nouvelles tentatives gérées par le SDK, message clair à l'utilisateur.
-- **Localisation des traitements** : l'inférence est « globale » par défaut (option « US uniquement » disponible) ; il n'existe pas d'option « UE uniquement » → l'utilisateur en est informé avant activation.
+- **Modèles** : `claude-haiku-4-5` par défaut pour limiter les coûts ; `claude-sonnet-4-5` sélectionnable.
+- **Sorties structurées sans SDK lourd** : appel HTTPS direct à `/v1/messages` (`anthropic-version: 2023-06-01`) via Node `fetch` + `output_config.format.json_schema` généré avec `z.toJSONSchema(schema)` ; toute réponse ne validant pas le schéma `zod` est rejetée.
+- **Charge utile minimale** : seul le texte **extrait localement et anonymisé** (jamais d'octets bruts non expurgés) est envoyé après aperçu exact et consentement utilisateur.
+- **Refus & plafond** : vérification explicite de `stop_reason === 'refusal'` ; calcul du coût estimé en micro-USD avant envoi et blocage au-delà du plafond mensuel configuré.
+- **Localisation des traitements** : l'API cloud Anthropic traite les extraits hors de l'appareil (et possiblement hors de l'UE) → l'utilisateur en est informé avant confirmation dans la modale de consentement.
 
 ```ts
-import Anthropic from '@anthropic-ai/sdk'
-import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
-
-// Exécuté dans le process main : la clé ne quitte jamais ce processus.
-const client = new Anthropic({ apiKey: userApiKey })
-
-const response = await client.messages.parse({
-  model: 'claude-opus-5-5',
-  max_tokens: 16000,
-  messages: [
-    {
-      role: 'user',
-      content: [
-        {
-          type: 'document',
-          source: { type: 'base64', media_type: 'application/pdf', data: anonymizedPdfBase64 },
-        },
-        { type: 'text', text: 'Extrais les champs de ce bulletin de paie selon le schéma fourni.' },
-      ],
-    },
-  ],
-  output_config: { format: zodOutputFormat(PayslipDraftSchema) },
+// Exécuté uniquement dans le process main (`src/main/documents/ai/anthropic.ts`).
+const response = await fetcher('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01',
+  },
+  body: JSON.stringify({
+    model,
+    max_tokens: 2048,
+    system,
+    messages: [{ role: 'user', content: anonymizedText }],
+    output_config: { format: { type: 'json_schema', schema: z.toJSONSchema(schema) } },
+  }),
 })
-
-if (response.stop_reason === 'refusal') throw new ExtractionRefused()
-const draft = response.parsed_output // null → extraction rejetée, saisie assistée
 ```
 
 ## Confidentialité

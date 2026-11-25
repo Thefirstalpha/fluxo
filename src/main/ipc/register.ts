@@ -5,6 +5,20 @@ import {
   exportAnalyticsImageSchema,
   exportAnalyticsPdfSchema,
 } from '@shared/analytics/schemas'
+import {
+  aiConfigPatchSchema,
+  aiExecuteAssistSchema,
+  aiExecuteCategorizeSchema,
+  aiPreviewAssistSchema,
+  aiPreviewCategorizeSchema,
+  anthropicApiKeySchema,
+  documentCommitPayslipSchema,
+  documentCommitStatementSchema,
+  documentIdSchema,
+  documentRunExtractionSchema,
+  documentUpdateDraftSchema,
+  ocrLanguageSchema,
+} from '@shared/documents/schemas'
 import { EXTERNAL_LINK_HOSTS } from '@shared/app-meta'
 import { DIALOG_LABELS } from '@shared/i18n/dialogs'
 import { ERROR_REPORT_LIMITS, IPC_CHANNELS, type AppInfo } from '@shared/ipc'
@@ -25,6 +39,7 @@ import {
   exportAnalyticsImage,
   exportMonthlyPdfReport,
 } from '../analytics/export'
+import type { DocumentManager } from '../documents/document-manager'
 import type { ImportManager } from '../imports/import-manager'
 import { logger } from '../logger'
 import { isAllowedExternalUrl } from '../security/url'
@@ -46,6 +61,7 @@ interface IpcDependencies {
   settings: SettingsStore
   vault: VaultManager
   imports: ImportManager
+  documents: DocumentManager
   isTrustedSender: TrustedSenderCheck
 }
 
@@ -55,6 +71,7 @@ export function registerIpcHandlers({
   settings,
   vault,
   imports,
+  documents,
   isTrustedSender,
 }: IpcDependencies): void {
   const handle = createHandleFactory(isTrustedSender)
@@ -164,5 +181,61 @@ export function registerIpcHandlers({
   )
   handle(IPC_CHANNELS.analyticsExportMonthlyPdf, exportAnalyticsPdfSchema, (input) =>
     exportMonthlyPdfReport(vault, input.filter, settings.get(), labels()),
+  )
+
+  // Documents, OCR local et passage IA anonymisé (M7).
+  handle(IPC_CHANNELS.documentsPickFile, noInput, () => documents.pickFile())
+  handle(IPC_CHANNELS.documentsStagePath, z.string().min(1).max(4096), (path) =>
+    documents.stagePath(path),
+  )
+  handle(IPC_CHANNELS.documentsRerunExtraction, documentRunExtractionSchema, (input) =>
+    documents.rerunExtraction(input),
+  )
+  handle(IPC_CHANNELS.documentsList, noInput, () => documents.list())
+  handle(IPC_CHANNELS.documentsGet, documentIdSchema, (input) => documents.get(input.documentId))
+  handle(IPC_CHANNELS.documentsUpdateDraft, documentUpdateDraftSchema, (input) =>
+    documents.updateDraft(input),
+  )
+  handle(IPC_CHANNELS.documentsExportOriginal, documentIdSchema, (input) =>
+    documents.exportOriginal(input.documentId),
+  )
+  handle(IPC_CHANNELS.documentsCommitPayslip, documentCommitPayslipSchema, (input) =>
+    documents.commitPayslip(input),
+  )
+  handle(IPC_CHANNELS.documentsCommitStatement, documentCommitStatementSchema, (input) =>
+    documents.commitStatement(input),
+  )
+  handle(IPC_CHANNELS.documentsReject, documentIdSchema, (input) =>
+    documents.reject(input.documentId),
+  )
+  handle(IPC_CHANNELS.documentsDelete, documentIdSchema, (input) =>
+    documents.delete(input.documentId),
+  )
+  handle(IPC_CHANNELS.documentsAiConfigGet, noInput, () => documents.aiConfig())
+  handle(IPC_CHANNELS.documentsAiConfigUpdate, aiConfigPatchSchema, (patch) =>
+    documents.aiUpdateConfig(patch),
+  )
+  handle(IPC_CHANNELS.documentsAiSetKey, anthropicApiKeySchema, (input) =>
+    documents.aiSetApiKey(input.apiKey),
+  )
+  handle(IPC_CHANNELS.documentsAiClearKey, noInput, () => documents.aiClearApiKey())
+  handle(IPC_CHANNELS.documentsAiSendLogs, noInput, () => documents.aiSendLogList())
+  handle(IPC_CHANNELS.documentsOcrDownload, ocrLanguageSchema, (input) =>
+    documents.downloadOcrLanguage(input.language),
+  )
+  handle(IPC_CHANNELS.documentsOcrRemove, ocrLanguageSchema, (input) =>
+    documents.removeOcrLanguage(input.language),
+  )
+  handle(IPC_CHANNELS.documentsAiPreviewAssist, aiPreviewAssistSchema, (input) =>
+    documents.aiPreviewAssist(input.documentId),
+  )
+  handle(IPC_CHANNELS.documentsAiExecuteAssist, aiExecuteAssistSchema, (input) =>
+    documents.aiExecuteAssist(input),
+  )
+  handle(IPC_CHANNELS.documentsAiPreviewCategorize, aiPreviewCategorizeSchema, (input) =>
+    documents.aiPreviewCategorize(input.transactionIds),
+  )
+  handle(IPC_CHANNELS.documentsAiExecuteCategorize, aiExecuteCategorizeSchema, (input) =>
+    documents.aiExecuteCategorize(input),
   )
 }

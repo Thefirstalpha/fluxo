@@ -27,6 +27,8 @@ export const EXPORTED_TABLES = [
   'contract',
   'payslip',
   'payslip_line',
+  'document',
+  'ai_send_log',
   'saved_filter',
   'audit_entry',
 ] as const

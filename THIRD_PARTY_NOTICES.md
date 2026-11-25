@@ -28,6 +28,8 @@ Fluxo itself is distributed under the [MIT License](LICENSE). The packaged appli
 | SQLite (embedded in the above)                                                                | 3.54.1  | Public domain     | Data service (native)                      |
 | [SQLite3 Multiple Ciphers](https://github.com/utelle/SQLite3MultipleCiphers) (embedded)       | 2.7.1   | MIT               | Data service (native)                      |
 | [hash-wasm](https://github.com/Daninet/hash-wasm) (Argon2 module)                             | 4.13.0  | MIT               | Data service                               |
+| [PDF.js](https://mozilla.github.io/pdf.js/) (`pdfjs-dist`)                                    | 6.5.438 | Apache-2.0        | Document parser worker                     |
+| [tesseract.js-core](https://github.com/naptha/tesseract.js-core) (`tesseract-core-lstm`)      | 7.0.0   | Apache-2.0        | Document parser worker                     |
 | Inter font (`@fontsource-variable/inter`)                                                     | 5.3.0   | OFL-1.1           | Renderer (fonts)                           |
 | Bebas Neue font (`@fontsource/bebas-neue`)                                                    | 5.3.0   | OFL-1.1           | Renderer (fonts)                           |
 

@@ -24,6 +24,7 @@ export const TRACKED_TABLES = {
   contract: { key: ['id'], entity: 'contract' },
   payslip: { key: ['id'], entity: 'payslip' },
   payslip_line: { key: ['id'], entity: 'payslip_line' },
+  document: { key: ['id'], entity: 'document' },
   saved_filter: { key: ['id'], entity: null },
 } as const satisfies Record<string, { key: readonly string[]; entity: AuditInput['entity'] | null }>
 

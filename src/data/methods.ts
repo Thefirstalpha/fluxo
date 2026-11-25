@@ -1,4 +1,15 @@
 import { z } from 'zod'
+import {
+  AI_PROVIDERS,
+  AI_PURPOSES,
+  AI_SEND_STATUSES,
+  DOCUMENT_EXTRACTION_METHODS,
+  DOCUMENT_KINDS,
+  DOCUMENT_LINKED_TYPES,
+  DOCUMENT_MIME_TYPES,
+  DOCUMENT_STATUSES,
+} from '@shared/documents/model'
+import { extractedDocumentDraftSchema } from '@shared/documents/schemas'
 import { CSV_DELIMITERS, STATEMENT_FORMATS } from '@shared/imports/model'
 import {
   csvProfileConfigSchema,
@@ -75,6 +86,19 @@ export function createMethods(
     csvProfilesList: () => host.active().csvProfilesList(),
     csvProfileSave: (params) => host.active().csvProfileSave(params),
     csvProfileDelete: (params) => host.active().csvProfileDelete(params),
+    documentsList: (params) => host.active().documentsList(params),
+    documentGet: (params) => host.active().documentGet(params),
+    documentFindByHash: (params) => host.active().documentFindByHash(params),
+    documentUpsert: (params) => host.active().documentUpsert(params),
+    documentUpdateDraft: (params) => host.active().documentUpdateDraft(params),
+    documentMarkCommitted: (params) => host.active().documentMarkCommitted(params),
+    documentReject: (params) => host.active().documentReject(params),
+    documentDelete: (params) => host.active().documentDelete(params),
+    documentKnownNames: () => host.active().documentKnownNames(),
+    aiSendLogList: (params) => host.active().aiSendLogList(params),
+    aiMonthlySpend: () => host.active().aiMonthlySpend(),
+    aiSendLogRecord: (params) => host.active().aiSendLogRecord(params),
+    aiApplyCategorization: (params) => host.active().aiApplyCategorization(params),
   }
   return {
     status: defineMethod(noParams, () => api.status()),
@@ -150,7 +174,7 @@ export function createMethods(
         fileHash: z.string().regex(/^[0-9a-f]{64}$/),
         profile: z.string().max(80).nullable(),
         statement: z.strictObject({
-          format: z.enum(STATEMENT_FORMATS),
+          format: z.enum([...STATEMENT_FORMATS, 'pdf'] as const),
           encoding: z.enum(['utf-8', 'windows-1252', 'iso-8859-1']),
           currency: z.string().nullable(),
           accountHint: z.string().nullable(),
@@ -216,6 +240,113 @@ export function createMethods(
     ),
     csvProfileDelete: defineMethod(csvProfileDeleteSchema, (params) =>
       host.active().csvProfileDelete(params),
+    ),
+    documentsList: defineMethod(
+      z.strictObject({
+        status: z.enum(DOCUMENT_STATUSES).optional(),
+        limit: z.int().min(1).max(200).optional(),
+      }),
+      (params) => api.documentsList(params),
+    ),
+    documentGet: defineMethod(
+      z.strictObject({ id: z.string().regex(/^[0-9a-f-]{36}$/) }),
+      (params) => api.documentGet(params),
+    ),
+    documentFindByHash: defineMethod(
+      z.strictObject({ sha256: z.string().regex(/^[0-9a-f]{64}$/) }),
+      (params) => api.documentFindByHash(params),
+    ),
+    documentUpsert: defineMethod(
+      z.strictObject({
+        id: z
+          .string()
+          .regex(/^[0-9a-f-]{36}$/)
+          .optional(),
+        kind: z.enum(DOCUMENT_KINDS),
+        fileName: z.string().min(1).max(260),
+        mimeType: z.enum(DOCUMENT_MIME_TYPES),
+        sha256: z.string().regex(/^[0-9a-f]{64}$/),
+        pageCount: z.int().min(1).max(600),
+        status: z.enum(DOCUMENT_STATUSES),
+        extractionMethod: z.enum(DOCUMENT_EXTRACTION_METHODS),
+        confidence: z.number().min(0).max(1),
+        draft: extractedDocumentDraftSchema.nullable(),
+        linkedEntityType: z.enum(DOCUMENT_LINKED_TYPES).nullable().optional(),
+        linkedEntityId: z.string().max(36).nullable().optional(),
+      }),
+      (params) => api.documentUpsert(params),
+    ),
+    documentUpdateDraft: defineMethod(
+      z.strictObject({
+        id: z.string().regex(/^[0-9a-f-]{36}$/),
+        draft: extractedDocumentDraftSchema,
+      }),
+      (params) => api.documentUpdateDraft(params),
+    ),
+    documentMarkCommitted: defineMethod(
+      z.strictObject({
+        id: z.string().regex(/^[0-9a-f-]{36}$/),
+        linkedEntityType: z.enum(DOCUMENT_LINKED_TYPES),
+        linkedEntityId: z.string().min(1).max(36),
+        draft: extractedDocumentDraftSchema.nullable().optional(),
+      }),
+      (params) => api.documentMarkCommitted(params),
+    ),
+    documentReject: defineMethod(
+      z.strictObject({ id: z.string().regex(/^[0-9a-f-]{36}$/) }),
+      (params) => api.documentReject(params),
+    ),
+    documentDelete: defineMethod(
+      z.strictObject({ id: z.string().regex(/^[0-9a-f-]{36}$/) }),
+      (params) => api.documentDelete(params),
+    ),
+    documentKnownNames: defineMethod(noParams, () => api.documentKnownNames()),
+    aiSendLogList: defineMethod(
+      z.strictObject({ limit: z.int().min(1).max(200).optional() }),
+      (params) => api.aiSendLogList(params),
+    ),
+    aiMonthlySpend: defineMethod(noParams, () => api.aiMonthlySpend()),
+    aiSendLogRecord: defineMethod(
+      z.strictObject({
+        provider: z.enum(AI_PROVIDERS),
+        model: z.string().min(1).max(120),
+        purpose: z.enum(AI_PURPOSES),
+        documentId: z
+          .string()
+          .regex(/^[0-9a-f-]{36}$/)
+          .nullable(),
+        inputTokens: z.int().min(0),
+        outputTokens: z.int().min(0),
+        costMicroUsd: z.int().min(0),
+        payloadSha256: z.string().regex(/^[0-9a-f]{64}$/),
+        redactions: z.array(
+          z.strictObject({
+            category: z.enum(['nir', 'iban', 'card', 'email', 'siret', 'name', 'address', 'phone']),
+            count: z.int().min(0),
+          }),
+        ),
+        status: z.enum(AI_SEND_STATUSES),
+      }),
+      (params) => api.aiSendLogRecord(params),
+    ),
+    aiApplyCategorization: defineMethod(
+      z.strictObject({
+        items: z
+          .array(
+            z.strictObject({
+              transactionId: z.string().regex(/^[0-9a-f-]{36}$/),
+              categoryId: z
+                .string()
+                .regex(/^[0-9a-f-]{36}$/)
+                .nullable(),
+              suggestedLabel: z.string().max(120).nullable(),
+              confidence: z.number().min(0).max(1),
+              reason: z.string().max(240),
+            }),
+          )
+          .max(100),
+      }),
+      (params) => api.aiApplyCategorization(params),
     ),
   }
 }

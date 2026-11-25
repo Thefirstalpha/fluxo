@@ -54,7 +54,7 @@ export interface RulePreviewResult {
   }[]
 }
 
-export type SuggestionSource = 'rule' | 'merchant' | 'naive-bayes'
+export type SuggestionSource = 'rule' | 'merchant' | 'naive-bayes' | 'ai'
 export type SuggestionStatus = 'pending' | 'accepted' | 'rejected'
 
 export interface CategorizationQueueItem {

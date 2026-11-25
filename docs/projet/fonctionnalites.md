@@ -62,7 +62,7 @@ C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([
 | D06 | Détection des doublons (exacte et approchée)                                                                         | Besoin      | M3    | ✅     |
 | D07 | Aperçu avant import et annulation d'un import                                                                        | Besoin      | M3    | ✅     |
 | D08 | Contrôle des soldes de début et de fin de relevé                                                                     | Proposition | M3    | ✅     |
-| D09 | Relevés PDF (via le pipeline documents)                                                                              | Besoin      | M7    | ⬜     |
+| D09 | Relevés PDF (via le pipeline documents)                                                                              | Besoin      | M7    | ✅     |
 | D10 | Analyse robuste des montants (formats FR/EN/CH, notation comptable)                                                  | Socle       | M0    | ✅     |
 | D11 | Écriture d'ajustement (rattrapage) d'un écart de solde détecté, annotée, remplaçable par l'import du relevé manquant | Proposition | M3    | ✅     |
 
@@ -77,7 +77,7 @@ C09 (justificatifs attachés) a été retiré : Fluxo ne stocke aucun fichier ([
 | E05 | Détection des récurrences et abonnements                                      | Proposition | M4    | ✅     |
 | E06 | Alerte de hausse de prix d'un abonnement                                      | Proposition | M4    | ✅     |
 | E07 | Détection automatique des virements internes                                  | Socle       | M4    | ✅     |
-| E08 | Suggestions par IA pour les marchands inconnus (facultatif)                   | Besoin      | M7    | ⬜     |
+| E08 | Suggestions par IA pour les marchands inconnus (facultatif)                   | Besoin      | M7    | ✅     |
 | E09 | Règles pouvant poser une ou plusieurs étiquettes, pas seulement une catégorie | Besoin      | M4    | ✅     |
 
 ## F. Analyses & synthèses
@@ -118,16 +118,16 @@ G05 (congés payés et RTT) a été retiré, jugé inutile ([ADR-025](../archite
 
 | ID  | Fonctionnalité                                                                                            | Origine     | Jalon | Statut |
 | --- | --------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
-| H01 | Boîte de dépôt de documents (glisser-déposer)                                                             | Besoin      | M7    | ⬜     |
-| H02 | Extraction du texte des PDF                                                                               | Besoin      | M7    | ⬜     |
-| H03 | Reconnaissance de caractères (OCR) pour les scans                                                         | Besoin      | M7    | ⬜     |
-| H04 | Modèles déterministes pour les formats connus                                                             | Socle       | M7    | ⬜     |
-| H05 | Extraction structurée par IA (bulletins, relevés)                                                         | Besoin      | M7    | ⬜     |
-| H06 | IA locale (sans réseau)                                                                                   | Proposition | M7    | ⬜     |
-| H07 | IA cloud facultative, clé personnelle, consentement par document                                          | Besoin      | M7    | ⬜     |
-| H08 | Anonymisation avant tout envoi                                                                            | Socle       | M7    | ⬜     |
-| H09 | Relecture côte à côte avant validation                                                                    | Socle       | M7    | ⬜     |
-| H10 | Export facultatif du document original, proposé juste après l'extraction (aucune conservation par défaut) | Proposition | M7    | ⬜     |
+| H01 | Boîte de dépôt de documents (glisser-déposer)                                                             | Besoin      | M7    | ✅     |
+| H02 | Extraction du texte des PDF                                                                               | Besoin      | M7    | ✅     |
+| H03 | Reconnaissance de caractères (OCR) pour les scans                                                         | Besoin      | M7    | ✅     |
+| H04 | Modèles déterministes pour les formats connus                                                             | Socle       | M7    | ✅     |
+| H05 | Extraction structurée par IA (bulletins, relevés)                                                         | Besoin      | M7    | ✅     |
+| H06 | IA locale (sans réseau)                                                                                   | Proposition | M7    | ✅     |
+| H07 | IA cloud facultative, clé personnelle, consentement par document                                          | Besoin      | M7    | ✅     |
+| H08 | Anonymisation avant tout envoi                                                                            | Socle       | M7    | ✅     |
+| H09 | Relecture côte à côte avant validation                                                                    | Socle       | M7    | ✅     |
+| H10 | Export facultatif du document original, proposé juste après l'extraction (aucune conservation par défaut) | Proposition | M7    | ✅     |
 
 ## I. Patrimoine, crédits, budgets & prévisions
 

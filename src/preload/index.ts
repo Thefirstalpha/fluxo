@@ -1,4 +1,18 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
+import type {
+  AiAssistOutcome,
+  AiCategorizeApplyOutcome,
+  AiConfigPublic,
+  AiSendLogEntry,
+  AiSendPreview,
+  DocumentCommitOutcome,
+  DocumentDetail,
+  DocumentListItem,
+  DocumentOriginalExportOutcome,
+  DocumentStageOutcome,
+  OcrDownloadOutcome,
+  OcrLanguageStatus,
+} from '@shared/documents/model'
 import type { AnalyticsExportOutcome } from '@shared/analytics/model'
 import type {
   CsvProfile,
@@ -154,6 +168,94 @@ const api: FluxoApi = {
       ipcRenderer.invoke(IPC_CHANNELS.analyticsExportMonthlyPdf, {
         filter,
       }) as Promise<AnalyticsExportOutcome>,
+  }),
+  documents: Object.freeze({
+    pickFile: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsPickFile) as Promise<DocumentStageOutcome>,
+    registerDroppedFile: (file: File) => {
+      const filePath = webUtils.getPathForFile(file)
+      if (!filePath) return Promise.resolve({ ok: false as const, reason: 'invalid-file' as const })
+      return ipcRenderer.invoke(
+        IPC_CHANNELS.documentsStagePath,
+        filePath,
+      ) as Promise<DocumentStageOutcome>
+    },
+    stagePath: (path) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsStagePath, path) as Promise<DocumentStageOutcome>,
+    rerunExtraction: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.documentsRerunExtraction,
+        input,
+      ) as Promise<DocumentStageOutcome>,
+    list: () => ipcRenderer.invoke(IPC_CHANNELS.documentsList) as Promise<DocumentListItem[]>,
+    get: (documentId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsGet, {
+        documentId,
+      }) as Promise<DocumentDetail | null>,
+    updateDraft: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.documentsUpdateDraft,
+        input,
+      ) as Promise<DocumentListItem | null>,
+    exportOriginal: (documentId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsExportOriginal, {
+        documentId,
+      }) as Promise<DocumentOriginalExportOutcome>,
+    commitPayslip: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.documentsCommitPayslip,
+        input,
+      ) as Promise<DocumentCommitOutcome>,
+    commitStatement: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.documentsCommitStatement,
+        input,
+      ) as Promise<DocumentCommitOutcome>,
+    reject: (documentId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsReject, {
+        documentId,
+      }) as Promise<DocumentListItem | null>,
+    delete: (documentId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsDelete, { documentId }) as Promise<boolean>,
+    aiConfig: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiConfigGet) as Promise<AiConfigPublic>,
+    aiUpdateConfig: (patch) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiConfigUpdate, patch) as Promise<AiConfigPublic>,
+    aiSetApiKey: (apiKey) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiSetKey, {
+        apiKey,
+      }) as Promise<{ ok: boolean; config: AiConfigPublic }>,
+    aiClearApiKey: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiClearKey) as Promise<AiConfigPublic>,
+    aiSendLogList: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiSendLogs) as Promise<AiSendLogEntry[]>,
+    downloadOcrLanguage: (language) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsOcrDownload, {
+        language,
+      }) as Promise<OcrDownloadOutcome>,
+    removeOcrLanguage: (language) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsOcrRemove, {
+        language,
+      }) as Promise<OcrLanguageStatus>,
+    aiPreviewAssist: (documentId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiPreviewAssist, { documentId }) as Promise<
+        | { ok: true; preview: AiSendPreview }
+        | { ok: false; reason: 'not-found' | 'disabled' | 'missing-key' }
+      >,
+    aiExecuteAssist: (input) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiExecuteAssist, input) as Promise<AiAssistOutcome>,
+    aiPreviewCategorize: (transactionIds) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiPreviewCategorize, {
+        transactionIds,
+      }) as Promise<
+        | { ok: true; preview: AiSendPreview }
+        | { ok: false; reason: 'disabled' | 'missing-key' | 'empty' }
+      >,
+    aiExecuteCategorize: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.documentsAiExecuteCategorize,
+        input,
+      ) as Promise<AiCategorizeApplyOutcome>,
   }),
 }
 

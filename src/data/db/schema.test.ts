@@ -89,12 +89,14 @@ describe('migrate', () => {
       .all()
     expect(tables).toEqual([
       'account',
+      'ai_send_log',
       'audit_entry',
       'categorization_suggestion',
       'category',
       'classifier_state',
       'contract',
       'csv_profile',
+      'document',
       'employer',
       'import_batch',
       'meta',
@@ -186,6 +188,73 @@ describe('migrate', () => {
            VALUES (?, ?, 'releve.mt940', ?, 'mt940', 'committed', ?)`,
         )
         .run(mtBatch, accountId, 'b'.repeat(64), now()),
+    ).not.toThrow()
+  })
+
+  it('migre une base v7 existante vers v8 en préservant les bulletins et en ajoutant document / ai_send_log / ai / pdf', () => {
+    migrate(db, { migrations: MIGRATIONS.slice(0, 7) })
+    expect(schemaVersion(db)).toBe(7)
+
+    const accountId = insertAccount('statement')
+    const batchId = insertBatch(accountId)
+    const txId = insertTransaction(accountId, { batch: batchId, amount: 245000 })
+    const empId = uuidv7()
+    const contractId = uuidv7()
+    const payslipId = uuidv7()
+    db.prepare('INSERT INTO employer (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run(
+      empId,
+      'Atelier Fluxo',
+      now(),
+      now(),
+    )
+    db.prepare(
+      `INSERT INTO contract (id, employer_id, title, contract_type, executive_status, work_time, start_date, currency, created_at, updated_at)
+       VALUES (?, ?, 'CDI', 'cdi', 'cadre', 'full_time', '2025-01-01', 'EUR', ?, ?)`,
+    ).run(contractId, empId, now(), now())
+    db.prepare(
+      `INSERT INTO payslip (id, contract_id, period, currency, base_salary, gross, employee_contributions, net_before_tax, taxable_net, withholding_tax, net_paid, created_at, updated_at)
+       VALUES (?, ?, '2026-10', 'EUR', 320000, 320000, 70000, 250000, 258000, 8000, 242000, ?, ?)`,
+    ).run(payslipId, contractId, now(), now())
+
+    const res = migrate(db)
+    expect(res).toEqual({ from: 7, to: LATEST_SCHEMA_VERSION })
+    expect(db.prepare('SELECT count(*) FROM payslip WHERE id = ?').pluck().get(payslipId)).toBe(1)
+
+    const docId = uuidv7()
+    expect(() =>
+      db
+        .prepare(
+          `INSERT INTO document (id, kind, file_name, mime_type, sha256, page_count, status, extraction_method, confidence, created_at, updated_at)
+           VALUES (?, 'payslip', 'bulletin.pdf', 'application/pdf', ?, 1, 'extracted', 'pdf-text', 0.95, ?, ?)`,
+        )
+        .run(docId, 'c'.repeat(64), now(), now()),
+    ).not.toThrow()
+
+    expect(() =>
+      db
+        .prepare(
+          `INSERT INTO ai_send_log (id, provider, model, purpose, document_id, input_tokens, output_tokens, cost_micro_usd, payload_sha256, status, created_at)
+           VALUES (?, 'anthropic', 'claude-haiku-4-5', 'payslip', ?, 500, 120, 900, ?, 'sent', ?)`,
+        )
+        .run(uuidv7(), docId, 'd'.repeat(64), now()),
+    ).not.toThrow()
+
+    expect(() =>
+      db
+        .prepare(
+          `INSERT INTO categorization_suggestion (transaction_id, source, confidence, reason, status, created_at, updated_at)
+           VALUES (?, 'ai', 0.91, 'IA', 'pending', ?, ?)`,
+        )
+        .run(txId, now(), now()),
+    ).not.toThrow()
+
+    expect(() =>
+      db
+        .prepare(
+          `INSERT INTO import_batch (id, account_id, file_name, file_hash, format, state, created_at)
+           VALUES (?, ?, 'releve.pdf', ?, 'pdf', 'committed', ?)`,
+        )
+        .run(uuidv7(), accountId, 'e'.repeat(64), now()),
     ).not.toThrow()
   })
 })

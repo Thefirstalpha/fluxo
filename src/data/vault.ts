@@ -27,6 +27,22 @@ import {
   type VaultResult,
 } from '@shared/vault'
 import type {
+  AiCategorizeSuggestionItem,
+  AiProviderId,
+  AiPurpose,
+  AiSendLogEntry,
+  AiSendStatus,
+  DocumentDetail,
+  DocumentExtractionMethod,
+  DocumentKind,
+  DocumentLinkedEntityType,
+  DocumentListItem,
+  DocumentMimeType,
+  DocumentStatus,
+  ExtractedDocumentDraft,
+  RedactionCount,
+} from '@shared/documents/model'
+import type {
   CreateParams,
   ExportKeyOutcome,
   ServiceStatus,
@@ -91,6 +107,22 @@ import { deleteCsvProfile, listCsvProfiles, saveCsvProfile } from './imports/pro
 import { exportDatabase } from './export'
 import { backfillSavingsLinkedCategories } from './ledger/categories'
 import { seedCategoryPack } from './ledger/category-seed'
+import { auditChanges, ChangeSet } from './ledger/changes'
+import {
+  deleteDocumentRecord,
+  findDocumentBySha256,
+  getAiMonthlySpendMicroUsd,
+  getDocumentDetail,
+  listAiSendLogs,
+  listDocuments,
+  listKnownPiiNames,
+  markDocumentCommitted,
+  markDocumentRejected,
+  recordAiSendLog,
+  saveAiCategorizationSuggestions,
+  updateDocumentDraft,
+  upsertDocument,
+} from './ledger/documents'
 import { databaseRuleError, LedgerFailure } from './ledger/failure'
 import { Ledger } from './ledger/ledger'
 import { Lockout } from './lockout'
@@ -292,6 +324,153 @@ export class Vault {
 
   csvProfileDelete(params: { id: string }): LedgerResult<{ deleted: true }> {
     return this.runImportOp((db) => deleteCsvProfile(db, params.id))
+  }
+
+  documentsList(params: {
+    status?: DocumentStatus
+    limit?: number
+  }): LedgerResult<DocumentListItem[]> {
+    return this.runImportOp((db) => listDocuments(db, params))
+  }
+
+  documentGet(params: { id: string }): LedgerResult<DocumentDetail | null> {
+    return this.runImportOp((db) => getDocumentDetail(db, params.id))
+  }
+
+  documentFindByHash(params: { sha256: string }): LedgerResult<DocumentListItem | null> {
+    return this.runImportOp((db) => findDocumentBySha256(db, params.sha256))
+  }
+
+  documentUpsert(params: {
+    id?: string
+    kind: DocumentKind
+    fileName: string
+    mimeType: DocumentMimeType
+    sha256: string
+    pageCount: number
+    status: DocumentStatus
+    extractionMethod: DocumentExtractionMethod
+    confidence: number
+    draft: ExtractedDocumentDraft | null
+    linkedEntityType?: DocumentLinkedEntityType | null
+    linkedEntityId?: string | null
+  }): LedgerResult<DocumentListItem> {
+    return this.runImportOp((db) =>
+      db
+        .transaction(() => {
+          const changes = new ChangeSet(db)
+          const now = this.now()
+          const out = upsertDocument(changes, params, now)
+          auditChanges(db, changes.changes, { origin: 'user', action: 'document-upsert', now })
+          return out
+        })
+        .immediate(),
+    )
+  }
+
+  documentUpdateDraft(params: {
+    id: string
+    draft: ExtractedDocumentDraft
+  }): LedgerResult<DocumentListItem> {
+    return this.runImportOp((db) =>
+      db
+        .transaction(() => {
+          const changes = new ChangeSet(db)
+          const now = this.now()
+          const out = updateDocumentDraft(changes, params.id, params.draft, now)
+          auditChanges(db, changes.changes, { origin: 'user', action: 'document-update', now })
+          return out
+        })
+        .immediate(),
+    )
+  }
+
+  documentMarkCommitted(params: {
+    id: string
+    linkedEntityType: DocumentLinkedEntityType
+    linkedEntityId: string
+    draft?: ExtractedDocumentDraft | null
+  }): LedgerResult<DocumentListItem> {
+    return this.runImportOp((db) =>
+      db
+        .transaction(() => {
+          const changes = new ChangeSet(db)
+          const now = this.now()
+          const out = markDocumentCommitted(changes, params, now)
+          auditChanges(db, changes.changes, { origin: 'user', action: 'document-commit', now })
+          return out
+        })
+        .immediate(),
+    )
+  }
+
+  documentReject(params: { id: string }): LedgerResult<DocumentListItem> {
+    return this.runImportOp((db) =>
+      db
+        .transaction(() => {
+          const changes = new ChangeSet(db)
+          const now = this.now()
+          const out = markDocumentRejected(changes, params.id, now)
+          auditChanges(db, changes.changes, { origin: 'user', action: 'document-reject', now })
+          return out
+        })
+        .immediate(),
+    )
+  }
+
+  documentDelete(params: { id: string }): LedgerResult<null> {
+    return this.runImportOp((db) =>
+      db
+        .transaction(() => {
+          const changes = new ChangeSet(db)
+          const now = this.now()
+          deleteDocumentRecord(changes, params.id)
+          auditChanges(db, changes.changes, { origin: 'user', action: 'document-delete', now })
+          return null
+        })
+        .immediate(),
+    )
+  }
+
+  documentKnownNames(): LedgerResult<string[]> {
+    return this.runImportOp((db) => listKnownPiiNames(db))
+  }
+
+  aiSendLogList(params: { limit?: number }): LedgerResult<AiSendLogEntry[]> {
+    return this.runImportOp((db) => listAiSendLogs(db, params.limit))
+  }
+
+  aiMonthlySpend(): LedgerResult<number> {
+    return this.runImportOp((db) => getAiMonthlySpendMicroUsd(db, this.now()))
+  }
+
+  aiSendLogRecord(params: {
+    provider: AiProviderId
+    model: string
+    purpose: AiPurpose
+    documentId: string | null
+    inputTokens: number
+    outputTokens: number
+    costMicroUsd: number
+    payloadSha256: string
+    redactions: RedactionCount[]
+    status: AiSendStatus
+  }): LedgerResult<AiSendLogEntry> {
+    return this.runImportOp((db) =>
+      db.transaction(() => recordAiSendLog(db, params, this.now())).immediate(),
+    )
+  }
+
+  aiApplyCategorization(params: {
+    items: AiCategorizeSuggestionItem[]
+  }): LedgerResult<{ appliedCount: number }> {
+    return this.runImportOp((db) =>
+      db
+        .transaction(() => ({
+          appliedCount: saveAiCategorizationSuggestions(db, params.items, this.now()),
+        }))
+        .immediate(),
+    )
   }
 
   // ——— Création —————————————————————————————————————————————————————

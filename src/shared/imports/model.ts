@@ -3,7 +3,7 @@ import type { MinorUnits } from '../money'
 export const STATEMENT_FORMATS = ['csv', 'ofx', 'qfx', 'qif', 'camt053', 'mt940'] as const
 export type StatementFormat = (typeof STATEMENT_FORMATS)[number]
 
-export const IMPORT_BATCH_FORMATS = [...STATEMENT_FORMATS, 'demo'] as const
+export const IMPORT_BATCH_FORMATS = [...STATEMENT_FORMATS, 'pdf', 'demo'] as const
 export type ImportBatchFormat = (typeof IMPORT_BATCH_FORMATS)[number]
 
 export const IMPORT_EXTENSIONS = [
@@ -115,7 +115,7 @@ export interface ParsedTransaction {
 }
 
 export interface ParsedStatement {
-  format: StatementFormat
+  format: StatementFormat | 'pdf'
   encoding: ResolvedEncoding
   currency: string | null
   accountHint: string | null
@@ -178,7 +178,7 @@ export interface ImportPreview {
   accountCurrency: string
   accountType: string
   fileName: string
-  format: StatementFormat
+  format: StatementFormat | 'pdf'
   encoding: ResolvedEncoding
   profile: string | null
   periodStart: string | null

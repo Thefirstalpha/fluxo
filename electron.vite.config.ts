@@ -25,6 +25,7 @@ export default defineConfig({
           index: resolve('src/main/index.ts'),
           'data-service': resolve('src/data/index.ts'),
           'import-parser': resolve('src/imports/index.ts'),
+          'document-parser': resolve('src/documents/index.ts'),
         },
       },
     },

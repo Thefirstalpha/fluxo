@@ -304,6 +304,8 @@ export const AUDIT_ENTITIES = [
   'contract',
   'payslip',
   'payslip_line',
+  'document',
+  'ai_send_log',
 ] as const
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number]
 

@@ -60,7 +60,7 @@ Retirées lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisi
 | P-26 | **Coût employeur** — G10                                                                                                                                                      | Comprendre le coût total de son poste.                                                                                            | M6       | ⭐⭐     | S      | ✅   |
 | P-27 | **Simulateur brut → net** — G11                                                                                                                                               | Évaluer une augmentation, un changement de taux.                                                                                  | M6       | ⭐⭐     | M      | ✅   |
 | P-28 | **Récapitulatif annuel** (net imposable) puis aide à la déclaration — K04                                                                                                     | Vérifier la déclaration pré-remplie.                                                                                              | M6 → M10 | ⭐⭐     | S → M  | 🟡   |
-| P-29 | **Export facultatif du document source** juste après extraction — H10 ([ADR-018](../architecture/decisions.md#adr-018--pas-de-conservation-des-documents-sources-par-défaut)) | Fluxo n'est pas un système de stockage ; l'original n'est pas conservé par défaut, mais l'utilisateur peut le garder de son côté. | M7       | ⭐⭐     | S      | ⬜   |
+| P-29 | **Export facultatif du document source** juste après extraction — H10 ([ADR-018](../architecture/decisions.md#adr-018--pas-de-conservation-des-documents-sources-par-défaut)) | Fluxo n'est pas un système de stockage ; l'original n'est pas conservé par défaut, mais l'utilisateur peut le garder de son côté. | M7       | ⭐⭐     | S      | ✅   |
 
 Retirée lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisions.md#adr-025--revue-des-propositions-du-24-novembre-2026)) : P-24 (congés & RTT, jugé inutile).
 
@@ -68,8 +68,8 @@ Retirée lors de la revue du 24 novembre 2026 ([ADR-025](../architecture/decisio
 
 | ID   | Proposition                                         | Pourquoi                                              | Jalon | Priorité | Effort | État |
 | ---- | --------------------------------------------------- | ----------------------------------------------------- | ----- | -------- | ------ | ---- |
-| P-30 | **IA locale recommandée** — H06                     | Analyse des documents sans qu'aucune donnée ne sorte. | M7    | ⭐⭐⭐   | M      | ⬜   |
-| P-31 | **Estimation du coût et plafond** avant envoi cloud | Aucune surprise sur la facture de l'API.              | M7    | ⭐⭐     | S      | ⬜   |
+| P-30 | **IA locale recommandée** — H06                     | Analyse des documents sans qu'aucune donnée ne sorte. | M7    | ⭐⭐⭐   | M      | ✅   |
+| P-31 | **Estimation du coût et plafond** avant envoi cloud | Aucune surprise sur la facture de l'API.              | M7    | ⭐⭐     | S      | ✅   |
 | P-32 | **Assistant conversationnel** — K05                 | Interroger ses finances en langage naturel.           | M10   | ⭐⭐     | L      | ⬜   |
 
 ### Budgets & motivation

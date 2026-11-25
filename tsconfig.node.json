@@ -27,6 +27,7 @@
     "src/main/**/*",
     "src/data/**/*",
     "src/imports/**/*",
+    "src/documents/**/*",
     "src/preload/**/*",
     "src/shared/**/*"
   ]

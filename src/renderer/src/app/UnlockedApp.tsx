@@ -20,6 +20,7 @@ const TransactionsPage = lazy(() => import('../features/transactions/Transaction
 const ImportsPage = lazy(() => import('../features/imports/ImportsPage'))
 const AnalyticsPage = lazy(() => import('../features/analytics/AnalyticsPage'))
 const PayslipsPage = lazy(() => import('../features/payslips/PayslipsPage'))
+const DocumentsPage = lazy(() => import('../features/documents/DocumentsPage'))
 
 // Verrouillage, démonstration ouverte ou fermée : les données en cache sont celles d'un autre
 // coffre (ou d'un coffre fermé) ; on les oublie.
@@ -79,7 +80,7 @@ export default function UnlockedApp() {
                   <PayslipsPage />
                 </Route>
                 <Route path="/documents">
-                  <ComingSoonPage section="documents" />
+                  <DocumentsPage />
                 </Route>
                 <Route path="/budgets">
                   <ComingSoonPage section="budgets" />

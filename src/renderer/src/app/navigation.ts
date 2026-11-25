@@ -41,7 +41,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'imports', path: '/imports', icon: Upload },
   { key: 'analytics', path: '/analytics', icon: ChartNoAxesCombined },
   { key: 'payslips', path: '/payslips', icon: Wallet },
-  { key: 'documents', path: '/documents', icon: FileScan, milestone: 'M7' },
+  { key: 'documents', path: '/documents', icon: FileScan },
   { key: 'budgets', path: '/budgets', icon: PiggyBank, milestone: 'M8' },
 ]
 

@@ -8,6 +8,7 @@ import {
   type TransactionSort,
   type TransactionSummary,
 } from '@shared/ledger/model'
+import type { SuggestionSource } from '@shared/categorization/model'
 import type { ParsedLedgerInputs } from '@shared/ledger/schemas'
 import { parseAmount } from '@shared/money'
 import type { Db } from '../db/connection'
@@ -314,7 +315,6 @@ export function getTransactionDetail(
     .prepare(
       'SELECT source, confidence, reason FROM categorization_suggestion WHERE transaction_id = ?',
     )
-    .get(id) as
-    { source: 'rule' | 'merchant' | 'naive-bayes'; confidence: number; reason: string } | undefined
+    .get(id) as { source: SuggestionSource; confidence: number; reason: string } | undefined
   return { ...base, splits: detail, categorizationExplanation: explanation ?? null }
 }

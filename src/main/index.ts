@@ -4,6 +4,11 @@ import { app, BrowserWindow, nativeTheme, powerMonitor, session } from 'electron
 import { DIALOG_LABELS } from '@shared/i18n/dialogs'
 import { IPC_CHANNELS } from '@shared/ipc'
 import { DataServiceClient } from './data/data-service'
+import { AiConfigStore } from './documents/ai/config-store'
+import { AiSecretStore } from './documents/ai/secrets'
+import { DocumentManager } from './documents/document-manager'
+import { OcrModelManager } from './documents/model-manager'
+import { DocumentParserHost } from './documents/parser-host'
 import { ImportManager } from './imports/import-manager'
 import { ImportParserHost } from './imports/parser-host'
 import { registerIpcHandlers } from './ipc/register'
@@ -101,9 +106,11 @@ async function start(): Promise<void> {
     app.getVersion(),
   )
   const importParser = new ImportParserHost()
+  const documentParser = new DocumentParserHost()
   app.on('will-quit', (event) => {
     event.preventDefault()
     importParser.dispose()
+    documentParser.dispose()
     dataService
       .stop()
       .catch((error: unknown) => logger.error('Arrêt du service de données', error))
@@ -155,7 +162,19 @@ async function start(): Promise<void> {
     importParser,
     () => DIALOG_LABELS[settings.get().locale],
   )
-  registerIpcHandlers({ settings, vault, imports, isTrustedSender: isTrustedUrl })
+  const documents = new DocumentManager(
+    vault,
+    dataService,
+    documentParser,
+    new OcrModelManager(join(app.getPath('userData'), 'ocr-models')),
+    new AiConfigStore(join(app.getPath('userData'), 'ai-config.json')),
+    new AiSecretStore(
+      join(app.getPath('userData'), 'secrets', 'ai-anthropic.bin'),
+      electronSecureStorage(),
+    ),
+    () => DIALOG_LABELS[settings.get().locale],
+  )
+  registerIpcHandlers({ settings, vault, imports, documents, isTrustedSender: isTrustedUrl })
 
   settings.onChange((next) => {
     applyThemePreference(next.theme)

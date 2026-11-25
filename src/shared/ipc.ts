@@ -1,5 +1,25 @@
 import type { AnalyticsExportOutcome, AnalyticsFilter } from './analytics/model'
 import type {
+  AiAssistOutcome,
+  AiCategorizeApplyOutcome,
+  AiConfigPatch,
+  AiConfigPublic,
+  AiSendLogEntry,
+  AiSendPreview,
+  DocumentCommitOutcome,
+  DocumentCommitPayslipInput,
+  DocumentCommitStatementInput,
+  DocumentDetail,
+  DocumentKind,
+  DocumentListItem,
+  DocumentOriginalExportOutcome,
+  DocumentStageOutcome,
+  ExtractedDocumentDraft,
+  OcrDownloadOutcome,
+  OcrLanguage,
+  OcrLanguageStatus,
+} from './documents/model'
+import type {
   CsvProfile,
   CsvProfileConfig,
   ImportBatchSummary,
@@ -76,6 +96,28 @@ export const IPC_CHANNELS = {
   analyticsExportCsv: 'fluxo:analytics:export-csv',
   analyticsExportImage: 'fluxo:analytics:export-image',
   analyticsExportMonthlyPdf: 'fluxo:analytics:export-monthly-pdf',
+  documentsPickFile: 'fluxo:documents:pick-file',
+  documentsStagePath: 'fluxo:documents:stage-path',
+  documentsRerunExtraction: 'fluxo:documents:rerun-extraction',
+  documentsList: 'fluxo:documents:list',
+  documentsGet: 'fluxo:documents:get',
+  documentsUpdateDraft: 'fluxo:documents:update-draft',
+  documentsExportOriginal: 'fluxo:documents:export-original',
+  documentsCommitPayslip: 'fluxo:documents:commit-payslip',
+  documentsCommitStatement: 'fluxo:documents:commit-statement',
+  documentsReject: 'fluxo:documents:reject',
+  documentsDelete: 'fluxo:documents:delete',
+  documentsAiConfigGet: 'fluxo:documents:ai-config-get',
+  documentsAiConfigUpdate: 'fluxo:documents:ai-config-update',
+  documentsAiSetKey: 'fluxo:documents:ai-set-key',
+  documentsAiClearKey: 'fluxo:documents:ai-clear-key',
+  documentsAiSendLogs: 'fluxo:documents:ai-send-logs',
+  documentsOcrDownload: 'fluxo:documents:ocr-download',
+  documentsOcrRemove: 'fluxo:documents:ocr-remove',
+  documentsAiPreviewAssist: 'fluxo:documents:ai-preview-assist',
+  documentsAiExecuteAssist: 'fluxo:documents:ai-execute-assist',
+  documentsAiPreviewCategorize: 'fluxo:documents:ai-preview-categorize',
+  documentsAiExecuteCategorize: 'fluxo:documents:ai-execute-categorize',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -194,5 +236,55 @@ export interface FluxoApi {
       data: string
     }): Promise<AnalyticsExportOutcome>
     exportMonthlyPdf(filter: AnalyticsFilter): Promise<AnalyticsExportOutcome>
+  }
+  /** Boîte de dépôt documentaire, OCR local et passage IA anonymisé (M7). */
+  readonly documents: {
+    pickFile(): Promise<DocumentStageOutcome>
+    registerDroppedFile(file: File): Promise<DocumentStageOutcome>
+    stagePath(path: string): Promise<DocumentStageOutcome>
+    rerunExtraction(input: {
+      documentId: string
+      kindOverride?: DocumentKind
+      ocrLanguage?: OcrLanguage
+    }): Promise<DocumentStageOutcome>
+    list(): Promise<DocumentListItem[]>
+    get(documentId: string): Promise<DocumentDetail | null>
+    updateDraft(input: {
+      documentId: string
+      draft: ExtractedDocumentDraft
+    }): Promise<DocumentListItem | null>
+    exportOriginal(documentId: string): Promise<DocumentOriginalExportOutcome>
+    commitPayslip(input: DocumentCommitPayslipInput): Promise<DocumentCommitOutcome>
+    commitStatement(input: DocumentCommitStatementInput): Promise<DocumentCommitOutcome>
+    reject(documentId: string): Promise<DocumentListItem | null>
+    delete(documentId: string): Promise<boolean>
+    aiConfig(): Promise<AiConfigPublic>
+    aiUpdateConfig(patch: AiConfigPatch): Promise<AiConfigPublic>
+    aiSetApiKey(apiKey: string): Promise<{ ok: boolean; config: AiConfigPublic }>
+    aiClearApiKey(): Promise<AiConfigPublic>
+    aiSendLogList(): Promise<AiSendLogEntry[]>
+    downloadOcrLanguage(language: OcrLanguage): Promise<OcrDownloadOutcome>
+    removeOcrLanguage(language: OcrLanguage): Promise<OcrLanguageStatus>
+    aiPreviewAssist(
+      documentId: string,
+    ): Promise<
+      | { ok: true; preview: AiSendPreview }
+      | { ok: false; reason: 'not-found' | 'disabled' | 'missing-key' }
+    >
+    aiExecuteAssist(input: {
+      documentId: string
+      previewToken: string
+      consentConfirmed: true
+    }): Promise<AiAssistOutcome>
+    aiPreviewCategorize(
+      transactionIds: string[],
+    ): Promise<
+      | { ok: true; preview: AiSendPreview }
+      | { ok: false; reason: 'disabled' | 'missing-key' | 'empty' }
+    >
+    aiExecuteCategorize(input: {
+      previewToken: string
+      consentConfirmed: true
+    }): Promise<AiCategorizeApplyOutcome>
   }
 }

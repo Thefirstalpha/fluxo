@@ -4,6 +4,22 @@
  * Ce module ne contient que des types : il est importé par le main et par le service.
  */
 import type {
+  AiCategorizeSuggestionItem,
+  AiProviderId,
+  AiPurpose,
+  AiSendLogEntry,
+  AiSendStatus,
+  DocumentDetail,
+  DocumentExtractionMethod,
+  DocumentKind,
+  DocumentLinkedEntityType,
+  DocumentListItem,
+  DocumentMimeType,
+  DocumentStatus,
+  ExtractedDocumentDraft,
+  RedactionCount,
+} from '@shared/documents/model'
+import type {
   CsvProfile,
   CsvProfileConfig,
   ImportBatchSummary,
@@ -111,6 +127,56 @@ export interface DataServiceApi {
     config: CsvProfileConfig
   }): LedgerResult<CsvProfile>
   csvProfileDelete(params: { id: string }): LedgerResult<{ deleted: true }>
+  documentsList(params: {
+    status?: DocumentStatus
+    limit?: number
+  }): LedgerResult<DocumentListItem[]>
+  documentGet(params: { id: string }): LedgerResult<DocumentDetail | null>
+  documentFindByHash(params: { sha256: string }): LedgerResult<DocumentListItem | null>
+  documentUpsert(params: {
+    id?: string
+    kind: DocumentKind
+    fileName: string
+    mimeType: DocumentMimeType
+    sha256: string
+    pageCount: number
+    status: DocumentStatus
+    extractionMethod: DocumentExtractionMethod
+    confidence: number
+    draft: ExtractedDocumentDraft | null
+    linkedEntityType?: DocumentLinkedEntityType | null
+    linkedEntityId?: string | null
+  }): LedgerResult<DocumentListItem>
+  documentUpdateDraft(params: {
+    id: string
+    draft: ExtractedDocumentDraft
+  }): LedgerResult<DocumentListItem>
+  documentMarkCommitted(params: {
+    id: string
+    linkedEntityType: DocumentLinkedEntityType
+    linkedEntityId: string
+    draft?: ExtractedDocumentDraft | null
+  }): LedgerResult<DocumentListItem>
+  documentReject(params: { id: string }): LedgerResult<DocumentListItem>
+  documentDelete(params: { id: string }): LedgerResult<null>
+  documentKnownNames(): LedgerResult<string[]>
+  aiSendLogList(params: { limit?: number }): LedgerResult<AiSendLogEntry[]>
+  aiMonthlySpend(): LedgerResult<number>
+  aiSendLogRecord(params: {
+    provider: AiProviderId
+    model: string
+    purpose: AiPurpose
+    documentId: string | null
+    inputTokens: number
+    outputTokens: number
+    costMicroUsd: number
+    payloadSha256: string
+    redactions: RedactionCount[]
+    status: AiSendStatus
+  }): LedgerResult<AiSendLogEntry>
+  aiApplyCategorization(params: {
+    items: AiCategorizeSuggestionItem[]
+  }): LedgerResult<{ appliedCount: number }>
 }
 
 /** Requête du registre : méthode et entrée, revalidées par le service (`LEDGER_INPUTS`). */

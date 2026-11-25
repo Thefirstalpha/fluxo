@@ -2,6 +2,7 @@ import { vi, type Mock } from 'vitest'
 import type { AppInfo, FluxoApi } from '@shared/ipc'
 import type { LedgerInput, LedgerMethod, LedgerOutput } from '@shared/ledger/api'
 import type { LedgerResult } from '@shared/ledger/model'
+import { buildDefaultAiConfig } from '@shared/documents/ai'
 import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@shared/settings'
 import type { BackupInfo, PickBackupResult, VaultStatus } from '@shared/vault'
 
@@ -564,6 +565,77 @@ export function createFakeApi() {
       ),
       exportMonthlyPdf: vi.fn((): ReturnType<FluxoApi['analytics']['exportMonthlyPdf']> =>
         Promise.resolve({ ok: true, fileName: 'fluxo-rapport.pdf' }),
+      ),
+    },
+    documents: {
+      pickFile: vi.fn((): ReturnType<FluxoApi['documents']['pickFile']> =>
+        Promise.resolve({ ok: false, reason: 'cancelled' }),
+      ),
+      registerDroppedFile: vi.fn((): ReturnType<FluxoApi['documents']['registerDroppedFile']> =>
+        Promise.resolve({ ok: false, reason: 'invalid-file' }),
+      ),
+      stagePath: vi.fn((): ReturnType<FluxoApi['documents']['stagePath']> =>
+        Promise.resolve({ ok: false, reason: 'invalid-file' }),
+      ),
+      rerunExtraction: vi.fn((): ReturnType<FluxoApi['documents']['rerunExtraction']> =>
+        Promise.resolve({ ok: false, reason: 'not-found' }),
+      ),
+      list: vi.fn((): ReturnType<FluxoApi['documents']['list']> => Promise.resolve([])),
+      get: vi.fn((): ReturnType<FluxoApi['documents']['get']> => Promise.resolve(null)),
+      updateDraft: vi.fn((): ReturnType<FluxoApi['documents']['updateDraft']> =>
+        Promise.resolve(null),
+      ),
+      exportOriginal: vi.fn((): ReturnType<FluxoApi['documents']['exportOriginal']> =>
+        Promise.resolve({ ok: false, reason: 'no-original' }),
+      ),
+      commitPayslip: vi.fn((): ReturnType<FluxoApi['documents']['commitPayslip']> =>
+        Promise.resolve({ ok: false, reason: 'not-found' }),
+      ),
+      commitStatement: vi.fn((): ReturnType<FluxoApi['documents']['commitStatement']> =>
+        Promise.resolve({ ok: false, reason: 'not-found' }),
+      ),
+      reject: vi.fn((): ReturnType<FluxoApi['documents']['reject']> => Promise.resolve(null)),
+      delete: vi.fn((): ReturnType<FluxoApi['documents']['delete']> => Promise.resolve(true)),
+      aiConfig: vi.fn((): ReturnType<FluxoApi['documents']['aiConfig']> =>
+        Promise.resolve(buildDefaultAiConfig()),
+      ),
+      aiUpdateConfig: vi.fn((patch): ReturnType<FluxoApi['documents']['aiUpdateConfig']> =>
+        Promise.resolve({ ...buildDefaultAiConfig(), ...patch }),
+      ),
+      aiSetApiKey: vi.fn((): ReturnType<FluxoApi['documents']['aiSetApiKey']> =>
+        Promise.resolve({ ok: true, config: { ...buildDefaultAiConfig(), hasAnthropicKey: true } }),
+      ),
+      aiClearApiKey: vi.fn((): ReturnType<FluxoApi['documents']['aiClearApiKey']> =>
+        Promise.resolve(buildDefaultAiConfig()),
+      ),
+      aiSendLogList: vi.fn((): ReturnType<FluxoApi['documents']['aiSendLogList']> =>
+        Promise.resolve([]),
+      ),
+      downloadOcrLanguage: vi.fn(
+        (language: 'fra' | 'eng'): ReturnType<FluxoApi['documents']['downloadOcrLanguage']> =>
+          Promise.resolve({
+            ok: true,
+            status: {
+              ...buildDefaultAiConfig().ocrLanguages[language],
+              installed: true,
+            },
+          }),
+      ),
+      removeOcrLanguage: vi.fn(
+        (language: 'fra' | 'eng'): ReturnType<FluxoApi['documents']['removeOcrLanguage']> =>
+          Promise.resolve(buildDefaultAiConfig().ocrLanguages[language]),
+      ),
+      aiPreviewAssist: vi.fn((): ReturnType<FluxoApi['documents']['aiPreviewAssist']> =>
+        Promise.resolve({ ok: false, reason: 'disabled' }),
+      ),
+      aiExecuteAssist: vi.fn((): ReturnType<FluxoApi['documents']['aiExecuteAssist']> =>
+        Promise.resolve({ ok: false, reason: 'disabled' }),
+      ),
+      aiPreviewCategorize: vi.fn((): ReturnType<FluxoApi['documents']['aiPreviewCategorize']> =>
+        Promise.resolve({ ok: false, reason: 'disabled' }),
+      ),
+      aiExecuteCategorize: vi.fn((): ReturnType<FluxoApi['documents']['aiExecuteCategorize']> =>
+        Promise.resolve({ ok: false, reason: 'disabled' }),
       ),
     },
   } satisfies FluxoApi

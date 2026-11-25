@@ -2,7 +2,7 @@
 
 Fluxo est livré par **jalons** successifs, ordonnés par importance et par logique d'implémentation : chaque jalon s'appuie sur les précédents et produit une application utilisable.
 
-> Dernière mise à jour : 25 novembre 2026 — **M0 à M6 livrés** ; prochain jalon : **M7** (documents & IA).
+> Dernière mise à jour : 25 novembre 2026 — **M0 à M7 livrés** ; prochain jalon : **M8** (patrimoine, crédits, budgets & prévisions).
 
 ## Vue d'ensemble
 
@@ -15,7 +15,7 @@ Fluxo est livré par **jalons** successifs, ordonnés par importance et par logi
 | [M4](M4-categorisation.md)       | Catégorisation automatique    | Règles, apprentissage local, abonnements                                                | ✅ Livré | L      | 0.5             |
 | [M5](M5-analyses.md)             | Analyses & synthèses          | Filtres globaux, synthèse mensuelle, exploration                                        | ✅ Livré | L      | 0.6 · **Bêta**  |
 | [M6](M6-salaires.md)             | Salaires & bulletins          | Bulletin détaillé, du brut au net, tableau de bord salaire                              | ✅ Livré | XL     | 0.7             |
-| [M7](M7-documents-ia.md)         | Documents & IA                | Extraction PDF/OCR, IA locale ou cloud consentie                                        | ⬜       | XL     | 0.8             |
+| [M7](M7-documents-ia.md)         | Documents & IA                | Extraction PDF/OCR, IA locale ou cloud consentie                                        | ✅ Livré | XL     | 0.8             |
 | [M8](M8-patrimoine-budgets.md)   | Patrimoine, crédits & budgets | Crédits, amortissement, patrimoine net, enveloppes, prévisions, simulation à long terme | ⬜       | XL     | 0.9 · **RC**    |
 | [M9](M9-distribution.md)         | Distribution v1.0             | Installeurs signés, mises à jour, audits                                                | ⬜       | XL     | **1.0**         |
 | [M10](M10-au-dela.md)            | Au-delà de la v1              | Synchronisation, mobile, open banking, packs pays                                       | 💭       | —      | 1.x             |

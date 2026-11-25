@@ -1,6 +1,8 @@
-import { Check, Plus, RefreshCw, RotateCcw, Sparkles, X } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { Check, Plus, RefreshCw, RotateCcw, Sparkles, Wand2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CategorizationQueueItem } from '@shared/categorization/model'
+import type { AiConfigPublic, AiSendPreview } from '@shared/documents/model'
 import type { AccountSummary, CategorySummary, TagSummary } from '@shared/ledger/model'
 import { CategorySelect } from '../../components/CategorySelect'
 import { LinkedAccountStatusHint } from '../../components/LinkedAccountStatusHint'
@@ -9,9 +11,11 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { useT } from '../../i18n'
+import { getApi } from '../../lib/api'
 import { cx } from '../../lib/cx'
 import { useFormatters } from '../../lib/format'
 import { ledgerErrorCode, useLedgerMutation, useLedgerQuery } from '../../lib/ledger'
+import { AiConsentDialog } from '../documents/AiConsentDialog'
 import { CreateRuleFromTxDialog } from './CreateRuleFromTxDialog'
 
 interface DraftSelection {
@@ -36,6 +40,7 @@ export function ValidationQueueTab({
   const t = useT()
   const q = t.categorization.queue
   const fmt = useFormatters()
+  const queryClient = useQueryClient()
 
   const queueQuery = useLedgerQuery('categorizationQueueList', { limit: 100 })
   const statusQuery = useLedgerQuery('classifierStatus', {})
@@ -54,6 +59,16 @@ export function ValidationQueueTab({
   const [thresholdDraft, setThresholdDraft] = useState<number | null>(null)
   const [ruleSourceItem, setRuleSourceItem] = useState<CategorizationQueueItem | null>(null)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [aiConfig, setAiConfig] = useState<AiConfigPublic | null>(null)
+  const [aiPreview, setAiPreview] = useState<AiSendPreview | null>(null)
+  const [aiBusy, setAiBusy] = useState(false)
+
+  useEffect(() => {
+    void getApi()
+      .documents.aiConfig()
+      .then(setAiConfig)
+      .catch(() => undefined)
+  }, [])
 
   const serverThreshold = statusQuery.data?.threshold ?? 0.85
   const effectiveThreshold = thresholdDraft ?? serverThreshold
@@ -117,6 +132,7 @@ export function ValidationQueueTab({
     quickCategories,
     ruleSourceItem,
     confirmReset,
+    aiPreview,
     handleAccept,
     handleReject,
   })
@@ -127,6 +143,7 @@ export function ValidationQueueTab({
       quickCategories,
       ruleSourceItem,
       confirmReset,
+      aiPreview,
       handleAccept,
       handleReject,
     }
@@ -146,7 +163,14 @@ export function ValidationQueueTab({
       }
       if (event.ctrlKey || event.metaKey || event.altKey) return
       const state = keyStateRef.current
-      if (state.ruleSourceItem || state.confirmReset || state.items.length === 0) return
+      if (
+        state.ruleSourceItem ||
+        state.confirmReset ||
+        state.aiPreview ||
+        state.items.length === 0
+      ) {
+        return
+      }
 
       const current = state.items[state.boundedIndex]
       if (!current) return
@@ -279,6 +303,26 @@ export function ValidationQueueTab({
             <Sparkles size={14} aria-hidden />
             {runAuto.isPending ? q.running : q.runAuto}
           </Button>
+
+          {aiConfig && aiConfig.provider !== 'none' && items.length > 0 ? (
+            <Button
+              disabled={aiBusy}
+              onClick={() => {
+                onError(null)
+                setAiBusy(true)
+                void getApi()
+                  .documents.aiPreviewCategorize(items.slice(0, 20).map((i) => i.transactionId))
+                  .then((res) => {
+                    if (!res.ok) onError(t.documents.errors[res.reason])
+                    else setAiPreview(res.preview)
+                  })
+                  .finally(() => setAiBusy(false))
+              }}
+            >
+              <Wand2 size={14} aria-hidden />
+              {aiBusy ? q.suggestingAi : q.suggestAi}
+            </Button>
+          ) : null}
         </div>
       </Card>
 
@@ -498,6 +542,33 @@ export function ValidationQueueTab({
                 )
               })
               .catch((failure: unknown) => onError(t.ledger.errors[ledgerErrorCode(failure)]))
+          }}
+        />
+      ) : null}
+
+      {aiPreview ? (
+        <AiConsentDialog
+          preview={aiPreview}
+          busy={aiBusy}
+          onClose={() => setAiPreview(null)}
+          onConfirm={() => {
+            setAiBusy(true)
+            onError(null)
+            void getApi()
+              .documents.aiExecuteCategorize({
+                previewToken: aiPreview.token,
+                consentConfirmed: true,
+              })
+              .then(async (res) => {
+                setAiPreview(null)
+                if (!res.ok) {
+                  onError(t.documents.errors[res.reason])
+                  return
+                }
+                onNotice(q.aiAppliedNotice(res.appliedCount))
+                await queryClient.invalidateQueries({ queryKey: ['ledger'] })
+              })
+              .finally(() => setAiBusy(false))
           }}
         />
       ) : null}
