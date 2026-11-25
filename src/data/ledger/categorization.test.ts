@@ -363,4 +363,117 @@ describe('détection des abonnements, hausses de prix et virements internes (M4)
     expect(rDetail.transferAccountId).toBe(livret)
     expect(t.ok('accountsList', {}).find((a) => a.id === livret)?.balance).toBe(900_00)
   })
+
+  it('réinitialise les catégories, la file À valider et le modèle tout en conservant notes, étiquettes et règles', () => {
+    const bank = checkingAccount()
+    const tagPro = t.ok('tagCreate', { name: 'Pro', color: null }).id
+
+    // 1. Opération simple classée (sans note ni étiquette)
+    const txSimple = insertImported(t.db, bank, {
+      date: '2026-11-05',
+      amount: -25_00,
+      label: 'ATELIER CERAMIQUE SIMPLE',
+    })
+    t.ok('categorizationAccept', { transactionId: txSimple, categoryId: cat('leisure.culture') })
+
+    // 2. Opération ventilée avec note + étiquette (à préserver)
+    const txTagged = insertImported(t.db, bank, {
+      date: '2026-11-06',
+      amount: -100_00,
+      label: 'ACHAT MIXTE',
+    })
+    t.ok('transactionSetSplits', {
+      id: txTagged,
+      splits: [
+        {
+          categoryId: cat('groceries.shopping'),
+          amount: -60_00,
+          note: 'Cadeau bureau',
+          tagIds: [tagPro],
+        },
+        { categoryId: cat('shopping'), amount: -40_00, note: null, tagIds: [] },
+      ],
+    })
+
+    // 3. Opération ventilée sans note ni étiquette -> redevient sans ventilation
+    const txSplitPlain = insertImported(t.db, bank, {
+      date: '2026-11-07',
+      amount: -50_00,
+      label: 'VENTILATION SIMPLE',
+    })
+    t.ok('transactionSetSplits', {
+      id: txSplitPlain,
+      splits: [
+        { categoryId: cat('groceries.shopping'), amount: -30_00, note: null, tagIds: [] },
+        { categoryId: cat('leisure'), amount: -20_00, note: null, tagIds: [] },
+      ],
+    })
+
+    // Deuxième exemple sur une autre catégorie pour que le modèle Bayes reste prudent (< 85 %) sur un libellé inconnu.
+    const txGroceries = insertImported(t.db, bank, {
+      date: '2026-11-05',
+      amount: -18_00,
+      label: 'EPICERIE BIO QUARTIER',
+    })
+    t.ok('categorizationAccept', {
+      transactionId: txGroceries,
+      categoryId: cat('groceries.shopping'),
+    })
+
+    // 4. Opération ignorée en file + règle conservée + seuil modifié
+    const txRejected = insertImported(t.db, bank, {
+      date: '2026-11-08',
+      amount: -12_00,
+      label: 'PETIT COMMERCE INCONNU',
+    })
+    t.ok('categorizeAutoRun', { transactionIds: [txRejected] })
+    t.ok('categorizationReject', { transactionId: txRejected })
+    const rule = t.ok('ruleSave', {
+      name: 'Règle conservée',
+      conditions: {
+        labelOp: 'contains',
+        labelValue: 'CERAMIQUE SIMPLE',
+        direction: 'expense',
+        amountOp: 'any',
+      },
+      actions: { categoryId: cat('leisure.culture') },
+    })
+    t.ok('categorizationThresholdSet', { threshold: 0.9 })
+    expect(t.ok('classifierStatus', {}).sampleCount).toBeGreaterThanOrEqual(2)
+
+    const res = t.ok('categorizationReset', {})
+    expect(res.clearedTransactions).toBe(4)
+    expect(res.clearedSuggestions).toBeGreaterThanOrEqual(2)
+    expect(res.clearedModelSamples).toBeGreaterThanOrEqual(2)
+
+    // Modèle remis à zéro, seuil et règle conservés.
+    expect(t.ok('classifierStatus', {})).toEqual({
+      sampleCount: 0,
+      categoryCount: 0,
+      updatedAt: null,
+      threshold: 0.9,
+    })
+    expect(t.ok('rulesList', {})).toHaveLength(1)
+    expect(t.ok('rulesList', {})[0]?.id).toBe(rule.id)
+
+    // Catégories effacées ; notes, étiquettes et montants ventilés préservés.
+    expect(t.ok('transactionGet', { id: txSimple }).splits).toEqual([])
+    expect(t.ok('transactionGet', { id: txSplitPlain }).splits).toEqual([])
+    const taggedAfter = t.ok('transactionGet', { id: txTagged })
+    expect(taggedAfter.categoryIds).toEqual([null, null])
+    expect(taggedAfter.tagIds).toEqual([tagPro])
+    expect(taggedAfter.splits[0]).toMatchObject({
+      categoryId: null,
+      amount: -60_00,
+      note: 'Cadeau bureau',
+      tagIds: [tagPro],
+    })
+
+    // La réinitialisation a effacé les refus : relancer l'auto-catégorisation réévalue tout.
+    t.ok('categorizeAutoRun', {})
+    expect(t.ok('transactionGet', { id: txSimple }).categoryIds).toEqual([cat('leisure.culture')])
+    expect(t.ok('categorizationQueueList', {}).some((q) => q.transactionId === txRejected)).toBe(
+      true,
+    )
+  })
 })

@@ -692,6 +692,79 @@ export function rejectQueueSuggestion(db: Db, transactionId: string, now: Date):
   return null
 }
 
+/**
+ * Réinitialise la catégorisation des opérations (en conservant notes, étiquettes, règles et
+ * catégories), vide la file/historique de suggestions et remet le modèle local à zéro.
+ */
+export function resetCategorization(
+  db: Db,
+  now: Date,
+): {
+  clearedTransactions: number
+  clearedSuggestions: number
+  clearedModelSamples: number
+} {
+  let clearedTransactions = 0
+  let clearedSuggestions = 0
+  let clearedModelSamples = 0
+
+  db.transaction(() => {
+    const txCount = db
+      .prepare('SELECT count(DISTINCT transaction_id) FROM split WHERE category_id IS NOT NULL')
+      .pluck()
+      .get() as number
+    clearedTransactions = txCount
+
+    const sugCount = db
+      .prepare('SELECT count(*) FROM categorization_suggestion')
+      .pluck()
+      .get() as number
+    clearedSuggestions = sugCount
+
+    const modelRow = db
+      .prepare('SELECT sample_count FROM classifier_state WHERE id = ?')
+      .get(CLASSIFIER_MODEL_ID) as { sample_count: number } | undefined
+    clearedModelSamples = modelRow?.sample_count ?? 0
+
+    // Les opérations n'ayant ni note ni étiquette sur aucune part redeviennent sans ventilation.
+    db.exec(`
+      DELETE FROM split
+      WHERE transaction_id IN (
+        SELECT s.transaction_id
+        FROM split s
+        LEFT JOIN split_tag st ON st.split_id = s.id
+        GROUP BY s.transaction_id
+        HAVING SUM(CASE WHEN s.category_id IS NOT NULL THEN 1 ELSE 0 END) > 0
+           AND SUM(CASE WHEN s.note IS NOT NULL OR st.split_id IS NOT NULL THEN 1 ELSE 0 END) = 0
+      );
+      UPDATE split SET category_id = NULL WHERE category_id IS NOT NULL;
+      DELETE FROM categorization_suggestion;
+      DELETE FROM classifier_state WHERE id = '${CLASSIFIER_MODEL_ID}';
+    `)
+
+    if (clearedTransactions > 0 || clearedSuggestions > 0 || clearedModelSamples > 0) {
+      recordAudit(
+        db,
+        {
+          entity: 'transaction',
+          entityId: null,
+          action: 'update',
+          origin: 'user',
+          after: {
+            action: 'categorization-reset',
+            clearedTransactions,
+            clearedSuggestions,
+            clearedModelSamples,
+          },
+        },
+        now,
+      )
+    }
+  }).immediate()
+
+  return { clearedTransactions, clearedSuggestions, clearedModelSamples }
+}
+
 export function createRuleFromCorrection(
   changes: ChangeSet,
   input: {

@@ -1075,6 +1075,7 @@ export const en: Dictionary = {
         `${evaluated} evaluated · ${applied} auto-applied · ${queued} to review (${ms} ms).`,
       retrainedSummary: (samples: number, categories: number) =>
         `Local model updated (${samples} examples, ${categories} categories).`,
+      resetButton: 'Reset…',
       shortcutsHint:
         'Shortcuts: ↑/↓ navigate · 1–9 quick category · Enter accept · Delete ignore · R create rule',
       quickKeysTitle: 'Quick keys (1–9)',
@@ -1107,6 +1108,20 @@ export const en: Dictionary = {
         `“${name}” uses manual valuation: reflected in net savings without mirror transactions.`,
       switchToManual: (name: string) => `Switch “${name}” to manual`,
       switchAndMirror: (name: string) => `Switch “${name}” to manual & create mirror`,
+    },
+    reset: {
+      title: 'Automatic categorization',
+      description: 'Local model confidence threshold and reset of assigned categories.',
+      sectionTitle: 'Reset categorization and model',
+      sectionDescription:
+        'Clears categories assigned to transactions, empties the review queue and resets the local model. Your transactions, notes, tags, custom categories and automatic rules are kept.',
+      button: 'Reset categorization…',
+      confirmTitle: 'Reset categorization and local model?',
+      confirmMessage:
+        'All transactions will lose their assigned category (notes and tags kept), pending or ignored suggestions will be cleared and the local model will be reset. Your rules remain intact.',
+      confirmAction: 'Reset',
+      doneNotice: (txCount: number, sugCount: number, samples: number) =>
+        `Categorization reset: ${txCount} transaction(s) cleared, ${sugCount} suggestion(s) removed and local model cleared (${samples} sample(s) erased).`,
     },
     rules: {
       newRule: 'New rule',

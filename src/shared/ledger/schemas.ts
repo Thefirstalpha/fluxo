@@ -277,6 +277,7 @@ export const LEDGER_INPUTS = {
   categorizationReject: z.strictObject({
     transactionId: idSchema,
   }),
+  categorizationReset: z.strictObject({}),
   subscriptionsOverview: z.strictObject({
     currency: currencySchema,
   }),

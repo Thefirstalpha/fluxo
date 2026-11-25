@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import type {
   CategorizationQueueItem,
@@ -313,6 +313,28 @@ describe('CategorizationPage', () => {
         id: livretEmpty.id,
         patch: { trackingMode: 'manual' },
       }),
+    )
+  })
+
+  it('déclenche la réinitialisation confirmée depuis l’onglet À valider', async () => {
+    const api = installFakeApi()
+    api.ledger.categorizationReset.mockResolvedValue({
+      ok: true,
+      value: { clearedTransactions: 5, clearedSuggestions: 7, clearedModelSamples: 10 },
+    })
+
+    renderWithQuery(<CategorizationPage />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Réinitialiser…' }))
+    const dialog = within(
+      await screen.findByRole('dialog', {
+        name: 'Réinitialiser la catégorisation et le modèle ?',
+      }),
+    )
+    fireEvent.click(dialog.getByRole('button', { name: 'Réinitialiser' }))
+
+    await waitFor(() => expect(api.ledger.categorizationReset).toHaveBeenCalledWith({}))
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      '5 opération(s) déclassée(s), 7 suggestion(s) vidée(s) et modèle remis à zéro (10 exemple(s) effacé(s)).',
     )
   })
 })

@@ -1085,6 +1085,7 @@ export const fr = {
         `${evaluated} évaluées · ${applied} appliquées automatiquement · ${queued} à valider (${ms} ms).`,
       retrainedSummary: (samples: number, categories: number) =>
         `Modèle local mis à jour (${samples} exemples, ${categories} catégories).`,
+      resetButton: 'Réinitialiser…',
       shortcutsHint:
         'Raccourcis : ↑/↓ naviguer · 1–9 catégorie rapide · Entrée valider · Suppr ignorer · R créer une règle',
       quickKeysTitle: 'Accès rapide (touches 1 à 9)',
@@ -1118,6 +1119,20 @@ export const fr = {
         `« ${name} » est suivi par valorisation : pris en compte dans l’épargne nette sans opération miroir.`,
       switchToManual: (name: string) => `Passer « ${name} » en suivi manuel`,
       switchAndMirror: (name: string) => `Passer « ${name} » en manuel et créer la contrepartie`,
+    },
+    reset: {
+      title: 'Catégorisation automatique',
+      description: 'Seuil de confiance du modèle local et réinitialisation de la classification.',
+      sectionTitle: 'Réinitialiser la catégorisation et le modèle',
+      sectionDescription:
+        'Retire les catégories attribuées aux opérations, vide la file « À valider » et remet à zéro le modèle local. Vos opérations, notes, étiquettes, catégories personnalisées et règles automatiques sont conservées.',
+      button: 'Réinitialiser la catégorisation…',
+      confirmTitle: 'Réinitialiser la catégorisation et le modèle ?',
+      confirmMessage:
+        'Toutes les opérations perdront leur catégorie (notes et étiquettes conservées), les suggestions en attente ou ignorées seront vidées et le modèle local sera réinitialisé. Vos règles restent intactes.',
+      confirmAction: 'Réinitialiser',
+      doneNotice: (txCount: number, sugCount: number, samples: number) =>
+        `Catégorisation réinitialisée : ${txCount} opération(s) déclassée(s), ${sugCount} suggestion(s) vidée(s) et modèle remis à zéro (${samples} exemple(s) effacé(s)).`,
     },
     rules: {
       newRule: 'Nouvelle règle',

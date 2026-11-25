@@ -27,6 +27,7 @@ import {
   getClassifierStatus,
   listValidationQueue,
   rejectQueueSuggestion,
+  resetCategorization,
   retrainClassifier,
   runAutoCategorization,
   setCategorizationThreshold,
@@ -177,6 +178,7 @@ export class Ledger {
         return null
       },
       categorizationReject: (input) => rejectQueueSuggestion(db, input.transactionId, this.now()),
+      categorizationReset: () => resetCategorization(db, this.now()),
       subscriptionsOverview: (input) => detectSubscriptions(db, input, this.now()),
       subscriptionDismissAlert: (input) =>
         dismissPriceAlert(db, input.signature, input.lastKnownAmount, this.now()),

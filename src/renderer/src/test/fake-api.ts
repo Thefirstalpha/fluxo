@@ -149,6 +149,7 @@ const LEDGER_DEFAULTS: { [M in LedgerMethod]: LedgerOutput<M> } = {
   categorizationThresholdSet: { threshold: 0.85 },
   categorizationAccept: null,
   categorizationReject: null,
+  categorizationReset: { clearedTransactions: 0, clearedSuggestions: 0, clearedModelSamples: 0 },
   subscriptionsOverview: {
     subscriptions: [],
     totalMonthlyCost: 0,

@@ -1,4 +1,4 @@
-import { Check, Plus, RefreshCw, Sparkles, X } from 'lucide-react'
+import { Check, Plus, RefreshCw, RotateCcw, Sparkles, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CategorizationQueueItem } from '@shared/categorization/model'
 import type { AccountSummary, CategorySummary, TagSummary } from '@shared/ledger/model'
@@ -7,6 +7,7 @@ import { LinkedAccountStatusHint } from '../../components/LinkedAccountStatusHin
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { useT } from '../../i18n'
 import { cx } from '../../lib/cx'
 import { useFormatters } from '../../lib/format'
@@ -44,6 +45,7 @@ export function ValidationQueueTab({
   const setThreshold = useLedgerMutation('categorizationThresholdSet')
   const acceptMutation = useLedgerMutation('categorizationAccept')
   const rejectMutation = useLedgerMutation('categorizationReject')
+  const resetMutation = useLedgerMutation('categorizationReset')
   const updateAccount = useLedgerMutation('accountUpdate')
 
   const items = useMemo(() => queueQuery.data ?? [], [queueQuery.data])
@@ -51,6 +53,7 @@ export function ValidationQueueTab({
   const [drafts, setDrafts] = useState<Record<string, DraftSelection>>({})
   const [thresholdDraft, setThresholdDraft] = useState<number | null>(null)
   const [ruleSourceItem, setRuleSourceItem] = useState<CategorizationQueueItem | null>(null)
+  const [confirmReset, setConfirmReset] = useState(false)
 
   const serverThreshold = statusQuery.data?.threshold ?? 0.85
   const effectiveThreshold = thresholdDraft ?? serverThreshold
@@ -113,6 +116,7 @@ export function ValidationQueueTab({
     boundedIndex,
     quickCategories,
     ruleSourceItem,
+    confirmReset,
     handleAccept,
     handleReject,
   })
@@ -122,6 +126,7 @@ export function ValidationQueueTab({
       boundedIndex,
       quickCategories,
       ruleSourceItem,
+      confirmReset,
       handleAccept,
       handleReject,
     }
@@ -141,7 +146,7 @@ export function ValidationQueueTab({
       }
       if (event.ctrlKey || event.metaKey || event.altKey) return
       const state = keyStateRef.current
-      if (state.ruleSourceItem || state.items.length === 0) return
+      if (state.ruleSourceItem || state.confirmReset || state.items.length === 0) return
 
       const current = state.items[state.boundedIndex]
       if (!current) return
@@ -229,6 +234,11 @@ export function ValidationQueueTab({
               {q.thresholdValue(pctThreshold)}
             </span>
           </label>
+
+          <Button disabled={resetMutation.isPending} onClick={() => setConfirmReset(true)}>
+            <RotateCcw size={14} aria-hidden />
+            {q.resetButton}
+          </Button>
 
           <Button
             disabled={retrain.isPending}
@@ -463,6 +473,31 @@ export function ValidationQueueTab({
           onCreated={(ruleName) => {
             setRuleSourceItem(null)
             onNotice(t.transactions.detail.createRuleCreated(ruleName))
+          }}
+        />
+      ) : null}
+
+      {confirmReset ? (
+        <ConfirmDialog
+          title={t.categorization.reset.confirmTitle}
+          message={t.categorization.reset.confirmMessage}
+          confirmLabel={t.categorization.reset.confirmAction}
+          onClose={() => setConfirmReset(false)}
+          onConfirm={() => {
+            onError(null)
+            void resetMutation
+              .mutateAsync({})
+              .then((res) => {
+                setDrafts({})
+                onNotice(
+                  t.categorization.reset.doneNotice(
+                    res.clearedTransactions,
+                    res.clearedSuggestions,
+                    res.clearedModelSamples,
+                  ),
+                )
+              })
+              .catch((failure: unknown) => onError(t.ledger.errors[ledgerErrorCode(failure)]))
           }}
         />
       ) : null}

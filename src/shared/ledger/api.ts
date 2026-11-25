@@ -86,6 +86,11 @@ export interface LedgerOutputs {
   categorizationThresholdSet: { threshold: number }
   categorizationAccept: null
   categorizationReject: null
+  categorizationReset: {
+    clearedTransactions: number
+    clearedSuggestions: number
+    clearedModelSamples: number
+  }
   subscriptionsOverview: SubscriptionsOverview
   subscriptionDismissAlert: null
   transferCandidatesList: TransferMatchCandidate[]
@@ -153,6 +158,7 @@ export const LEDGER_METHODS = [
   'categorizationThresholdSet',
   'categorizationAccept',
   'categorizationReject',
+  'categorizationReset',
   'subscriptionsOverview',
   'subscriptionDismissAlert',
   'transferCandidatesList',

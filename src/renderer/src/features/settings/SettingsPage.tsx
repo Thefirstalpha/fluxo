@@ -12,6 +12,7 @@ import { getApi } from '../../lib/api'
 import { useSettingsStore } from '../../stores/settings'
 import { useVaultStore } from '../../stores/vault'
 import { ThemePicker } from './ThemePicker'
+import { CategorizationSettings } from './CategorizationSettings'
 import { DataSettings } from './DataSettings'
 import { VaultSettings } from './VaultSettings'
 
@@ -123,6 +124,8 @@ export default function SettingsPage() {
             <DataSettings />
           </>
         )}
+
+        <CategorizationSettings />
 
         <Card title={t.settings.privacy.title}>
           <div className="divide-y divide-border">
