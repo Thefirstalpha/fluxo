@@ -39,6 +39,7 @@ Jalons [M0 — Fondations](docs/planning/M0-fondations.md) (socle applicatif, in
 
 - **Catégories et étiquettes** (M2) : créer, renommer, déplacer, fusionner ou archiver une catégorie en réaffectant ses opérations ; gérer ses étiquettes et voir leur total.
 - **Documents, OCR & IA** (M7) : boîte de dépôt PDF/PNG/JPEG multi-fichiers en processus isolé (`pdfjs-dist` sans `eval`, OCR Tesseract local à la demande vérifié par SHA-256), extraction déterministe des bulletins français, **soldes de tout compte** (avec détection automatique de la société, du poste et des dates de début/fin de contrat) et relevés bancaires PDF, enregistrement groupé par lot chronologique avec déduplication employeur par SIRET/nom, relecture côte à côte avec zones sources surlignées, zéro conservation des originaux par défaut ([ADR-018](docs/architecture/decisions.md#adr-018--pas-de-conservation-des-documents-sources-par-défaut)), et assistance IA facultative (locale ou Claude avec clé `safeStorage`, anonymisation, aperçu et plafond mensuel).
+- **Patrimoine, crédits, budgets & prévisions** (M8, lots 1–6) : budgets mensuels par catégorie (fixe, % revenus, moyenne 3 mois, report d’enveloppe et seuils 80 % / 100 %), objectifs d’épargne avec date d’atteinte estimée, crédits avec tableau d’amortissement en centimes entiers et simulateur de remboursement anticipé, valorisations manuelles d’actifs et vue patrimoine net (6 mois), prévision de fin de mois (« reste à vivre ») et simulation multi-comptes à long terme avec scénarios « et si ».
 
 ### Sécurité
 

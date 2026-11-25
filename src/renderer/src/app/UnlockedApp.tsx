@@ -3,7 +3,6 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { Redirect, Route, Router, Switch, useLocation } from 'wouter'
 import { useHashLocation } from 'wouter/use-hash-location'
 import { ErrorBoundary } from '../components/ErrorBoundary'
-import { ComingSoonPage } from '../features/roadmap/ComingSoonPage'
 import { queryClient } from '../lib/ledger'
 import { useAnalyticsStore } from '../stores/analytics'
 import { useRegisterStore } from '../stores/register'
@@ -21,6 +20,7 @@ const ImportsPage = lazy(() => import('../features/imports/ImportsPage'))
 const AnalyticsPage = lazy(() => import('../features/analytics/AnalyticsPage'))
 const PayslipsPage = lazy(() => import('../features/payslips/PayslipsPage'))
 const DocumentsPage = lazy(() => import('../features/documents/DocumentsPage'))
+const BudgetsPage = lazy(() => import('../features/budgets/BudgetsPage'))
 
 // Verrouillage, démonstration ouverte ou fermée : les données en cache sont celles d'un autre
 // coffre (ou d'un coffre fermé) ; on les oublie.
@@ -83,7 +83,7 @@ export default function UnlockedApp() {
                   <DocumentsPage />
                 </Route>
                 <Route path="/budgets">
-                  <ComingSoonPage section="budgets" />
+                  <BudgetsPage />
                 </Route>
                 <Route path="/settings">
                   <SettingsPage />

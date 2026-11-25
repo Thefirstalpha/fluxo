@@ -25,6 +25,13 @@ export const TRACKED_TABLES = {
   payslip: { key: ['id'], entity: 'payslip' },
   payslip_line: { key: ['id'], entity: 'payslip_line' },
   document: { key: ['id'], entity: 'document' },
+  valuation_entry: { key: ['id'], entity: 'valuation_entry' },
+  loan: { key: ['id'], entity: 'loan' },
+  loan_installment: { key: ['id'], entity: 'loan_installment' },
+  budget: { key: ['id'], entity: 'budget' },
+  goal: { key: ['id'], entity: 'goal' },
+  scenario: { key: ['id'], entity: 'scenario' },
+  planned_item: { key: ['id'], entity: 'planned_item' },
   saved_filter: { key: ['id'], entity: null },
 } as const satisfies Record<string, { key: readonly string[]; entity: AuditInput['entity'] | null }>
 

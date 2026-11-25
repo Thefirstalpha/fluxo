@@ -7,6 +7,7 @@ import { SCHEMA_V5 } from './schema-v5'
 import { SCHEMA_V6 } from './schema-v6'
 import { SCHEMA_V7 } from './schema-v7'
 import { SCHEMA_V8 } from './schema-v8'
+import { SCHEMA_V9 } from './schema-v9'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
@@ -52,6 +53,11 @@ export const MIGRATIONS: readonly Migration[] = [
     name: 'documents et IA (file documentaire, journal IA, relevés PDF)',
     up: SCHEMA_V8,
     rebuildForeignKeys: true,
+  },
+  {
+    version: 9,
+    name: 'patrimoine, crédits, budgets et prévisions',
+    up: SCHEMA_V9,
   },
 ]
 

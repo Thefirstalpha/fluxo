@@ -306,6 +306,13 @@ export const AUDIT_ENTITIES = [
   'payslip_line',
   'document',
   'ai_send_log',
+  'valuation_entry',
+  'loan',
+  'loan_installment',
+  'budget',
+  'goal',
+  'scenario',
+  'planned_item',
 ] as const
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number]
 

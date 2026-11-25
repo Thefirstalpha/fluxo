@@ -13,6 +13,19 @@ import type {
   TransferMatchCandidate,
 } from '../categorization/model'
 import type {
+  BudgetSummary,
+  EarlyRepaymentSimulation,
+  EndOfMonthForecast,
+  GoalSummary,
+  LoanDetail,
+  LoanSummary,
+  NetWorthOverview,
+  ScenarioDetail,
+  ScenarioSummary,
+  SimulationProjection,
+  ValuationEntry,
+} from '../planning/model'
+import type {
   ContractSummary,
   EmployerSummary,
   PayslipDetail,
@@ -125,6 +138,33 @@ export interface LedgerOutputs {
   payslipTransferCandidates: PayslipTransferCandidate[]
   payslipLinkTransaction: PayslipDetail
   salaryDashboard: SalaryDashboardOverview
+  valuationsList: ValuationEntry[]
+  valuationAdd: { id: string }
+  valuationDelete: null
+  netWorthOverview: NetWorthOverview
+  loansList: LoanSummary[]
+  loanGet: LoanDetail
+  loanCreate: { id: string; accountId: string }
+  loanUpdate: null
+  loanDelete: null
+  loanLinkInstallment: null
+  loanSimulateEarlyRepayment: EarlyRepaymentSimulation
+  budgetsList: BudgetSummary[]
+  budgetSave: { id: string }
+  budgetDelete: null
+  goalsList: GoalSummary[]
+  goalSave: { id: string }
+  goalDelete: null
+  forecastOverview: EndOfMonthForecast
+  scenariosList: ScenarioSummary[]
+  scenarioGet: ScenarioDetail
+  scenarioGenerateBase: ScenarioDetail
+  scenarioCloneVariant: ScenarioDetail
+  scenarioUpdate: null
+  scenarioDelete: null
+  plannedItemSave: { id: string }
+  plannedItemDelete: null
+  scenarioSimulate: SimulationProjection
 }
 
 export type LedgerMethod = keyof LedgerOutputs
@@ -212,6 +252,33 @@ export const LEDGER_METHODS = [
   'payslipTransferCandidates',
   'payslipLinkTransaction',
   'salaryDashboard',
+  'valuationsList',
+  'valuationAdd',
+  'valuationDelete',
+  'netWorthOverview',
+  'loansList',
+  'loanGet',
+  'loanCreate',
+  'loanUpdate',
+  'loanDelete',
+  'loanLinkInstallment',
+  'loanSimulateEarlyRepayment',
+  'budgetsList',
+  'budgetSave',
+  'budgetDelete',
+  'goalsList',
+  'goalSave',
+  'goalDelete',
+  'forecastOverview',
+  'scenariosList',
+  'scenarioGet',
+  'scenarioGenerateBase',
+  'scenarioCloneVariant',
+  'scenarioUpdate',
+  'scenarioDelete',
+  'plannedItemSave',
+  'plannedItemDelete',
+  'scenarioSimulate',
 ] as const satisfies readonly LedgerMethod[]
 
 type Missing = Exclude<LedgerMethod, (typeof LEDGER_METHODS)[number]>
@@ -252,6 +319,17 @@ export const LEDGER_QUERIES: ReadonlySet<LedgerMethod> = new Set<LedgerMethod>([
   'payslipRevealSensitive',
   'payslipTransferCandidates',
   'salaryDashboard',
+  'valuationsList',
+  'netWorthOverview',
+  'loansList',
+  'loanGet',
+  'loanSimulateEarlyRepayment',
+  'budgetsList',
+  'goalsList',
+  'forecastOverview',
+  'scenariosList',
+  'scenarioGet',
+  'scenarioSimulate',
 ])
 
 export function ledgerChannel(method: LedgerMethod): string {

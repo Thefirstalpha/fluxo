@@ -58,6 +58,35 @@ import {
   updateContract,
   updateEmployer,
 } from './payslips'
+import {
+  addValuation,
+  cloneScenarioVariant,
+  createLoan,
+  deleteBudget,
+  deleteGoal,
+  deleteLoan,
+  deletePlannedItem,
+  deleteScenario,
+  deleteValuation,
+  generateBaseScenario,
+  getEndOfMonthForecast,
+  getLoanDetail,
+  getNetWorthOverview,
+  getScenarioDetail,
+  linkLoanInstallment,
+  listBudgets,
+  listGoals,
+  listLoans,
+  listScenarios,
+  listValuations,
+  saveBudget,
+  saveGoal,
+  savePlannedItem,
+  simulateLoanEarlyRepaymentFromDb,
+  simulateScenario,
+  updateLoan,
+  updateScenario,
+} from './planning'
 import { detectSubscriptions, detectTransferCandidates, dismissPriceAlert } from './recurring'
 import {
   applyRulesRetroactively,
@@ -236,6 +265,45 @@ export class Ledger {
       payslipLinkTransaction: (input) =>
         write('payslip-link', (changes) => linkPayslipTransaction(changes, input, this.now())),
       salaryDashboard: (input) => getSalaryDashboardOverview(db, input),
+      valuationsList: (input) => listValuations(db, input),
+      valuationAdd: (input) =>
+        write('valuation-add', (changes) => addValuation(changes, input, this.now())),
+      valuationDelete: (input) =>
+        write('valuation-delete', (changes) => deleteValuation(changes, input)),
+      netWorthOverview: (input) => getNetWorthOverview(db, input, this.now()),
+      loansList: (input) => listLoans(db, input, this.now()),
+      loanGet: (input) => getLoanDetail(db, input.id, this.now()),
+      loanCreate: (input) =>
+        write('loan-create', (changes) => createLoan(changes, input, this.now())),
+      loanUpdate: (input) =>
+        write('loan-update', (changes) => updateLoan(changes, input, this.now())),
+      loanDelete: (input) => write('loan-delete', (changes) => deleteLoan(changes, input.id)),
+      loanLinkInstallment: (input) =>
+        write('loan-link', (changes) => linkLoanInstallment(changes, input, this.now())),
+      loanSimulateEarlyRepayment: (input) => simulateLoanEarlyRepaymentFromDb(db, input),
+      budgetsList: (input) => listBudgets(db, input, this.now()),
+      budgetSave: (input) =>
+        write('budget-save', (changes) => saveBudget(changes, input, this.now())),
+      budgetDelete: (input) => write('budget-delete', (changes) => deleteBudget(changes, input.id)),
+      goalsList: (input) => listGoals(db, input, this.now()),
+      goalSave: (input) => write('goal-save', (changes) => saveGoal(changes, input, this.now())),
+      goalDelete: (input) => write('goal-delete', (changes) => deleteGoal(changes, input.id)),
+      forecastOverview: (input) => getEndOfMonthForecast(db, input, this.now()),
+      scenariosList: () => listScenarios(db),
+      scenarioGet: (input) => getScenarioDetail(db, input.id),
+      scenarioGenerateBase: (input) =>
+        write('scenario-base', (changes) => generateBaseScenario(changes, input, this.now())),
+      scenarioCloneVariant: (input) =>
+        write('scenario-clone', (changes) => cloneScenarioVariant(changes, input, this.now())),
+      scenarioUpdate: (input) =>
+        write('scenario-update', (changes) => updateScenario(changes, input, this.now())),
+      scenarioDelete: (input) =>
+        write('scenario-delete', (changes) => deleteScenario(changes, input.id)),
+      plannedItemSave: (input) =>
+        write('planned-item-save', (changes) => savePlannedItem(changes, input, this.now())),
+      plannedItemDelete: (input) =>
+        write('planned-item-delete', (changes) => deletePlannedItem(changes, input.id)),
+      scenarioSimulate: (input) => simulateScenario(db, input.scenarioId, this.now()),
     }
   }
 

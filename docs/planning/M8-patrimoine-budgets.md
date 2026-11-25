@@ -1,6 +1,6 @@
 # M8 — Patrimoine, crédits, budgets & prévisions
 
-> **Statut : ⬜ À venir** · Taille : XL · Dépend de : M2 (comptes), M4 (catégorisation et récurrences, pour les budgets, les prévisions et la simulation) ; M6 facultatif (salaire projeté) · Version : 0.9 — **RC**
+> **Statut : 🟡 Lots 1–6 livrés (Lot 7 défis facultatif restant)** · Taille : XL · Dépend de : M2 (comptes), M4 (catégorisation et récurrences, pour les budgets, les prévisions et la simulation) ; M6 facultatif (salaire projeté) · Version : 0.9 — **RC**
 
 ## Objectif
 
@@ -31,42 +31,42 @@ Passer du constat à l'**anticipation**, et donner une vision complète : budget
 
 ### Lot 1 — Budgets
 
-- [ ] Budget mensuel par catégorie : montant fixe, % des revenus ou moyenne des 3 derniers mois ; report du reliquat (mode enveloppes) facultatif. `Proposition`
-- [ ] Jauges d'avancement : état porté par couleur **+ icône + libellé** (jamais la couleur seule), vue tableau. `Proposition`
-- [ ] Alertes à 80 % et 100 % via notifications système locales, regroupées, désactivables. `Proposition`
+- [x] Budget mensuel par catégorie : montant fixe, % des revenus ou moyenne des 3 derniers mois ; report du reliquat (mode enveloppes) facultatif. `Proposition`
+- [x] Jauges d'avancement : état porté par couleur **+ icône + libellé** (jamais la couleur seule), vue tableau. `Proposition`
+- [ ] Alertes à 80 % et 100 % via notifications système locales, regroupées, désactivables (seuils visuels et badges 80 % / 100 % actifs dans l'interface). `Proposition`
 
 ### Lot 2 — Objectifs d'épargne
 
-- [ ] Objectifs d'épargne (montant, échéance, compte associé), projection de la date d'atteinte au rythme actuel. `Proposition`
+- [x] Objectifs d'épargne (montant, échéance, compte associé), projection de la date d'atteinte au rythme actuel. `Proposition`
 
 ### Lot 3 — Crédits
 
-- [ ] **Déclaration d'un crédit** (`Loan`) : type (immobilier, consommation, auto, étudiant, autre), capital initial, taux nominal, TAEG, assurance emprunteur, durée, date de début, périodicité ; compte associé de type « prêt ». `Besoin`
-- [ ] **Tableau d'amortissement** généré (`LoanInstallment`) : part capital, part intérêts, part assurance et capital restant dû pour chaque échéance ; recalcul si le crédit est modifié. `Besoin`
-- [ ] **Vue d'ensemble des crédits** : liste de tous les crédits en cours, mensualité totale, capital restant dû total, date de fin la plus lointaine. `Besoin`
-- [ ] **Rapprochement** facultatif entre une mensualité et la transaction de prélèvement correspondante. `Proposition`
-- [ ] Alerte avant une échéance importante (fin de période à taux fixe, dernier remboursement). `Proposition`
-- [ ] **Simulateur de remboursement anticipé** : impact d'un versement exceptionnel sur la durée ou la mensualité restante. `Proposition`
+- [x] **Déclaration d'un crédit** (`Loan`) : type (immobilier, consommation, auto, étudiant, autre), capital initial, taux nominal, TAEG, assurance emprunteur, durée, date de début, périodicité ; compte associé de type « prêt ». `Besoin`
+- [x] **Tableau d'amortissement** généré (`LoanInstallment`) : part capital, part intérêts, part assurance et capital restant dû pour chaque échéance ; recalcul si le crédit est modifié. `Besoin`
+- [x] **Vue d'ensemble des crédits** : liste de tous les crédits en cours, mensualité totale, capital restant dû total, date de fin la plus lointaine. `Besoin`
+- [x] **Rapprochement** facultatif entre une mensualité et la transaction de prélèvement correspondante. `Proposition`
+- [x] Alerte avant une échéance importante (fin de période à taux fixe, dernier remboursement). `Proposition`
+- [x] **Simulateur de remboursement anticipé** : impact d'un versement exceptionnel sur la durée ou la mensualité restante. `Proposition`
 
 ### Lot 4 — Comptes externes & patrimoine
 
-- [ ] **Comptes en mode valorisation manuelle** (placement, immobilier, autre actif) : pas de transactions, une suite de valorisations datées (`ValuationEntry`) saisies par l'utilisateur. `Besoin`
-- [ ] **Vue patrimoine net** : actifs (comptes courants, épargne, placements valorisés) moins passifs (capital restant dû de tous les crédits), à la date du jour et dans le temps (graphique dédié, suivant les [règles de visualisation](../design/systeme-de-design.md#graphiques)). `Besoin`
-- [ ] Rappel périodique (facultatif) pour mettre à jour une valorisation ancienne. `Proposition`
+- [x] **Comptes en mode valorisation manuelle** (placement, immobilier, autre actif) : pas de transactions, une suite de valorisations datées (`ValuationEntry`) saisies par l'utilisateur. `Besoin`
+- [x] **Vue patrimoine net** : actifs (comptes courants, épargne, placements valorisés) moins passifs (capital restant dû de tous les crédits), à la date du jour et dans le temps (graphique dédié, suivant les [règles de visualisation](../design/systeme-de-design.md#graphiques)). `Besoin`
+- [x] Rappel périodique (facultatif) pour mettre à jour une valorisation ancienne. `Proposition`
 
 ### Lot 5 — Prévisions
 
-- [ ] Calendrier des prélèvements et revenus à venir (récurrences M4, salaire M6, mensualités de crédit M8). `Proposition`
-- [ ] **Solde prévisionnel** de fin de mois avec intervalle (récurrences + dépenses variables moyennes) et **« reste à vivre »**. `Proposition`
-- [ ] Alerte de découvert prévisionnel. `Proposition`
+- [x] Calendrier des prélèvements et revenus à venir (récurrences M4, salaire M6, mensualités de crédit M8). `Proposition`
+- [x] **Solde prévisionnel** de fin de mois avec intervalle (récurrences + dépenses variables moyennes) et **« reste à vivre »**. `Proposition`
+- [x] Alerte de découvert prévisionnel. `Proposition`
 
 ### Lot 6 — Simulation à long terme
 
-- [ ] **Scénario de base** dérivé des données existantes : récurrences détectées (M4 : abonnements, énergie, eau, assurances…), échéances de crédit (lot 3), salaire (M6 si renseigné), dépenses variables moyennes par catégorie ; régénéré à la demande. `Proposition`
-- [ ] **Projection mois par mois** des soldes des comptes courants et d'épargne choisis, horizon au choix (quelques mois à plusieurs années), rémunération des comptes d'épargne au taux saisi. `Proposition`
-- [ ] **Hypothèses** ajoutées, modifiées ou retirées : charge ou revenu récurrent (début, fin, périodicité), dépense ponctuelle prévue (voiture, travaux), indexation annuelle par élément ou par défaut (ex. énergie + 8 %/an), fin anticipée d'un crédit. `Proposition`
-- [ ] **Scénarios « et si »** : variantes du scénario de base, comparaison côte à côte, date de franchissement d'un seuil (découvert, objectif d'épargne atteint, épargne de précaution). `Proposition`
-- [ ] Graphique de projection avec incertitude croissante et liste des hypothèses, vue tableau équivalente, respect du masquage des montants. `Proposition`
+- [x] **Scénario de base** dérivé des données existantes : récurrences détectées (M4 : abonnements, énergie, eau, assurances…), échéances de crédit (lot 3), salaire (M6 si renseigné), dépenses variables moyennes par catégorie ; régénéré à la demande. `Proposition`
+- [x] **Projection mois par mois** des soldes des comptes courants et d'épargne choisis, horizon au choix (quelques mois à plusieurs années), rémunération des comptes d'épargne au taux saisi. `Proposition`
+- [x] **Hypothèses** ajoutées, modifiées ou retirées : charge ou revenu récurrent (début, fin, périodicité), dépense ponctuelle prévue (voiture, travaux), indexation annuelle par élément ou par défaut (ex. énergie + 8 %/an), fin anticipée d'un crédit. `Proposition`
+- [x] **Scénarios « et si »** : variantes du scénario de base, comparaison côte à côte, date de franchissement d'un seuil (découvert, objectif d'épargne atteint, épargne de précaution). `Proposition`
+- [x] Graphique de projection avec incertitude croissante et liste des hypothèses, vue tableau équivalente, respect du masquage des montants. `Proposition`
 
 ### Lot 7 — Motivation (facultatif)
 

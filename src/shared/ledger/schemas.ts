@@ -16,6 +16,13 @@ import {
   isValidNir,
   normalizeNir,
 } from '../payslip'
+import {
+  BUDGET_MODES,
+  LOAN_PERIODICITIES,
+  LOAN_STATUSES,
+  LOAN_TYPES,
+  PLANNED_PERIODICITIES,
+} from '../planning/model'
 import type { LedgerMethod } from './api'
 import { isValidIban, normalizeIban } from './iban'
 import {
@@ -436,6 +443,125 @@ export const LEDGER_INPUTS = {
     contractId: idSchema.optional(),
     currency: currencySchema.optional(),
   }),
+  valuationsList: z.strictObject({ accountId: idSchema }),
+  valuationAdd: z.strictObject({
+    accountId: idSchema,
+    valuationDate: isoDateSchema,
+    valueCents: amountSchema,
+    note: optionalText(500).default(null),
+  }),
+  valuationDelete: byId,
+  netWorthOverview: z.strictObject({ currency: currencySchema.optional() }),
+  loansList: z.strictObject({ includeArchived: z.boolean().optional() }),
+  loanGet: byId,
+  loanCreate: z.strictObject({
+    accountId: idSchema.optional(),
+    name: requiredText(200),
+    loanType: z.enum(LOAN_TYPES),
+    initialCapital: z.int().min(1).max(MAX_AMOUNT),
+    nominalRateMicros: rateMicrosSchema,
+    taegMicros: rateMicrosSchema.nullable().default(null),
+    insuranceMonthlyCents: z.int().min(0).max(MAX_AMOUNT).default(0),
+    durationMonths: z.int().min(1).max(600),
+    periodicity: z.enum(LOAN_PERIODICITIES).default('monthly'),
+    startDate: isoDateSchema,
+    fixedRateEndDate: isoDateSchema.nullable().default(null),
+    currency: currencySchema.default('EUR'),
+  }),
+  loanUpdate: z.strictObject({
+    id: idSchema,
+    patch: z
+      .strictObject({
+        name: requiredText(200),
+        loanType: z.enum(LOAN_TYPES),
+        initialCapital: z.int().min(1).max(MAX_AMOUNT),
+        nominalRateMicros: rateMicrosSchema,
+        taegMicros: rateMicrosSchema.nullable(),
+        insuranceMonthlyCents: z.int().min(0).max(MAX_AMOUNT),
+        durationMonths: z.int().min(1).max(600),
+        periodicity: z.enum(LOAN_PERIODICITIES),
+        startDate: isoDateSchema,
+        fixedRateEndDate: isoDateSchema.nullable(),
+        status: z.enum(LOAN_STATUSES),
+      })
+      .partial(),
+  }),
+  loanDelete: byId,
+  loanLinkInstallment: z.strictObject({
+    installmentId: idSchema,
+    transactionId: idSchema.nullable(),
+  }),
+  loanSimulateEarlyRepayment: z.strictObject({
+    loanId: idSchema,
+    extraPrincipalCents: z.int().min(1).max(MAX_AMOUNT),
+    atInstallmentNumber: z.int().min(1).max(600),
+    mode: z.enum(['reduce_duration', 'reduce_payment']),
+  }),
+  budgetsList: z.strictObject({
+    month: monthSchema.optional(),
+    includeArchived: z.boolean().optional(),
+  }),
+  budgetSave: z.strictObject({
+    id: idSchema.optional(),
+    categoryId: idSchema,
+    mode: z.enum(BUDGET_MODES),
+    amountCents: z.int().min(0).max(MAX_AMOUNT).default(0),
+    percentMicros: rateMicrosSchema.nullable().default(null),
+    rollover: z.boolean().default(false),
+    alert80: z.boolean().default(true),
+    alert100: z.boolean().default(true),
+    archived: z.boolean().default(false),
+  }),
+  budgetDelete: byId,
+  goalsList: z.strictObject({ includeArchived: z.boolean().optional() }),
+  goalSave: z.strictObject({
+    id: idSchema.optional(),
+    name: requiredText(200),
+    targetCents: z.int().min(1).max(MAX_AMOUNT),
+    targetDate: isoDateSchema.nullable().default(null),
+    accountId: idSchema.nullable().default(null),
+    archived: z.boolean().default(false),
+  }),
+  goalDelete: byId,
+  forecastOverview: z.strictObject({ currency: currencySchema.optional() }),
+  scenariosList: z.strictObject({}),
+  scenarioGet: byId,
+  scenarioGenerateBase: z.strictObject({
+    horizonMonths: z.int().min(1).max(120).optional(),
+    currency: currencySchema.optional(),
+  }),
+  scenarioCloneVariant: z.strictObject({
+    sourceScenarioId: idSchema,
+    name: requiredText(200),
+  }),
+  scenarioUpdate: z.strictObject({
+    id: idSchema,
+    patch: z
+      .strictObject({
+        name: requiredText(200),
+        horizonMonths: z.int().min(1).max(120),
+        accountIds: z.array(idSchema).max(50),
+        defaultIndexationMicros: z.int().min(-500_000).max(500_000),
+        savingsRateOverrides: z.record(idSchema, rateMicrosSchema),
+      })
+      .partial(),
+  }),
+  scenarioDelete: byId,
+  plannedItemSave: z.strictObject({
+    id: idSchema.optional(),
+    scenarioId: idSchema,
+    accountId: idSchema,
+    label: requiredText(200),
+    categoryId: idSchema.nullable().default(null),
+    amountCents: amountSchema,
+    periodicity: z.enum(PLANNED_PERIODICITIES),
+    startDate: isoDateSchema,
+    endDate: isoDateSchema.nullable().default(null),
+    indexationMicros: z.int().min(-500_000).max(500_000).default(0),
+    enabled: z.boolean().default(true),
+  }),
+  plannedItemDelete: byId,
+  scenarioSimulate: z.strictObject({ scenarioId: idSchema }),
 } as const satisfies Record<LedgerMethod, z.ZodType>
 
 export type LedgerInputs = { [M in keyof typeof LEDGER_INPUTS]: z.input<(typeof LEDGER_INPUTS)[M]> }

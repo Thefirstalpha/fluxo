@@ -40,13 +40,15 @@ interface AccountListRow extends AccountRow {
   reconciled: number
   transaction_count: number
   last_date: string | null
+  latest_valuation: number | null
+  loan_remaining: number | null
 }
 
 /**
  * Comptes et soldes à date. Solde = solde d'ouverture + Σ opérations jusqu'à la date ;
  * part rapprochée = solde d'ouverture + Σ opérations « rapprochées ». Un compte en
- * valorisation manuelle n'a pas d'opérations : son solde est sa valeur d'ouverture (M8 :
- * historique de valorisations).
+ * valorisation manuelle reflète sa dernière entrée `valuation_entry` (ou `-remaining_principal_cents`
+ * s'il est associé à un crédit M8), à défaut son solde d'ouverture.
  */
 export function listAccounts(
   db: Db,
@@ -57,7 +59,9 @@ export function listAccounts(
       `SELECT a.id, a.name, a.type, a.tracking_mode, a.institution, a.currency, a.opening_balance,
          a.opening_date, a.iban, a.color, a.icon, a.archived, a.sort_order,
          coalesce(t.total, 0) AS total, coalesce(t.reconciled, 0) AS reconciled,
-         coalesce(t.count, 0) AS transaction_count, t.last_date
+         coalesce(t.count, 0) AS transaction_count, t.last_date,
+         val.value_cents AS latest_valuation,
+         l.remaining_principal_cents AS loan_remaining
        FROM account a
        LEFT JOIN (
          SELECT account_id, sum(amount) AS total, count(*) AS count, max(booking_date) AS last_date,
@@ -65,29 +69,53 @@ export function listAccounts(
          FROM transactions WHERE @asOf IS NULL OR booking_date <= @asOf
          GROUP BY account_id
        ) t ON t.account_id = a.id
+       LEFT JOIN (
+         SELECT v1.account_id, v1.value_cents
+         FROM valuation_entry v1
+         WHERE (@asOf IS NULL OR v1.valuation_date <= @asOf)
+           AND v1.rowid = (
+             SELECT v2.rowid FROM valuation_entry v2
+             WHERE v2.account_id = v1.account_id AND (@asOf IS NULL OR v2.valuation_date <= @asOf)
+             ORDER BY v2.valuation_date DESC, v2.created_at DESC, v2.rowid DESC
+             LIMIT 1
+           )
+       ) val ON val.account_id = a.id
+       LEFT JOIN loan l ON l.account_id = a.id AND l.status != 'archived'
        WHERE @all = 1 OR a.archived = 0
        ORDER BY a.archived, a.sort_order, a.name COLLATE NOCASE`,
     )
     .all({ asOf: asOf ?? null, all: includeArchived ? 1 : 0 }) as AccountListRow[]
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    trackingMode: row.tracking_mode,
-    institution: row.institution,
-    currency: row.currency,
-    openingBalance: row.opening_balance,
-    openingDate: row.opening_date,
-    ibanMasked: row.iban ? maskIban(row.iban) : null,
-    color: row.color,
-    icon: row.icon,
-    archived: row.archived === 1,
-    sortOrder: row.sort_order,
-    balance: row.opening_balance + row.total,
-    reconciledBalance: row.opening_balance + row.reconciled,
-    transactionCount: row.transaction_count,
-    lastTransactionDate: row.last_date,
-  }))
+  return rows.map((row) => {
+    const valuationBalance =
+      row.type === 'loan' && row.loan_remaining !== null
+        ? -row.loan_remaining
+        : row.latest_valuation !== null
+          ? row.latest_valuation
+          : row.opening_balance
+    const balance =
+      row.tracking_mode === 'valuation' ? valuationBalance : row.opening_balance + row.total
+    const reconciledBalance =
+      row.tracking_mode === 'valuation' ? valuationBalance : row.opening_balance + row.reconciled
+    return {
+      id: row.id,
+      name: row.name,
+      type: row.type,
+      trackingMode: row.tracking_mode,
+      institution: row.institution,
+      currency: row.currency,
+      openingBalance: row.opening_balance,
+      openingDate: row.opening_date,
+      ibanMasked: row.iban ? maskIban(row.iban) : null,
+      color: row.color,
+      icon: row.icon,
+      archived: row.archived === 1,
+      sortOrder: row.sort_order,
+      balance,
+      reconciledBalance,
+      transactionCount: row.transaction_count,
+      lastTransactionDate: row.last_date,
+    }
+  })
 }
 
 export function getAccount(db: Db, id: string): AccountRow {

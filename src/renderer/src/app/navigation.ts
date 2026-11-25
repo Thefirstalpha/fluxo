@@ -42,7 +42,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'analytics', path: '/analytics', icon: ChartNoAxesCombined },
   { key: 'payslips', path: '/payslips', icon: Wallet },
   { key: 'documents', path: '/documents', icon: FileScan },
-  { key: 'budgets', path: '/budgets', icon: PiggyBank, milestone: 'M8' },
+  { key: 'budgets', path: '/budgets', icon: PiggyBank },
 ]
 
 export const SETTINGS_PATH = '/settings'

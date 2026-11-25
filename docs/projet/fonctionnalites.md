@@ -133,19 +133,19 @@ G05 (congés payés et RTT) a été retiré, jugé inutile ([ADR-025](../archite
 
 | ID  | Fonctionnalité                                                                                                    | Origine     | Jalon | Statut |
 | --- | ----------------------------------------------------------------------------------------------------------------- | ----------- | ----- | ------ |
-| I01 | Budgets mensuels par catégorie (montant fixe ou % des revenus)                                                    | Proposition | M8    | ⬜     |
-| I02 | Alertes de dépassement (notifications locales)                                                                    | Proposition | M8    | ⬜     |
-| I03 | Objectifs d'épargne avec projection                                                                               | Proposition | M8    | ⬜     |
-| I04 | Calendrier des prélèvements à venir (factures, mensualités de crédit)                                             | Proposition | M8    | ⬜     |
-| I05 | Prévision du solde de fin de mois, « reste à vivre »                                                              | Proposition | M8    | ⬜     |
+| I01 | Budgets mensuels par catégorie (montant fixe ou % des revenus)                                                    | Proposition | M8    | ✅     |
+| I02 | Alertes de dépassement (notifications locales)                                                                    | Proposition | M8    | 🟡     |
+| I03 | Objectifs d'épargne avec projection                                                                               | Proposition | M8    | ✅     |
+| I04 | Calendrier des prélèvements à venir (factures, mensualités de crédit)                                             | Proposition | M8    | ✅     |
+| I05 | Prévision du solde de fin de mois, « reste à vivre »                                                              | Proposition | M8    | ✅     |
 | I06 | Défis et succès (gamification sobre)                                                                              | Proposition | M8    | ⬜     |
-| I07 | Crédits (immobilier, consommation, auto, étudiant) : échéancier et tableau d'amortissement                        | Besoin      | M8    | ⬜     |
-| I08 | Vue patrimoine net : actifs (comptes, épargne, placements valorisés) − passifs (capital restant dû) dans le temps | Besoin      | M8    | ⬜     |
-| I09 | Rapprochement mensualité de crédit ↔ transaction                                                                  | Proposition | M8    | ⬜     |
-| I10 | Alerte d'échéance de crédit et simulateur de remboursement anticipé                                               | Proposition | M8    | ⬜     |
-| I11 | Valorisation manuelle périodique des actifs externes (placements, immobilier)                                     | Besoin      | M8    | ⬜     |
-| I12 | Simulation à long terme des soldes (courant, épargne) : récurrences, crédits, salaire, charges futures prévues    | Proposition | M8    | ⬜     |
-| I13 | Scénarios « et si » comparables (nouvel abonnement, hausse de l'énergie, fin de crédit, épargne mensuelle)        | Proposition | M8    | ⬜     |
+| I07 | Crédits (immobilier, consommation, auto, étudiant) : échéancier et tableau d'amortissement                        | Besoin      | M8    | ✅     |
+| I08 | Vue patrimoine net : actifs (comptes, épargne, placements valorisés) − passifs (capital restant dû) dans le temps | Besoin      | M8    | ✅     |
+| I09 | Rapprochement mensualité de crédit ↔ transaction                                                                  | Proposition | M8    | ✅     |
+| I10 | Alerte d'échéance de crédit et simulateur de remboursement anticipé                                               | Proposition | M8    | ✅     |
+| I11 | Valorisation manuelle périodique des actifs externes (placements, immobilier)                                     | Besoin      | M8    | ✅     |
+| I12 | Simulation à long terme des soldes (courant, épargne) : récurrences, crédits, salaire, charges futures prévues    | Proposition | M8    | ✅     |
+| I13 | Scénarios « et si » comparables (nouvel abonnement, hausse de l'énergie, fin de crédit, épargne mensuelle)        | Proposition | M8    | ✅     |
 
 ## J. Distribution
 
