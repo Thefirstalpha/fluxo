@@ -19,6 +19,7 @@ const category = (n: number, overrides: Partial<CategorySummary>): CategorySumma
   color: null,
   sortOrder: n,
   archived: false,
+  linkedAccountId: null,
   transactionCount: 0,
   total: 0,
   ...overrides,

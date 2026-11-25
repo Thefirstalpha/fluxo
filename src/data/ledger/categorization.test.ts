@@ -315,4 +315,52 @@ describe('détection des abonnements, hausses de prix et virements internes (M4)
       toTransaction: { id: inId },
     })
   })
+
+  it('valide et applique une règle vers une catégorie liée d’épargne avec comptabilisation miroir', () => {
+    const checking = checkingAccount('Courant')
+    const livret = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Livret A',
+      type: 'savings',
+      trackingMode: 'manual',
+      openingBalance: 1_000_00,
+    }).id
+    const livretCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livret)!.id
+
+    // 1. Passage par la file À valider : retrait du livret vers le courant (+300 €)
+    const txQueue = insertImported(t.db, checking, {
+      date: '2026-11-12',
+      amount: 300_00,
+      label: 'VIR RETRAIT LIVRET MANUEL',
+    })
+    t.ok('categorizeAutoRun', { transactionIds: [txQueue] })
+    t.ok('categorizationAccept', {
+      transactionId: txQueue,
+      categoryId: livretCat,
+    })
+    const qDetail = t.ok('transactionGet', { id: txQueue })
+    expect(qDetail.transferAccountId).toBe(livret)
+    expect(t.ok('accountsList', {}).find((a) => a.id === livret)?.balance).toBe(700_00)
+
+    // 2. Passage par une règle automatique : versement (-200 €) lors du lot suivant
+    t.ok('ruleSave', {
+      name: 'Vers Livret A',
+      conditions: {
+        labelOp: 'contains',
+        labelValue: 'VERS LIVRET A',
+        direction: 'expense',
+        amountOp: 'any',
+      },
+      actions: { categoryId: livretCat },
+    })
+    const txRule = insertImported(t.db, checking, {
+      date: '2026-11-20',
+      amount: -200_00,
+      label: 'VIR SEPA VERS LIVRET A',
+    })
+    t.ok('categorizeAutoRun', { transactionIds: [txRule] })
+    const rDetail = t.ok('transactionGet', { id: txRule })
+    expect(rDetail.transferAccountId).toBe(livret)
+    expect(t.ok('accountsList', {}).find((a) => a.id === livret)?.balance).toBe(900_00)
+  })
 })

@@ -4,6 +4,7 @@ import {
   ACCOUNT_TYPES,
   allowedTrackingModes,
   DEFAULT_TRACKING_MODE,
+  isSavingsAccountType,
   type AccountDraft,
   type AccountSummary,
   type AccountType,
@@ -163,6 +164,9 @@ export function AccountForm({ account, onClose, onSaved }: AccountFormProps) {
               )
             })}
           </div>
+          {!locked && isSavingsAccountType(type) ? (
+            <p className="mt-2 text-xs text-fg-2">{f.savingsTrackingHint}</p>
+          ) : null}
         </fieldset>
 
         <div className="grid gap-4 sm:grid-cols-3">

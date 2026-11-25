@@ -29,6 +29,7 @@ import {
   type RuleCandidateTx,
 } from './rules'
 import { writeSplits } from './splits'
+import { reconcileLinkedCategoryTransfer, reconcileLinkedCategoryTransferOnDb } from './transfers'
 
 const DEFAULT_THRESHOLD = 0.85
 const META_THRESHOLD_KEY = 'categorization_threshold'
@@ -237,6 +238,12 @@ export function runAutoCategorization(
       )
       .pluck()
       .get() as string | undefined) ?? null
+  const linkedCategoryIds = new Set(
+    db
+      .prepare('SELECT id FROM category WHERE linked_account_id IS NOT NULL AND archived = 0')
+      .pluck()
+      .all() as string[],
+  )
 
   const scopedIds = options.transactionIds
   const idFilterSql =
@@ -311,6 +318,7 @@ export function runAutoCategorization(
   const pendingSplits: unknown[] = []
   const pendingSplitTags: [string, string][] = []
   const pendingSugs: unknown[] = []
+  const autoAppliedLinkedTxIds: string[] = []
 
   const flushSplitBatch = () => {
     if (pendingSplits.length === SPLIT_BATCH * 4) {
@@ -416,6 +424,9 @@ export function runAutoCategorization(
           const splitId = uuidv7()
           pendingSplits.push(splitId, tx.id, matchedCategoryId, tx.amount)
           flushSplitBatch()
+          if (matchedCategoryId !== null && linkedCategoryIds.has(matchedCategoryId)) {
+            autoAppliedLinkedTxIds.push(tx.id)
+          }
           for (const tagId of matchedTagIds) {
             pendingSplitTags.push([splitId, tagId])
           }
@@ -467,6 +478,9 @@ export function runAutoCategorization(
     }
     for (const [splitId, tagId] of pendingSplitTags) {
       insertSplitTag.run(splitId, tagId)
+    }
+    for (const txId of autoAppliedLinkedTxIds) {
+      reconcileLinkedCategoryTransferOnDb(db, txId, now)
     }
     for (let i = 0; i < pendingSugs.length; i += 12) {
       upsertSugSingle.run(
@@ -638,6 +652,7 @@ export function acceptQueueSuggestion(
     tagIds: input.tagIds ?? [],
   }
   writeSplits(changes, tx.id, tx.amount, [split])
+  reconcileLinkedCategoryTransfer(changes, tx.id, now)
 
   changes.db
     .prepare(

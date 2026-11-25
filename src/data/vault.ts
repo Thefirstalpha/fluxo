@@ -89,6 +89,7 @@ import {
 } from './imports/engine'
 import { deleteCsvProfile, listCsvProfiles, saveCsvProfile } from './imports/profiles'
 import { exportDatabase } from './export'
+import { backfillSavingsLinkedCategories } from './ledger/categories'
 import { seedCategoryPack } from './ledger/category-seed'
 import { databaseRuleError, LedgerFailure } from './ledger/failure'
 import { Ledger } from './ledger/ledger'
@@ -462,6 +463,9 @@ export class Vault {
       },
     })
     if (result.to !== result.from) this.log('info', `Schéma v${result.from} → v${result.to}.`)
+    if (result.from > 0 && result.from < 6 && result.to >= 6) {
+      backfillSavingsLinkedCategories(db, this.now())
+    }
   }
 
   /** Contrôle rapide au plus une fois par jour (la date du dernier est dans `meta`). */

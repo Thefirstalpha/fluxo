@@ -11,6 +11,7 @@ import {
 } from '@shared/ledger/model'
 import { parseAmount } from '@shared/money'
 import { CategorySelect } from '../../components/CategorySelect'
+import { LinkedAccountStatusHint } from '../../components/LinkedAccountStatusHint'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
@@ -100,6 +101,7 @@ function DetailBody({
   const unlinkTx = useLedgerMutation('transferUnlink')
   const counterpartTx = useLedgerMutation('transferCounterpart')
   const linkTx = useLedgerMutation('transferLink')
+  const updateAccount = useLedgerMutation('accountUpdate')
 
   const payees = useLedgerQuery('payeesList', {})
   const audit = useLedgerQuery('auditList', {
@@ -564,6 +566,37 @@ function DetailBody({
                   </Button>
                 ) : null}
               </div>
+
+              {splits.length === 1 ? (
+                <LinkedAccountStatusHint
+                  categoryId={split.categoryId}
+                  categories={categories}
+                  accounts={accounts}
+                  sourceAccountId={detail.accountId}
+                  alreadyLinked={detail.transferId !== null}
+                  switching={updateAccount.isPending || setSplitsTx.isPending}
+                  switchLabel={(() => {
+                    const cat = categories.find((c) => c.id === split.categoryId)
+                    const acc = cat?.linkedAccountId
+                      ? accounts.find((a) => a.id === cat.linkedAccountId)
+                      : null
+                    return acc ? t.categorization.linkedHints.switchAndMirror(acc.name) : undefined
+                  })()}
+                  onSwitchToManual={(target) => {
+                    setError(null)
+                    void (async () => {
+                      await updateAccount.mutateAsync({
+                        id: target.id,
+                        patch: { trackingMode: 'manual' },
+                      })
+                      await setSplitsTx.mutateAsync({ id: detail.id, splits })
+                      onNotice(t.categorization.linkedHints.manual(target.name))
+                    })().catch((failure: unknown) =>
+                      setError(t.ledger.errors[ledgerErrorCode(failure)]),
+                    )
+                  }}
+                />
+              ) : null}
 
               {tags.length > 0 ? (
                 <div className="flex flex-wrap gap-1">

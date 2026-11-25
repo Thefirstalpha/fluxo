@@ -54,6 +54,7 @@ export default function CategoriesPage() {
 function CategoriesView() {
   const t = useT()
   const categories = useLedgerQuery('categoriesList', { includeArchived: true })
+  const accounts = useLedgerQuery('accountsList', { includeArchived: true })
   const unarchive = useLedgerMutation('categoryArchive')
   const remove = useLedgerMutation('categoryDelete')
   const [editing, setEditing] = useState<Editing>(null)
@@ -62,6 +63,7 @@ function CategoriesView() {
   const [error, setError] = useState<string | null>(null)
 
   const all = categories.data ?? []
+  const accountNames = new Map((accounts.data ?? []).map((a) => [a.id, a.name]))
   const parentsArchived = new Set(all.filter((c) => c.archived && !c.parentId).map((c) => c.id))
   const active = all.filter((c) => !c.archived)
   const archived = all.filter((c) => c.archived && !(c.parentId && parentsArchived.has(c.parentId)))
@@ -118,7 +120,7 @@ function CategoriesView() {
               title={t.categoryManager.kinds[group.kind]}
               subtitle={t.categoryManager.kindHints[group.kind]}
             >
-              <CategoryList nodes={group.nodes} actions={actions} />
+              <CategoryList nodes={group.nodes} accountNames={accountNames} actions={actions} />
             </Card>
           ))}
           {archived.length > 0 ? (
@@ -213,12 +215,20 @@ interface RowActions {
   remove: (category: CategorySummary) => void
 }
 
-function CategoryList({ nodes, actions }: { nodes: CategoryNode[]; actions: RowActions }) {
+function CategoryList({
+  nodes,
+  accountNames,
+  actions,
+}: {
+  nodes: CategoryNode[]
+  accountNames: ReadonlyMap<string, string>
+  actions: RowActions
+}) {
   return (
     <ul className="divide-y divide-border">
       {nodes.map((node) => (
         <li key={node.category.id} className="py-2.5 first:pt-0 last:pb-0">
-          <CategoryRow node={node} actions={actions} />
+          <CategoryRow node={node} accountNames={accountNames} actions={actions} />
           {node.children.length > 0 ? (
             <ul className="mt-1.5 ml-11 space-y-1 border-l border-border pl-3">
               {node.children.map((child) => (
@@ -231,6 +241,7 @@ function CategoryList({ nodes, actions }: { nodes: CategoryNode[]; actions: RowA
                       total: child.total,
                     }}
                     parent={node.category}
+                    accountNames={accountNames}
                     actions={actions}
                   />
                 </li>
@@ -246,16 +257,19 @@ function CategoryList({ nodes, actions }: { nodes: CategoryNode[]; actions: RowA
 function CategoryRow({
   node,
   parent,
+  accountNames,
   actions,
 }: {
   node: CategoryNode
   parent?: CategorySummary
+  accountNames: ReadonlyMap<string, string>
   actions: RowActions
 }) {
   const t = useT()
   const fmt = useFormatters()
   const { category } = node
   const name = category.name
+  const linkedName = category.linkedAccountId ? accountNames.get(category.linkedAccountId) : null
   const unused = node.transactionCount === 0 && node.children.length === 0
   const button = (label: string, onClick: () => void, icon: ReactNode) => (
     <Button variant="ghost" iconOnly aria-label={label} title={label} onClick={onClick}>
@@ -268,7 +282,10 @@ function CategoryRow({
         <LedgerBadge icon={category.icon} color={category.color} fallback="circle-help" />
       )}
       <div className="min-w-0 flex-1">
-        <p className={parent ? 'text-sm text-fg' : 'text-sm font-semibold text-fg'}>{name}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className={parent ? 'text-sm text-fg' : 'text-sm font-semibold text-fg'}>{name}</p>
+          {linkedName ? <Badge>{t.categoryManager.linkedAccountBadge(linkedName)}</Badge> : null}
+        </div>
         <p className="text-xs text-muted">{t.categoryManager.usage(node.transactionCount)}</p>
       </div>
       {node.transactionCount > 0 ? (

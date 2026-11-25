@@ -18,6 +18,7 @@ import type { Db } from '../db/connection'
 import { runAutoCategorization } from '../ledger/categorize'
 import { fail } from '../ledger/failure'
 import { sameName } from '../ledger/names'
+import { reconcileImportedAccountTransfers } from '../ledger/transfers'
 import { saveCsvProfile } from './profiles'
 
 export interface PendingImportPreview {
@@ -621,7 +622,9 @@ export function commitImport(
 
   store.delete(input.previewId)
   if (insertedTxIds.length > 0) {
-    runAutoCategorization(db, { transactionIds: insertedTxIds })
+    const nowDate = new Date()
+    runAutoCategorization(db, { transactionIds: insertedTxIds }, nowDate)
+    reconcileImportedAccountTransfers(db, pending.accountId, insertedTxIds, nowDate)
   }
   return result
 }

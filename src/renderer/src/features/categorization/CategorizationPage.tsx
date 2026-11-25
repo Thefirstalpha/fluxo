@@ -63,6 +63,7 @@ export default function CategorizationPage() {
 
       {tab === 'queue' ? (
         <ValidationQueueTab
+          accounts={accounts.data ?? []}
           categories={categories.data ?? []}
           tags={tags.data ?? []}
           onNotice={(msg) => {

@@ -94,6 +94,7 @@ export const fr = {
       savings: 'Épargne nette',
       savingsRate: 'Taux d’épargne',
       savingsPlaced: (amount: string) => `${amount} versé vers l’épargne`,
+      savingsWithdrawn: (amount: string) => `${amount} repris de l’épargne`,
       vs: (label: string) => `vs ${label}`,
       points: (value: string) => `${value} pt`,
     },
@@ -493,6 +494,8 @@ export const fr = {
       type: 'Type',
       trackingMode: 'Mode de suivi',
       trackingModeLocked: 'Figé : le compte a déjà des opérations.',
+      savingsTrackingHint:
+        'Astuce : si vous n’importez pas de relevés pour ce compte d’épargne, choisissez « Saisie manuelle » pour y comptabiliser automatiquement vos virements depuis le compte courant.',
       institution: 'Établissement',
       institutionPlaceholder: 'Facultatif',
       currency: 'Devise',
@@ -541,6 +544,7 @@ export const fr = {
     hideArchived: 'Masquer les catégories archivées',
     archivedTitle: 'Catégories archivées',
     archivedBadge: 'Archivée',
+    linkedAccountBadge: (name: string) => `Compte lié : ${name}`,
     saved: 'Catégorie enregistrée.',
     merged: (count: number) =>
       count === 0
@@ -557,6 +561,10 @@ export const fr = {
       parent: 'Catégorie parente',
       noParent: 'Aucune (premier niveau)',
       parentHint: 'Une sous-catégorie prend le type de sa catégorie parente.',
+      linkedAccount: 'Compte associé (facultatif)',
+      linkedAccountNone: 'Aucun (catégorie générale)',
+      linkedAccountHint:
+        'Classer une opération ici rapproche ou crée automatiquement la contrepartie sur ce compte.',
       nameRequired: 'Indiquez un nom.',
       save: 'Enregistrer',
       create: 'Créer',
@@ -1096,6 +1104,20 @@ export const fr = {
         'naive-bayes': 'Apprentissage local',
       },
       customLabelField: 'Libellé affiché',
+      linkedSwitchedNotice: (name: string) =>
+        `« ${name} » est passé en suivi manuel : la contrepartie est créée à la validation.`,
+    },
+    linkedHints: {
+      manual: (name: string) =>
+        `Contrepartie miroir créée ou reliée automatiquement sur « ${name} ».`,
+      statement: (name: string) =>
+        `Rapprochement automatique avec l’opération opposée de « ${name} » (± 3 jours).`,
+      statementEmpty: (name: string) =>
+        `« ${name} » est en mode relevé importé (0 opération) : passez-le en suivi manuel pour créer son écriture miroir dès maintenant.`,
+      valuation: (name: string) =>
+        `« ${name} » est suivi par valorisation : pris en compte dans l’épargne nette sans opération miroir.`,
+      switchToManual: (name: string) => `Passer « ${name} » en suivi manuel`,
+      switchAndMirror: (name: string) => `Passer « ${name} » en manuel et créer la contrepartie`,
     },
     rules: {
       newRule: 'Nouvelle règle',

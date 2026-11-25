@@ -194,6 +194,7 @@ export const LEDGER_INPUTS = {
     kind: z.enum(CATEGORY_KINDS).optional(),
     icon: z.enum(LEDGER_ICONS).nullable(),
     color: z.enum(PALETTE).nullable(),
+    linkedAccountId: idSchema.nullable().optional(),
   }),
   categoryUpdate: z.strictObject({
     id: idSchema,
@@ -204,6 +205,7 @@ export const LEDGER_INPUTS = {
         kind: z.enum(CATEGORY_KINDS),
         icon: z.enum(LEDGER_ICONS).nullable(),
         color: z.enum(PALETTE).nullable(),
+        linkedAccountId: idSchema.nullable(),
       })
       .partial(),
   }),

@@ -42,6 +42,7 @@ const FOOD_CAT: CategorySummary = {
   color: '#e5690c',
   sortOrder: 0,
   archived: false,
+  linkedAccountId: null,
   transactionCount: 1,
   total: -20_00,
 }
@@ -55,6 +56,7 @@ const LEISURE_CAT: CategorySummary = {
   color: '#dd2a80',
   sortOrder: 1,
   archived: false,
+  linkedAccountId: null,
   transactionCount: 0,
   total: 0,
 }
@@ -234,5 +236,83 @@ describe('CategorizationPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Masquer l’alerte' }))
     await waitFor(() => expect(calls).toContain('dismiss:sub:orange:monthly'))
+  })
+
+  it('propose de passer un livret sans opération en suivi manuel lors de sa sélection dans la file', async () => {
+    const livretEmpty: AccountSummary = {
+      ...ACCOUNT,
+      id: '0192f0c8-0000-7000-8000-000000000009',
+      name: 'Livret A',
+      type: 'savings',
+      trackingMode: 'statement',
+      transactionCount: 0,
+      balance: 1000_00,
+    }
+    const savingsParent: CategorySummary = {
+      id: '0192f0c8-0000-7000-8000-000000000018',
+      parentId: null,
+      name: 'Épargne',
+      kind: 'savings',
+      icon: 'piggy-bank',
+      color: '#0e9b8f',
+      sortOrder: 1,
+      archived: false,
+      linkedAccountId: null,
+      transactionCount: 0,
+      total: 0,
+    }
+    const livretLinked: CategorySummary = {
+      id: '0192f0c8-0000-7000-8000-000000000019',
+      parentId: savingsParent.id,
+      name: 'Transfert ↔ Livret A',
+      kind: 'savings',
+      icon: null,
+      color: null,
+      sortOrder: 0,
+      archived: false,
+      linkedAccountId: livretEmpty.id,
+      transactionCount: 0,
+      total: 0,
+    }
+
+    const api = installFakeApi()
+    api.ledger.accountsList.mockResolvedValue({ ok: true, value: [ACCOUNT, livretEmpty] })
+    api.ledger.categoriesList.mockResolvedValue({
+      ok: true,
+      value: [FOOD_CAT, savingsParent, livretLinked],
+    })
+    api.ledger.categorizationQueueList.mockResolvedValue({
+      ok: true,
+      value: [
+        {
+          ...QUEUE_ITEM,
+          amount: 500_00,
+          labelRaw: 'VIR DE LIVRET A',
+          labelDisplay: 'VIR DE LIVRET A',
+          cleanedLabel: 'Vir De Livret A',
+          suggestion: null,
+        },
+      ],
+    })
+    api.ledger.classifierStatus.mockResolvedValue({
+      ok: true,
+      value: { sampleCount: 0, categoryCount: 0, updatedAt: null, threshold: 0.85 },
+    })
+
+    renderWithQuery(<CategorizationPage />)
+    const select = await screen.findByLabelText('Choisir une catégorie…')
+    fireEvent.change(select, { target: { value: livretLinked.id } })
+
+    const switchBtn = await screen.findByRole('button', {
+      name: 'Passer « Livret A » en suivi manuel',
+    })
+    fireEvent.click(switchBtn)
+
+    await waitFor(() =>
+      expect(api.ledger.accountUpdate).toHaveBeenCalledWith({
+        id: livretEmpty.id,
+        patch: { trackingMode: 'manual' },
+      }),
+    )
   })
 })

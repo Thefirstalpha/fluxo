@@ -82,7 +82,8 @@ export class Ledger {
         write('account-update', (changes) => updateAccount(changes, input, this.now())),
       accountSetArchived: (input) =>
         write('account-archive', (changes) => setAccountArchived(changes, input, this.now())),
-      accountDelete: (input) => write('account-delete', (changes) => deleteAccount(changes, input)),
+      accountDelete: (input) =>
+        write('account-delete', (changes) => deleteAccount(changes, input, this.now())),
       accountRevealIban: (input) => revealIban(db, input),
       accountsReorder: (input) =>
         write('account-reorder', (changes) => reorderAccounts(changes, input)),

@@ -38,6 +38,7 @@ const FOOD_CAT: CategorySummary = {
   color: '#e5690c',
   sortOrder: 0,
   archived: false,
+  linkedAccountId: null,
   transactionCount: 2,
   total: -320_00,
 }

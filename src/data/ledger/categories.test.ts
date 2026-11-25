@@ -179,3 +179,97 @@ describe('réorganisation avec réaffectation', () => {
     expect(summary(category('other.gifts'))).toBeUndefined()
   })
 })
+
+describe('catégories de transfert liées aux comptes d’épargne', () => {
+  it('crée, renomme, archive, réactive et supprime la sous-catégorie associée à un livret', () => {
+    const livretId = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Livret A',
+      type: 'savings',
+      trackingMode: 'manual',
+    }).id
+
+    const savingsParent = category('savings')
+    const linked = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livretId)
+    expect(linked).toMatchObject({
+      parentId: savingsParent,
+      kind: 'savings',
+      name: 'Transfert ↔ Livret A',
+      archived: false,
+      linkedAccountId: livretId,
+    })
+
+    // Renommer le compte met à jour la sous-catégorie liée.
+    t.ok('accountUpdate', { id: livretId, patch: { name: 'LDDS' } })
+    expect(summary(linked!.id)?.name).toBe('Transfert ↔ LDDS')
+
+    // Archiver / réactiver le compte suit sur la catégorie.
+    t.ok('accountSetArchived', { id: livretId, archived: true })
+    expect(summary(linked!.id)?.archived).toBe(true)
+    t.ok('accountSetArchived', { id: livretId, archived: false })
+    expect(summary(linked!.id)?.archived).toBe(false)
+
+    // Supprimer un livret vide retire sa sous-catégorie ; annuler les rétablit tous les deux.
+    t.ok('accountDelete', { id: livretId })
+    expect(summary(linked!.id)).toBeUndefined()
+    t.ok('ledgerUndo', {})
+    expect(summary(linked!.id)).toMatchObject({
+      linkedAccountId: livretId,
+      name: 'Transfert ↔ LDDS',
+    })
+  })
+
+  it('refuse de lier un compte déjà lié, un prêt, ou une catégorie hors épargne/virement', () => {
+    const cashId = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Espèces',
+      type: 'cash',
+      trackingMode: 'manual',
+    }).id
+    const loanId = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Prêt immo',
+      type: 'loan',
+      trackingMode: 'valuation',
+    }).id
+
+    expect(
+      t.ledger.run('categoryCreate', {
+        name: 'Faux lien dépense',
+        parentId: category('groceries'),
+        icon: null,
+        color: null,
+        linkedAccountId: cashId,
+      }),
+    ).toEqual({ ok: false, error: 'invalid' })
+
+    expect(
+      t.ledger.run('categoryCreate', {
+        name: 'Lien prêt',
+        parentId: category('transfer'),
+        icon: null,
+        color: null,
+        linkedAccountId: loanId,
+      }),
+    ).toEqual({ ok: false, error: 'invalid' })
+
+    const cashSub = t.ok('categoryCreate', {
+      name: 'Transfert ↔ Espèces',
+      parentId: category('transfer'),
+      icon: null,
+      color: null,
+      linkedAccountId: cashId,
+    }).id
+    expect(summary(cashSub)?.linkedAccountId).toBe(cashId)
+
+    expect(
+      t.ledger.run('categoryCreate', {
+        name: 'Doublon Espèces',
+        parentId: category('transfer'),
+        icon: null,
+        color: null,
+        linkedAccountId: cashId,
+      }),
+    ).toEqual({ ok: false, error: 'invalid' })
+  })
+})

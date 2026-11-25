@@ -7,6 +7,7 @@ import type { ChangeSet, Row } from './changes'
 import { fail } from './failure'
 import { sameName } from './names'
 import { readSplits, writeSplits } from './splits'
+import { reconcileLinkedCategoryTransfer } from './transfers'
 
 export interface TransactionDbRow {
   id: string
@@ -88,7 +89,10 @@ export function createTransaction(
     created_at: stamp,
     updated_at: stamp,
   })
-  if (input.splits) writeSplits(changes, id, input.amount, input.splits)
+  if (input.splits) {
+    writeSplits(changes, id, input.amount, input.splits)
+    if (input.splits.length === 1) reconcileLinkedCategoryTransfer(changes, id, now)
+  }
   return { id }
 }
 
@@ -189,6 +193,7 @@ export function setSplits(
   const current = getTransaction(changes.db, id)
   const before = changes.changes.length
   writeSplits(changes, id, current.amount, splits)
+  if (splits.length === 1) reconcileLinkedCategoryTransfer(changes, id, now)
   if (changes.changes.length > before) touch(changes, id, now)
   return null
 }
@@ -219,6 +224,7 @@ export function categorizeTransactions(
     const base: SplitInput = splits[0] ?? { categoryId: null, amount: 0, note: null, tagIds: [] }
     const before = changes.changes.length
     writeSplits(changes, id, current.amount, [{ ...base, categoryId, amount: current.amount }])
+    if (categoryId !== null) reconcileLinkedCategoryTransfer(changes, id, now)
     if (changes.changes.length > before) {
       touch(changes, id, now)
       updated += 1

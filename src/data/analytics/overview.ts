@@ -54,6 +54,7 @@ interface CategoryMeta {
   name: string
   kind: CategoryKind
   color: string | null
+  linkedAccountIsSavings: boolean | null
   key: string | null
 }
 
@@ -66,12 +67,24 @@ function loadCategoryMap(db: Db): {
   const keyById = new Map<string, string>()
   for (const [key, id] of packMap.entries()) keyById.set(id, key)
 
-  const rows = db.prepare('SELECT id, parent_id, name, kind, color FROM category').all() as {
+  const rows = db
+    .prepare(
+      `SELECT c.id, c.parent_id, c.name, c.kind, c.color,
+              CASE
+                WHEN c.linked_account_id IS NOT NULL AND a.id IS NOT NULL
+                  THEN (a.type IN ('savings', 'investment'))
+                ELSE NULL
+              END AS linked_is_savings
+       FROM category c
+       LEFT JOIN account a ON a.id = c.linked_account_id`,
+    )
+    .all() as {
     id: string
     parent_id: string | null
     name: string
     kind: CategoryKind
     color: string | null
+    linked_is_savings: 0 | 1 | null
   }[]
   const byId = new Map<string, CategoryMeta>()
   const childrenByParent = new Map<string, string[]>()
@@ -82,6 +95,7 @@ function loadCategoryMap(db: Db): {
       name: row.name,
       kind: row.kind,
       color: row.color,
+      linkedAccountIsSavings: row.linked_is_savings === null ? null : row.linked_is_savings === 1,
       key: keyById.get(row.id) ?? null,
     })
     if (row.parent_id) {
@@ -157,8 +171,17 @@ function buildFilterGuardsSql(
   const transferGuard = filter.includeTransfers
     ? ''
     : `AND NOT EXISTS (
-         SELECT 1 FROM split sx JOIN category cx ON cx.id = sx.category_id
-         WHERE sx.transaction_id = t.id AND cx.kind = 'transfer'
+         SELECT 1 FROM split sx
+         JOIN category cx ON cx.id = sx.category_id
+         JOIN account ax ON ax.id = t.account_id
+         LEFT JOIN account lx ON lx.id = cx.linked_account_id
+         WHERE sx.transaction_id = t.id AND (
+           CASE
+             WHEN cx.linked_account_id IS NOT NULL AND lx.id IS NOT NULL AND t.transfer_id IS NULL
+               THEN (ax.type IN ('savings', 'investment')) = (lx.type IN ('savings', 'investment'))
+             ELSE cx.kind = 'transfer'
+           END
+         )
        )
        AND (t.transfer_id IS NULL OR EXISTS (
          SELECT 1 FROM split sx JOIN category cx ON cx.id = sx.category_id
@@ -395,8 +418,13 @@ export function getAnalyticsOverview(
       .prepare(
         `SELECT t.id AS tx_id, substr(t.booking_date, 1, 7) AS month, t.booking_date,
                 t.amount AS tx_amount, t.currency, t.converted_amount, t.transfer_id,
+                (a.type IN ('savings', 'investment')) AS a_is_savings,
+                (tr.id IS NOT NULL AND tr_acc.type IN ('savings', 'investment')) AS tr_is_savings,
                 s.category_id AS raw_cat_id, s.amount AS split_amount
          FROM transactions t
+         JOIN account a ON a.id = t.account_id
+         LEFT JOIN transactions tr ON tr.id = t.transfer_id
+         LEFT JOIN account tr_acc ON tr_acc.id = tr.account_id
          LEFT JOIN split s ON s.transaction_id = t.id
          WHERE ${guards.sql}`,
       )
@@ -408,6 +436,8 @@ export function getAnalyticsOverview(
       currency: string
       converted_amount: number | null
       transfer_id: string | null
+      a_is_savings: 0 | 1
+      tr_is_savings: 0 | 1
       raw_cat_id: string | null
       split_amount: number | null
     }[]
@@ -433,8 +463,18 @@ export function getAnalyticsOverview(
       if (eff === null || eff === 0) continue
 
       const catMeta = row.raw_cat_id ? byId.get(row.raw_cat_id) : undefined
-      const kind = catMeta?.kind ?? null
-      const isTransfer = kind === 'transfer' || (row.transfer_id !== null && kind !== 'savings')
+      const rawKind = catMeta?.kind ?? null
+      const effectiveKind: CategoryKind | null =
+        row.transfer_id !== null
+          ? rawKind === 'savings' && !(row.a_is_savings === 1 && row.tr_is_savings === 1)
+            ? 'savings'
+            : 'transfer'
+          : catMeta && catMeta.linkedAccountIsSavings !== null
+            ? (row.a_is_savings === 1) !== catMeta.linkedAccountIsSavings
+              ? 'savings'
+              : 'transfer'
+            : rawKind
+      const isTransfer = effectiveKind === 'transfer'
       if (isTransfer && !filter.includeTransfers) continue
 
       if (inSelectedRange) periodSeenTx.add(row.tx_id)
@@ -443,14 +483,20 @@ export function getAnalyticsOverview(
       const grp = resolveDisplayGroup(catId, byId, drillSingleParentId)
       const key = grp.groupId ?? UNCATEGORIZED_AGG_KEY
 
-      if (kind === 'savings') {
-        if (eff > 0) mBucket.savings += eff
+      if (effectiveKind === 'savings') {
+        const delta =
+          row.a_is_savings === 1
+            ? eff
+            : row.transfer_id !== null && row.tr_is_savings === 1
+              ? 0
+              : -eff
+        mBucket.savings += delta
         continue
       }
 
       if (
-        kind === 'income' ||
-        (kind === null && eff > 0 && row.transfer_id === null) ||
+        effectiveKind === 'income' ||
+        (effectiveKind === null && eff > 0 && row.transfer_id === null) ||
         (isTransfer && eff > 0)
       ) {
         if (eff > 0) {
@@ -634,7 +680,7 @@ export function getAnalyticsOverview(
       sankeyNodes.push({ name: 'out:savings', kind: 'savings' })
       sankeyLinks.push({ source: 'budget', target: 'out:savings', value: totalSavings })
     }
-    const surplus = totalIncome - totalExpenses - totalSavings
+    const surplus = totalIncome - totalExpenses - Math.max(0, totalSavings)
     if (surplus > 0) {
       sankeyNodes.push({ name: 'out:surplus', kind: 'surplus' })
       sankeyLinks.push({ source: 'budget', target: 'out:surplus', value: surplus })

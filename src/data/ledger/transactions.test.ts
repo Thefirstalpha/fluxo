@@ -183,10 +183,14 @@ describe('virements internes', () => {
 
     const savingsCategory = category('savings')
     const transferCategory = category('transfer')
+    const livretTransferCategory = t
+      .ok('categoriesList', {})
+      .find((c) => c.linkedAccountId === livret)?.id
+    expect(livretTransferCategory).toBeDefined()
     expect(t.ok('transactionGet', { id: out })).toMatchObject({
       transferId: into,
       transferAccountId: livret,
-      categoryIds: [savingsCategory],
+      categoryIds: [livretTransferCategory],
     })
     expect(t.ok('transactionGet', { id: into }).categoryIds).toEqual([savingsCategory])
     expect(t.ok('transactionGet', { id: cashIn })).toMatchObject({
@@ -197,6 +201,55 @@ describe('virements internes', () => {
     expect(balances()).toEqual({ Courant: 740_00, Livret: 700_00, Espèces: 60_00 })
     // Un virement ne crée ni ne détruit d'argent.
     expect(Object.values(balances()).reduce((a, b) => a + b, 0)).toBe(1_500_00)
+  })
+
+  it('classer un virement depuis/vers un livret manuel crée ou relie la contrepartie (et s’annule)', () => {
+    const bank = account('Courant', 'checking', 'statement', 1_000_00)
+    const livret = account('Livret A', 'savings', 'manual', 2_000_00)
+    const livretCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livret)?.id
+    expect(livretCat).toBeDefined()
+
+    // Retrait Livret A -> Compte courant (+500 € sur le compte courant)
+    const inflow = insertImported(t.db, bank, {
+      date: '2026-11-12',
+      amount: 500_00,
+      label: 'VIR DE LIVRET A',
+    })
+    t.ok('transactionsCategorize', { ids: [inflow], categoryId: livretCat! })
+
+    const detail = t.ok('transactionGet', { id: inflow })
+    expect(detail.transferId).not.toBeNull()
+    expect(detail.transferAccountId).toBe(livret)
+    const mirror = t.ok('transactionGet', { id: detail.transferId! })
+    expect(mirror).toMatchObject({
+      accountId: livret,
+      amount: -500_00,
+      bookingDate: '2026-11-12',
+      transferId: inflow,
+      transferAccountId: bank,
+    })
+    expect(balances()).toEqual({ Courant: 1_500_00, 'Livret A': 1_500_00 })
+
+    // S'il existe déjà une opération miroir (± 3 jours), la relie sans créer de doublon
+    const preMirror = spend(livret, 250_00, {
+      bookingDate: '2026-11-16',
+      label: 'Épargne manuelle',
+    })
+    const outBank = insertImported(t.db, bank, {
+      date: '2026-11-15',
+      amount: -250_00,
+      label: 'VIR VERS LIVRET A',
+    })
+    t.ok('transactionSetSplits', {
+      id: outBank,
+      splits: [part(livretCat!, -250_00)],
+    })
+    expect(t.ok('transactionGet', { id: outBank }).transferId).toBe(preMirror)
+    expect(t.ok('transactionsList', { filter: { accountIds: [livret] } }).rows).toHaveLength(2)
+
+    // Annuler la dernière écriture délie proprement
+    t.ok('ledgerUndo', {})
+    expect(t.ok('transactionGet', { id: outBank }).transferId).toBeNull()
   })
 
   it('refuse un lien incohérent, défait un lien, supprime en déliant', () => {

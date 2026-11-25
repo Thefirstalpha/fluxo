@@ -1,8 +1,9 @@
 import { Check, Plus, RefreshCw, Sparkles, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CategorizationQueueItem } from '@shared/categorization/model'
-import type { CategorySummary, TagSummary } from '@shared/ledger/model'
+import type { AccountSummary, CategorySummary, TagSummary } from '@shared/ledger/model'
 import { CategorySelect } from '../../components/CategorySelect'
+import { LinkedAccountStatusHint } from '../../components/LinkedAccountStatusHint'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -19,11 +20,13 @@ interface DraftSelection {
 
 /** Boîte « À valider » avec validation clavier rapide (1–9, Entrée, Suppr, R, ↑/↓). */
 export function ValidationQueueTab({
+  accounts = [],
   categories,
   tags,
   onNotice,
   onError,
 }: {
+  accounts?: readonly AccountSummary[]
   categories: readonly CategorySummary[]
   tags: readonly TagSummary[]
   onNotice: (message: string) => void
@@ -41,6 +44,7 @@ export function ValidationQueueTab({
   const setThreshold = useLedgerMutation('categorizationThresholdSet')
   const acceptMutation = useLedgerMutation('categorizationAccept')
   const rejectMutation = useLedgerMutation('categorizationReject')
+  const updateAccount = useLedgerMutation('accountUpdate')
 
   const items = useMemo(() => queueQuery.data ?? [], [queueQuery.data])
   const [activeIndex, setActiveIndex] = useState(0)
@@ -424,6 +428,22 @@ export function ValidationQueueTab({
                       </Button>
                     </div>
                   </div>
+                  <LinkedAccountStatusHint
+                    categoryId={draft.categoryId || null}
+                    categories={categories}
+                    accounts={accounts}
+                    sourceAccountId={item.accountId}
+                    switching={updateAccount.isPending}
+                    onSwitchToManual={(target) => {
+                      onError(null)
+                      void updateAccount
+                        .mutateAsync({ id: target.id, patch: { trackingMode: 'manual' } })
+                        .then(() => onNotice(q.linkedSwitchedNotice(target.name)))
+                        .catch((failure: unknown) =>
+                          onError(t.ledger.errors[ledgerErrorCode(failure)]),
+                        )
+                    }}
+                  />
                 </Card>
               </li>
             )

@@ -4,6 +4,7 @@ import { SCHEMA_V2 } from './schema-v2'
 import { SCHEMA_V3 } from './schema-v3'
 import { SCHEMA_V4 } from './schema-v4'
 import { SCHEMA_V5 } from './schema-v5'
+import { SCHEMA_V6 } from './schema-v6'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
@@ -33,6 +34,11 @@ export const MIGRATIONS: readonly Migration[] = [
     version: 5,
     name: 'analyses (agrégats mensuels précalculés, index par date)',
     up: SCHEMA_V5,
+  },
+  {
+    version: 6,
+    name: 'virements (catégories liées aux comptes, épargne nette)',
+    up: SCHEMA_V6,
   },
 ]
 

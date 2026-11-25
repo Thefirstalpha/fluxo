@@ -254,7 +254,11 @@ export default function DashboardPage() {
                   text:
                     current.savings > 0
                       ? t.dashboard.kpi.savingsPlaced(fmt.money(current.savings))
-                      : fmt.money(net - previousNet, { signed: true }),
+                      : current.savings < 0
+                        ? t.dashboard.kpi.savingsWithdrawn(
+                            fmt.money(current.savings, { signed: true }),
+                          )
+                        : fmt.money(net - previousNet, { signed: true }),
                   direction: direction(net - previousNet),
                   tone: tone(net - previousNet, true),
                   caption,

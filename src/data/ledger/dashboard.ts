@@ -15,6 +15,9 @@ interface DashboardRow {
   currency: string
   converted_amount: number | null
   transfer_id: string | null
+  a_is_savings: 0 | 1
+  tr_is_savings: 0 | 1
+  linked_is_savings: 0 | 1 | null
   split_amount: number | null
   top_id: string | null
   top_name: string | null
@@ -62,15 +65,26 @@ export function getDashboardSummary(
          t.currency AS currency,
          t.converted_amount AS converted_amount,
          t.transfer_id AS transfer_id,
+         (a.type IN ('savings', 'investment')) AS a_is_savings,
+         (tr.id IS NOT NULL AND tr_acc.type IN ('savings', 'investment')) AS tr_is_savings,
+         CASE
+           WHEN c.linked_account_id IS NOT NULL AND linked_acc.id IS NOT NULL
+             THEN (linked_acc.type IN ('savings', 'investment'))
+           ELSE NULL
+         END AS linked_is_savings,
          s.amount AS split_amount,
          coalesce(p.id, c.id) AS top_id,
          coalesce(p.name, c.name) AS top_name,
          coalesce(p.color, c.color) AS top_color,
          coalesce(p.kind, c.kind) AS kind
        FROM transactions t
+       JOIN account a ON a.id = t.account_id
+       LEFT JOIN transactions tr ON tr.id = t.transfer_id
+       LEFT JOIN account tr_acc ON tr_acc.id = tr.account_id
        LEFT JOIN split s ON s.transaction_id = t.id
        LEFT JOIN category c ON c.id = s.category_id
        LEFT JOIN category p ON p.id = c.parent_id
+       LEFT JOIN account linked_acc ON linked_acc.id = c.linked_account_id
        WHERE t.nature = 'operation'
          AND t.booking_date >= @startDate
          AND t.booking_date <= @endDate`,
@@ -99,14 +113,31 @@ export function getDashboardSummary(
 
     if (effective === 0) continue
 
-    if (row.kind === 'transfer' || (row.transfer_id !== null && row.kind !== 'savings')) {
+    const effectiveKind: CategoryKind | null =
+      row.transfer_id !== null
+        ? row.kind === 'savings' && !(row.a_is_savings === 1 && row.tr_is_savings === 1)
+          ? 'savings'
+          : 'transfer'
+        : row.linked_is_savings !== null
+          ? row.a_is_savings !== row.linked_is_savings
+            ? 'savings'
+            : 'transfer'
+          : row.kind
+
+    if (effectiveKind === 'transfer') {
       continue
     }
-    if (row.kind === 'savings') {
-      if (effective > 0) bucket.savings += effective
+    if (effectiveKind === 'savings') {
+      const delta =
+        row.a_is_savings === 1
+          ? effective
+          : row.transfer_id !== null && row.tr_is_savings === 1
+            ? 0
+            : -effective
+      bucket.savings += delta
       continue
     }
-    if (row.kind === 'income' || (row.kind === null && effective > 0)) {
+    if (effectiveKind === 'income' || (effectiveKind === null && effective > 0)) {
       bucket.income += effective
       continue
     }

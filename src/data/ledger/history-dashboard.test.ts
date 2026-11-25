@@ -206,4 +206,55 @@ describe('synthèse du tableau de bord', () => {
       amount: 105_00,
     })
   })
+
+  it('exclut un retrait d’épargne des revenus et calcule l’épargne nette (liée ou non)', () => {
+    const checking = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Courant',
+      type: 'checking',
+      trackingMode: 'statement',
+    }).id
+    const livretVal = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Livret Valo',
+      type: 'savings',
+      trackingMode: 'valuation',
+    }).id
+    const livretManual = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Livret Manuel',
+      type: 'savings',
+      trackingMode: 'manual',
+    }).id
+
+    const valCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livretVal)!.id
+    const manCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livretManual)!.id
+
+    // Sans classification : le virement entrant (+500 €) gonflait à tort les revenus.
+    const txWithdrawalUnlinked = insertImported(t.db, checking, {
+      date: '2026-11-10',
+      amount: 500_00,
+      label: 'VIR DE LIVRET VALO',
+    })
+    expect(
+      t.ok('dashboardSummary', { currency: 'EUR', months: 1, endMonth: '2026-11' }).months[0],
+    ).toMatchObject({ income: 500_00, expenses: 0, savings: 0 })
+
+    // Classé en Transfert ↔ Livret Valo : 0 revenu, -500 € d'épargne nette.
+    t.ok('transactionsCategorize', { ids: [txWithdrawalUnlinked], categoryId: valCat })
+    expect(
+      t.ok('dashboardSummary', { currency: 'EUR', months: 1, endMonth: '2026-11' }).months[0],
+    ).toMatchObject({ income: 0, expenses: 0, savings: -500_00 })
+
+    // Ajout d'un versement (+700 € vers livret manuel, avec miroir lié sur le livret) -> net +200 €.
+    const txDepositLinked = insertImported(t.db, checking, {
+      date: '2026-11-15',
+      amount: -700_00,
+      label: 'VIR VERS LIVRET MANUEL',
+    })
+    t.ok('transactionsCategorize', { ids: [txDepositLinked], categoryId: manCat })
+    expect(
+      t.ok('dashboardSummary', { currency: 'EUR', months: 1, endMonth: '2026-11' }).months[0],
+    ).toMatchObject({ income: 0, expenses: 0, savings: 200_00 })
+  })
 })

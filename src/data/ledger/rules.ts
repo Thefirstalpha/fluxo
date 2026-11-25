@@ -14,6 +14,7 @@ import type { ChangeSet } from './changes'
 import { fail } from './failure'
 import { sameName } from './names'
 import { writeSplits } from './splits'
+import { reconcileLinkedCategoryTransfer } from './transfers'
 
 interface RuleRow {
   id: string
@@ -368,6 +369,7 @@ export function applyActionsToTransaction(
         tagIds: mergedTags,
       }
       writeSplits(changes, tx.id, tx.amount, [nextSplit])
+      reconcileLinkedCategoryTransfer(changes, tx.id, new Date(stamp))
     } else if (targetTags && targetTags.length > 0) {
       // Ventilation multiple : ajoute uniquement les étiquettes sur chaque part existante.
       const readTags = changes.db.prepare('SELECT tag_id FROM split_tag WHERE split_id = ?').pluck()

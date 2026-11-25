@@ -10,6 +10,12 @@ import {
 import type { ParsedLedgerInputs } from '@shared/ledger/schemas'
 import { uuidv7 } from '@shared/uuid'
 import type { Db } from '../db/connection'
+import {
+  cleanupLinkedCategoryOnAccountDelete,
+  ensureAccountLinkedCategory,
+  syncLinkedCategoryOnAccountArchive,
+  syncLinkedCategoryOnAccountChange,
+} from './categories'
 import type { ChangeSet } from './changes'
 import { fail } from './failure'
 
@@ -123,6 +129,7 @@ export function createAccount(
     created_at: stamp,
     updated_at: stamp,
   })
+  ensureAccountLinkedCategory(changes, { id, name: draft.name, type: draft.type, archived: 0 }, now)
   return { id }
 }
 
@@ -156,6 +163,17 @@ export function updateAccount(
   const stored = current as unknown as Record<string, unknown>
   if (Object.keys(row).every((column) => row[column] === stored[column])) return null
   changes.update('account', { id }, { ...row, updated_at: now.toISOString() })
+  syncLinkedCategoryOnAccountChange(
+    changes,
+    { id: current.id, name: current.name, type: current.type, archived: current.archived },
+    {
+      id: current.id,
+      name: patch.name ?? current.name,
+      type,
+      archived: current.archived,
+    },
+    now,
+  )
   return null
 }
 
@@ -166,6 +184,7 @@ export function setAccountArchived(
 ): null {
   getAccount(changes.db, id)
   changes.update('account', { id }, { archived: archived ? 1 : 0, updated_at: now.toISOString() })
+  syncLinkedCategoryOnAccountArchive(changes, id, archived, now)
   return null
 }
 
@@ -173,10 +192,12 @@ export function setAccountArchived(
 export function deleteAccount(
   changes: ChangeSet,
   { id }: ParsedLedgerInputs['accountDelete'],
+  now: Date,
 ): null {
   getAccount(changes.db, id)
   const batches = changes.db.prepare('SELECT 1 FROM import_batch WHERE account_id = ? LIMIT 1')
   if (hasTransactions(changes.db, id) || batches.get(id) !== undefined) fail('account-not-empty')
+  cleanupLinkedCategoryOnAccountDelete(changes, id, now)
   changes.delete('account', { id })
   return null
 }

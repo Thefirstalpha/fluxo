@@ -15,6 +15,7 @@ import { validateSafeRegex } from '@shared/categorization/regex'
 import type { AccountSummary, CategorySummary, TagSummary } from '@shared/ledger/model'
 import { parseAmount } from '@shared/money'
 import { CategorySelect } from '../../components/CategorySelect'
+import { LinkedAccountStatusHint } from '../../components/LinkedAccountStatusHint'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -576,6 +577,13 @@ function RuleEditorDialog({
                 emptyLabel={f.keepCategory}
                 className="h-9 text-sm"
               />
+              <div className="mt-1.5">
+                <LinkedAccountStatusHint
+                  categoryId={categoryId || null}
+                  categories={categories}
+                  accounts={accounts}
+                />
+              </div>
             </label>
 
             <label className="block text-xs text-fg-2">

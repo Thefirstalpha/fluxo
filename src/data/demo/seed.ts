@@ -11,6 +11,7 @@ import type { Locale } from '@shared/settings'
 import { uuidv7 } from '@shared/uuid'
 import { recordAudit } from '../db/audit'
 import type { Db } from '../db/connection'
+import { backfillSavingsLinkedCategories } from '../ledger/categories'
 
 const DEMO_ACCOUNT_LOOK: Readonly<
   Record<DemoAccountKey, { color: PaletteColor; icon: LedgerIcon }>
@@ -126,6 +127,7 @@ export function seedDemoVault(
         }
       }
     }
+    backfillSavingsLinkedCategories(db, now)
     recordAudit(
       db,
       {

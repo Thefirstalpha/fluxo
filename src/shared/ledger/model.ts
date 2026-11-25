@@ -53,6 +53,23 @@ export function allowedTrackingModes(type: AccountType): readonly TrackingMode[]
 /** Types dont un virement entrant est de l'épargne (et non un virement neutre). */
 export const SAVINGS_ACCOUNT_TYPES: readonly AccountType[] = ['savings', 'investment']
 
+export function isSavingsAccountType(type: AccountType): boolean {
+  return SAVINGS_ACCOUNT_TYPES.includes(type)
+}
+
+const LINKED_CATEGORY_PREFIX_FR = 'Transfert ↔ '
+const LINKED_CATEGORY_PREFIX_EN = 'Transfer ↔ '
+
+/** Libellé standard d'une sous-catégorie de transfert liée à un compte (borné à 100 caractères). */
+export function linkedTransferCategoryName(
+  accountName: string,
+  language: 'fr' | 'en' = 'fr',
+): string {
+  const prefix = language === 'en' ? LINKED_CATEGORY_PREFIX_EN : LINKED_CATEGORY_PREFIX_FR
+  const clean = accountName.trim() || 'Compte'
+  return `${prefix}${clean.slice(0, 100 - prefix.length)}`
+}
+
 /**
  * Palette validée (emplacements catégoriels du système de design, thème clair) : un compte ou
  * une catégorie ne prend qu'une de ces couleurs ; le renderer l'affiche avec la variable CSS de
@@ -243,6 +260,8 @@ export interface CategorySummary {
   color: PaletteColor | null
   sortOrder: number
   archived: boolean
+  /** Compte cible pour les sous-catégories de transfert / épargne (`null` : catégorie générale). */
+  linkedAccountId: string | null
   /** Opérations ayant au moins une part dans cette catégorie (sans ses sous-catégories). */
   transactionCount: number
   /** Σ des parts de cette catégorie (sans ses sous-catégories). */

@@ -11,7 +11,7 @@ import { Dialog } from '../../components/ui/Dialog'
 import { SelectField, TextField } from '../../components/ui/Field'
 import { ColorPicker, IconPicker } from '../../components/ui/Pickers'
 import { useT } from '../../i18n'
-import { ledgerErrorCode, useLedgerMutation } from '../../lib/ledger'
+import { ledgerErrorCode, useLedgerMutation, useLedgerQuery } from '../../lib/ledger'
 
 const TOP_LEVEL = ''
 
@@ -35,9 +35,11 @@ export function CategoryForm({
   const f = t.categoryManager.form
   const create = useLedgerMutation('categoryCreate')
   const update = useLedgerMutation('categoryUpdate')
+  const accountsQuery = useLedgerQuery('accountsList', { includeArchived: true })
   const [name, setName] = useState(category?.name ?? '')
   const [kind, setKind] = useState<CategoryKind>(category?.kind ?? parent?.kind ?? 'expense')
   const [parentId, setParentId] = useState(category?.parentId ?? parent?.id ?? TOP_LEVEL)
+  const [linkedAccountId, setLinkedAccountId] = useState(category?.linkedAccountId ?? '')
   const [icon, setIcon] = useState<LedgerIcon | null>(category?.icon ?? null)
   const [color, setColor] = useState<PaletteColor | null>(category?.color ?? null)
   const [error, setError] = useState<string | null>(null)
@@ -49,6 +51,21 @@ export function CategoryForm({
     (c) => c.parentId === null && !c.archived && c.id !== category?.id,
   )
   const topLevel = parentId === TOP_LEVEL
+  const selectedParent = topLevel
+    ? null
+    : (parents.find((p) => p.id === parentId) ?? parent ?? null)
+  const effectiveKind = selectedParent ? selectedParent.kind : kind
+  const eligibleAccounts = (accountsQuery.data ?? []).filter(
+    (acc) =>
+      (!acc.archived || acc.id === linkedAccountId) &&
+      acc.type !== 'loan' &&
+      (acc.id === linkedAccountId ||
+        !categories.some((c) => c.id !== category?.id && c.linkedAccountId === acc.id)),
+  )
+  const showLinkedAccount =
+    !topLevel &&
+    (effectiveKind === 'savings' || effectiveKind === 'transfer') &&
+    eligibleAccounts.length > 0
   const busy = create.isPending || update.isPending
 
   const submit = async (event: FormEvent) => {
@@ -57,6 +74,7 @@ export function CategoryForm({
     setError(null)
     setFailure(null)
     const look = topLevel ? { icon, color } : { icon: null, color: null }
+    const nextLinked = showLinkedAccount ? linkedAccountId || null : null
     try {
       if (category) {
         await update.mutateAsync({
@@ -65,6 +83,7 @@ export function CategoryForm({
             name: name.trim(),
             parentId: topLevel ? null : parentId,
             ...(topLevel ? { kind } : {}),
+            ...(nextLinked !== category.linkedAccountId ? { linkedAccountId: nextLinked } : {}),
             ...look,
           },
         })
@@ -73,6 +92,7 @@ export function CategoryForm({
           name: name.trim(),
           parentId: topLevel ? null : parentId,
           ...(topLevel ? { kind } : {}),
+          ...(nextLinked ? { linkedAccountId: nextLinked } : {}),
           ...look,
         })
       }
@@ -129,6 +149,17 @@ export function CategoryForm({
               onChange={setIcon}
             />
           </>
+        ) : showLinkedAccount ? (
+          <SelectField
+            label={f.linkedAccount}
+            value={linkedAccountId}
+            onChange={setLinkedAccountId}
+            hint={f.linkedAccountHint}
+            options={[
+              { value: '', label: f.linkedAccountNone },
+              ...eligibleAccounts.map((acc) => ({ value: acc.id, label: acc.name })),
+            ]}
+          />
         ) : null}
         {failure ? (
           <p role="alert" className="text-sm font-medium text-expense">

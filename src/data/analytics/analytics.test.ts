@@ -257,4 +257,76 @@ describe('agrégats mensuels et analyses multi-critères (M5)', () => {
     })
     expect(csvOut.csv).toContain("'=MALICIOUS_CELL")
   })
+
+  it('compte un retrait depuis l’épargne en épargne nette négative sans fausser les revenus (agrégat et direct)', () => {
+    const bank = manualAccount('Courant', 'checking')
+    const livretValo = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'PEA',
+      type: 'investment',
+      trackingMode: 'valuation',
+    }).id
+    const livretManual = manualAccount('Livret A', 'savings')
+
+    const peaCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livretValo)!.id
+    const livretCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livretManual)!.id
+
+    // Versement 600 € vers Livret A (lié auto), retrait 450 € depuis Livret A (lié auto),
+    // et retrait 200 € depuis PEA non suivi par opérations -> épargne nette = 600 - 450 - 200 = -50 €.
+    t.ok('transactionCreate', {
+      accountId: bank,
+      bookingDate: '2026-11-04',
+      valueDate: null,
+      amount: -600_00,
+      convertedAmount: null,
+      label: 'VIR VERS LIVRET A',
+      payee: null,
+      status: 'cleared',
+      note: null,
+      splits: [{ categoryId: livretCat, amount: -600_00, note: null, tagIds: [] }],
+    })
+    t.ok('transactionCreate', {
+      accountId: bank,
+      bookingDate: '2026-11-10',
+      valueDate: null,
+      amount: 450_00,
+      convertedAmount: null,
+      label: 'VIR DE LIVRET A',
+      payee: null,
+      status: 'cleared',
+      note: null,
+      splits: [{ categoryId: livretCat, amount: 450_00, note: null, tagIds: [] }],
+    })
+    t.ok('transactionCreate', {
+      accountId: bank,
+      bookingDate: '2026-11-15',
+      valueDate: null,
+      amount: 200_00,
+      convertedAmount: null,
+      label: 'RACHAT PEA',
+      payee: null,
+      status: 'cleared',
+      note: null,
+      splits: [{ categoryId: peaCat, amount: 200_00, note: null, tagIds: [] }],
+    })
+
+    const viaAgg = getAnalyticsOverview(t.db, {
+      currency: 'EUR',
+      from: '2026-11-01',
+      to: '2026-11-30',
+    })
+    expect(viaAgg.kpis.income).toBe(0)
+    expect(viaAgg.kpis.expenses).toBe(0)
+    expect(viaAgg.kpis.savings).toBe(-50_00)
+
+    // Force le chemin direct (plage en milieu de mois).
+    const viaDirect = getAnalyticsOverview(t.db, {
+      currency: 'EUR',
+      from: '2026-11-02',
+      to: '2026-11-29',
+    })
+    expect(viaDirect.kpis.income).toBe(0)
+    expect(viaDirect.kpis.expenses).toBe(0)
+    expect(viaDirect.kpis.savings).toBe(-50_00)
+  })
 })

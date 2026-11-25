@@ -92,6 +92,7 @@ export const en: Dictionary = {
       savings: 'Net savings',
       savingsRate: 'Savings rate',
       savingsPlaced: (amount: string) => `${amount} transferred to savings`,
+      savingsWithdrawn: (amount: string) => `${amount} withdrawn from savings`,
       vs: (label: string) => `vs ${label}`,
       points: (value: string) => `${value} pt`,
     },
@@ -486,6 +487,8 @@ export const en: Dictionary = {
       type: 'Type',
       trackingMode: 'Tracking mode',
       trackingModeLocked: 'Locked: the account already has transactions.',
+      savingsTrackingHint:
+        'Tip: if you do not import statements for this savings account, pick “Manual entry” so transfers from your checking account automatically create mirror transactions on it.',
       institution: 'Institution',
       institutionPlaceholder: 'Optional',
       currency: 'Currency',
@@ -534,6 +537,7 @@ export const en: Dictionary = {
     hideArchived: 'Hide archived categories',
     archivedTitle: 'Archived categories',
     archivedBadge: 'Archived',
+    linkedAccountBadge: (name: string) => `Linked account: ${name}`,
     saved: 'Category saved.',
     merged: (count: number) =>
       count === 0
@@ -550,6 +554,10 @@ export const en: Dictionary = {
       parent: 'Parent category',
       noParent: 'None (top level)',
       parentHint: 'A subcategory takes the type of its parent category.',
+      linkedAccount: 'Linked account (optional)',
+      linkedAccountNone: 'None (general category)',
+      linkedAccountHint:
+        'Classifying a transaction here automatically matches or creates its counterpart on that account.',
       nameRequired: 'Enter a name.',
       save: 'Save',
       create: 'Create',
@@ -1086,6 +1094,19 @@ export const en: Dictionary = {
         'naive-bayes': 'Local learning',
       },
       customLabelField: 'Display label',
+      linkedSwitchedNotice: (name: string) =>
+        `“${name}” switched to manual tracking: counterpart will be created on validation.`,
+    },
+    linkedHints: {
+      manual: (name: string) => `Mirror entry automatically created or matched on “${name}”.`,
+      statement: (name: string) =>
+        `Automatically matched with the opposite transaction on “${name}” (±3 days).`,
+      statementEmpty: (name: string) =>
+        `“${name}” uses statement tracking (0 transactions): switch it to manual tracking to create its mirror entry now.`,
+      valuation: (name: string) =>
+        `“${name}” uses manual valuation: reflected in net savings without mirror transactions.`,
+      switchToManual: (name: string) => `Switch “${name}” to manual`,
+      switchAndMirror: (name: string) => `Switch “${name}” to manual & create mirror`,
     },
     rules: {
       newRule: 'New rule',

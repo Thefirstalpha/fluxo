@@ -263,4 +263,55 @@ describe('moteur d’import M3 — déduplication, soldes, ajustements et annula
     expect(deleteCsvProfile(t.db, saved.id)).toEqual({ deleted: true })
     expect(listCsvProfiles(t.db).some((p) => p.id === saved.id)).toBe(false)
   })
+
+  it('rapproche à l’import du livret une opération déjà classée vers lui depuis le compte courant', () => {
+    const checkingId = bankAccount('Compte Courant', 1_000_00)
+    const livretId = t.ok('accountCreate', {
+      ...ACCOUNT_DEFAULTS,
+      name: 'Livret A',
+      type: 'savings',
+      trackingMode: 'statement',
+      openingBalance: 2_000_00,
+    }).id
+    const livretCat = t.ok('categoriesList', {}).find((c) => c.linkedAccountId === livretId)!.id
+
+    // Jour 1 : import du compte courant (+500 € depuis Livret A), classé vers Livret A avant import du livret.
+    const csvBank = [
+      'dateOp;label;amount;accountbalance',
+      '2026-11-10;VIR DEPUIS LIVRET A;500,00;1500,00',
+    ].join('\n')
+    const parsedBank = parse(csvBank, 'courant.csv')
+    const pBank = previewImport(t.db, store, {
+      accountId: checkingId,
+      fileName: 'courant.csv',
+      fileHash: parsedBank.fileHash,
+      profile: 'builtin:boursobank',
+      statement: parsedBank.statement,
+    })
+    commitImport(t.db, store, { previewId: pBank.previewId })
+
+    const bankTx = t.ok('transactionsList', { filter: { accountIds: [checkingId] } }).rows[0]!
+    t.ok('transactionsCategorize', { ids: [bankTx.id], categoryId: livretCat })
+    expect(t.ok('transactionGet', { id: bankTx.id }).transferId).toBeNull()
+
+    // Jour 2 : import du relevé du Livret A (-500 € à J+1) -> liaison automatique sans doublon.
+    const csvLivret = [
+      'dateOp;label;amount;accountbalance',
+      '2026-11-11;VIR VERS COMPTE COURANT;-500,00;1500,00',
+    ].join('\n')
+    const parsedLivret = parse(csvLivret, 'livret.csv')
+    const pLivret = previewImport(t.db, store, {
+      accountId: livretId,
+      fileName: 'livret.csv',
+      fileHash: parsedLivret.fileHash,
+      profile: 'builtin:boursobank',
+      statement: parsedLivret.statement,
+    })
+    commitImport(t.db, store, { previewId: pLivret.previewId })
+
+    const livretTx = t.ok('transactionsList', { filter: { accountIds: [livretId] } }).rows[0]!
+    expect(t.ok('transactionGet', { id: bankTx.id }).transferId).toBe(livretTx.id)
+    expect(t.ok('transactionGet', { id: livretTx.id }).transferId).toBe(bankTx.id)
+    expect(t.ok('categorizationQueueList', {})).toHaveLength(0)
+  })
 })
