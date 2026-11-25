@@ -3,6 +3,7 @@ import type {
   AiAssistOutcome,
   AiCategorizeApplyOutcome,
   AiConfigPublic,
+  AiInsightsOutcome,
   AiSendLogEntry,
   AiSendPreview,
   DocumentBatchPayslipCommitOutcome,
@@ -228,12 +229,13 @@ const api: FluxoApi = {
       ipcRenderer.invoke(IPC_CHANNELS.documentsAiConfigGet) as Promise<AiConfigPublic>,
     aiUpdateConfig: (patch) =>
       ipcRenderer.invoke(IPC_CHANNELS.documentsAiConfigUpdate, patch) as Promise<AiConfigPublic>,
-    aiSetApiKey: (apiKey) =>
+    aiSetApiKey: (apiKey, provider) =>
       ipcRenderer.invoke(IPC_CHANNELS.documentsAiSetKey, {
         apiKey,
+        provider,
       }) as Promise<{ ok: boolean; config: AiConfigPublic }>,
-    aiClearApiKey: () =>
-      ipcRenderer.invoke(IPC_CHANNELS.documentsAiClearKey) as Promise<AiConfigPublic>,
+    aiClearApiKey: (provider) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiClearKey, { provider }) as Promise<AiConfigPublic>,
     aiSendLogList: () =>
       ipcRenderer.invoke(IPC_CHANNELS.documentsAiSendLogs) as Promise<AiSendLogEntry[]>,
     downloadOcrLanguage: (language) =>
@@ -263,6 +265,16 @@ const api: FluxoApi = {
         IPC_CHANNELS.documentsAiExecuteCategorize,
         input,
       ) as Promise<AiCategorizeApplyOutcome>,
+    aiPreviewInsights: (scope) =>
+      ipcRenderer.invoke(IPC_CHANNELS.documentsAiPreviewInsights, { scope }) as Promise<
+        | { ok: true; preview: AiSendPreview }
+        | { ok: false; reason: 'disabled' | 'missing-key' | 'empty' }
+      >,
+    aiExecuteInsights: (input) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.documentsAiExecuteInsights,
+        input,
+      ) as Promise<AiInsightsOutcome>,
   }),
 }
 

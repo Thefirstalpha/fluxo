@@ -10,6 +10,7 @@ import type {
 } from '@shared/documents/model'
 import { callAnthropicStructured, type ProviderCallOutcome } from './anthropic'
 import type { StoredAiConfig } from './config-store'
+import { callGoogleStructured } from './google'
 import { callOllamaStructured } from './local'
 import type { AiSecretStore } from './secrets'
 
@@ -57,7 +58,10 @@ export class AiGateway {
     if (config.provider === 'none') {
       return { ok: false, reason: 'disabled' }
     }
-    if (config.provider === 'anthropic' && !this.secrets.hasKey()) {
+    if (config.provider === 'anthropic' && !this.secrets.hasKey('anthropic')) {
+      return { ok: false, reason: 'missing-key' }
+    }
+    if (config.provider === 'google' && !this.secrets.hasKey('google')) {
       return { ok: false, reason: 'missing-key' }
     }
 
@@ -73,9 +77,11 @@ export class AiGateway {
     const model =
       config.provider === 'anthropic'
         ? config.anthropicModel
-        : config.localMode === 'ollama'
-          ? config.localModel
-          : 'fluxo-local-heuristics'
+        : config.provider === 'google'
+          ? config.googleModel
+          : config.localMode === 'ollama'
+            ? config.localModel
+            : 'fluxo-local-heuristics'
 
     const estimatedCostMicroUsd = estimateCostMicroUsd(
       config.provider,
@@ -85,7 +91,7 @@ export class AiGateway {
     )
     const spentThisMonthMicroUsd = await this.readMonthlySpend()
     const exceedsCap =
-      config.provider === 'anthropic' &&
+      (config.provider === 'anthropic' || config.provider === 'google') &&
       spentThisMonthMicroUsd + estimatedCostMicroUsd > config.monthlyCapMicroUsd
 
     const token = randomBytes(16).toString('hex')
@@ -93,9 +99,11 @@ export class AiGateway {
     const destinationLabel =
       config.provider === 'anthropic'
         ? `Anthropic Messages (${model})`
-        : config.localMode === 'ollama'
-          ? `Ollama local (${config.localEndpoint})`
-          : 'Modèle local embarqué (hors-ligne)'
+        : config.provider === 'google'
+          ? `Google AI Gemini (${model})`
+          : config.localMode === 'ollama'
+            ? `Ollama local (${config.localEndpoint})`
+            : 'Modèle local embarqué (hors-ligne)'
 
     const preview: AiSendPreview = {
       token,
@@ -189,11 +197,22 @@ export class AiGateway {
 
     let outcome: ProviderCallOutcome<z.output<S>>
     if (config.provider === 'anthropic') {
-      const apiKey = this.secrets.readKey()
+      const apiKey = this.secrets.readKey('anthropic')
       if (!apiKey) return { ok: false, reason: 'missing-key' }
       outcome = await callAnthropicStructured({
         apiKey,
         model: config.anthropicModel,
+        system: job.system,
+        user: job.user,
+        schema: params.schema,
+        fetcher: this.fetcher,
+      })
+    } else if (config.provider === 'google') {
+      const apiKey = this.secrets.readKey('google')
+      if (!apiKey) return { ok: false, reason: 'missing-key' }
+      outcome = await callGoogleStructured({
+        apiKey,
+        model: config.googleModel,
         system: job.system,
         user: job.user,
         schema: params.schema,

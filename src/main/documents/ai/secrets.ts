@@ -1,11 +1,13 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { dirname, join } from 'node:path'
 import type { SecureStorage } from '../../vault/secure-storage'
 
+export type CloudAiProvider = 'anthropic' | 'google'
+
 /**
- * Conserve la clé API Anthropic exclusivement dans le process main, chiffrée par `safeStorage`
- * (Keychain macOS, Credential Vault / DPAPI Windows, libsecret Linux).
- * N'est jamais journalisée ni exposée au renderer.
+ * Conserve les clés API cloud (Anthropic / Google AI) exclusivement dans le process main,
+ * chiffrées par `safeStorage` (Keychain macOS, DPAPI Windows, libsecret Linux).
+ * Jamais journalisées ni exposées au renderer.
  */
 export class AiSecretStore {
   constructor(
@@ -13,18 +15,24 @@ export class AiSecretStore {
     private readonly storage: SecureStorage,
   ) {}
 
-  hasKey(): boolean {
-    return this.readKey() !== null
+  private pathFor(provider: CloudAiProvider): string {
+    if (provider === 'anthropic') return this.secretFile
+    return join(dirname(this.secretFile), 'ai-google.bin')
   }
 
-  setKey(apiKey: string): boolean {
+  hasKey(provider: CloudAiProvider = 'anthropic'): boolean {
+    return this.readKey(provider) !== null
+  }
+
+  setKey(apiKey: string, provider: CloudAiProvider = 'anthropic'): boolean {
     const trimmed = apiKey.trim()
     if (!trimmed) return false
     if (this.storage.unavailableReason()) return false
     try {
       const encrypted = this.storage.encrypt(trimmed)
-      mkdirSync(dirname(this.secretFile), { recursive: true })
-      writeFileSync(this.secretFile, encrypted.toString('base64'), {
+      const target = this.pathFor(provider)
+      mkdirSync(dirname(target), { recursive: true })
+      writeFileSync(target, encrypted.toString('base64'), {
         encoding: 'utf8',
         mode: 0o600,
       })
@@ -34,10 +42,10 @@ export class AiSecretStore {
     }
   }
 
-  readKey(): string | null {
+  readKey(provider: CloudAiProvider = 'anthropic'): string | null {
     if (this.storage.unavailableReason()) return null
     try {
-      const b64 = readFileSync(this.secretFile, 'utf8').trim()
+      const b64 = readFileSync(this.pathFor(provider), 'utf8').trim()
       if (!b64) return null
       const buf = Buffer.from(b64, 'base64')
       const decrypted = this.storage.decrypt(buf).trim()
@@ -47,9 +55,9 @@ export class AiSecretStore {
     }
   }
 
-  clearKey(): void {
+  clearKey(provider: CloudAiProvider = 'anthropic'): void {
     try {
-      rmSync(this.secretFile, { force: true })
+      rmSync(this.pathFor(provider), { force: true })
     } catch {
       // Ignore
     }

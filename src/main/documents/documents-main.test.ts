@@ -9,6 +9,7 @@ import type { SecureStorage } from '../vault/secure-storage'
 import { callAnthropicStructured } from './ai/anthropic'
 import { AiConfigStore } from './ai/config-store'
 import { AiGateway } from './ai/gateway'
+import { callGoogleStructured } from './ai/google'
 import { callOllamaStructured } from './ai/local'
 import { AiSecretStore } from './ai/secrets'
 import { StagedOriginalBytesStore } from './file-guard'
@@ -169,6 +170,103 @@ describe('AiGateway & fournisseurs Anthropic / Ollama (hors-ligne, mocks stricts
     })
     expect(remoteBlocked).toEqual({ ok: false, reason: 'network-error' })
     expect(fetcher).not.toHaveBeenCalled()
+
+    // Google AI (Gemini) : clé séparée chiffrée, en-tête x-goog-api-key, sortie JSON validée.
+    expect(secrets.setKey('AIza-test-google-key-1234', 'google')).toBe(true)
+    expect(secrets.hasKey('google')).toBe(true)
+    expect(secrets.hasKey('anthropic')).toBe(true)
+    config.update({
+      provider: 'google',
+      googleModel: 'gemini-2.5-flash',
+      autoAnalyzeDocuments: true,
+    })
+    expect(config.get().autoAnalyzeDocuments).toBe(true)
+
+    const googleRes = await callGoogleStructured({
+      apiKey: 'AIza-test-google-key-1234',
+      model: 'gemini-2.5-flash',
+      system: 'sys',
+      user: 'user',
+      schema: aiPayslipStructuredOutputSchema,
+      fetcher: (url, init) => {
+        expect(typeof url === 'string' ? url : '').toContain('gemini-2.5-flash:generateContent')
+        expect((init?.headers as Record<string, string>)['x-goog-api-key']).toBe(
+          'AIza-test-google-key-1234',
+        )
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              candidates: [
+                {
+                  finishReason: 'STOP',
+                  content: {
+                    parts: [
+                      {
+                        text: JSON.stringify({
+                          employerName: 'Nova SAS',
+                          period: '2026-11',
+                          paymentDate: '2026-11-28',
+                          baseSalaryCents: 350_000,
+                          grossCents: 350_000,
+                          employeeContributionsCents: 77_000,
+                          employerContributionsCents: 147_000,
+                          netBeforeTaxCents: 273_000,
+                          taxableNetCents: 280_000,
+                          socialNetCents: 265_000,
+                          withholdingTaxCents: 21_000,
+                          withholdingRateMicros: 75_000,
+                          otherAdjustmentsCents: 0,
+                          netPaidCents: 252_000,
+                          confidence: 0.96,
+                        }),
+                      },
+                    ],
+                  },
+                },
+              ],
+              usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 80 },
+            }),
+            { status: 200 },
+          ),
+        )
+      },
+    })
+    expect(googleRes.ok).toBe(true)
+    if (googleRes.ok) {
+      expect(googleRes.data.netPaidCents).toBe(252_000)
+      expect(googleRes.inputTokens).toBe(100)
+      expect(googleRes.outputTokens).toBe(80)
+    }
+
+    const googleGateway = new AiGateway(
+      () => config.get(),
+      secrets,
+      () => Promise.resolve(0),
+      () =>
+        Promise.resolve(
+          new Response(JSON.stringify({ candidates: [{ finishReason: 'SAFETY' }] }), {
+            status: 200,
+          }),
+        ),
+    )
+    const gPreview = await googleGateway.createPreview({
+      purpose: 'payslip',
+      documentId: 'doc-g',
+      rawText: 'Bulletin anonymisé',
+    })
+    expect(gPreview.ok).toBe(true)
+    if (gPreview.ok) {
+      expect(gPreview.preview.provider).toBe('google')
+      expect(gPreview.preview.destinationLabel).toContain('Google AI Gemini')
+      const gExec = await googleGateway.executeConsented({
+        previewToken: gPreview.preview.token,
+        consentConfirmed: true,
+        schema: aiPayslipStructuredOutputSchema,
+        embeddedFallback: () => null,
+      })
+      expect(gExec.ok).toBe(false)
+      if (!gExec.ok) expect(gExec.reason).toBe('refusal')
+    }
   })
 })
 

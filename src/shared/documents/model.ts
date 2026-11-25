@@ -27,6 +27,7 @@ export const DOCUMENT_EXTRACTION_METHODS = [
   'pdf-text',
   'ocr',
   'ai-local',
+  'ai-google',
   'ai-claude',
   'manual',
 ] as const
@@ -35,13 +36,13 @@ export type DocumentExtractionMethod = (typeof DOCUMENT_EXTRACTION_METHODS)[numb
 export const DOCUMENT_LINKED_TYPES = ['payslip', 'import_batch'] as const
 export type DocumentLinkedEntityType = (typeof DOCUMENT_LINKED_TYPES)[number]
 
-export const AI_PROVIDERS = ['none', 'local', 'anthropic'] as const
+export const AI_PROVIDERS = ['none', 'local', 'google', 'anthropic'] as const
 export type AiProviderId = (typeof AI_PROVIDERS)[number]
 
 export const AI_LOCAL_MODES = ['embedded', 'ollama'] as const
 export type AiLocalMode = (typeof AI_LOCAL_MODES)[number]
 
-export const AI_PURPOSES = ['payslip', 'statement', 'categorization'] as const
+export const AI_PURPOSES = ['payslip', 'statement', 'categorization', 'insights'] as const
 export type AiPurpose = (typeof AI_PURPOSES)[number]
 
 export const AI_SEND_STATUSES = ['sent', 'refused', 'error', 'dry-run'] as const
@@ -52,6 +53,13 @@ export type OcrLanguage = (typeof OCR_LANGUAGES)[number]
 
 export const ANTHROPIC_MODELS = ['claude-sonnet-4-5', 'claude-haiku-4-5'] as const
 export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]
+
+export const GOOGLE_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-lite',
+] as const
+export type GoogleModelId = (typeof GOOGLE_MODELS)[number]
 
 /** Coordonnées normalisées (0..1) sur une page, origine en haut à gauche. */
 export interface DocumentBox {
@@ -223,6 +231,9 @@ export interface AiConfigPublic {
   provider: AiProviderId
   anthropicModel: AnthropicModelId
   hasAnthropicKey: boolean
+  googleModel: GoogleModelId
+  hasGoogleKey: boolean
+  autoAnalyzeDocuments: boolean
   localMode: AiLocalMode
   localEndpoint: string
   localModel: string
@@ -234,11 +245,39 @@ export interface AiConfigPublic {
 export interface AiConfigPatch {
   provider?: AiProviderId
   anthropicModel?: AnthropicModelId
+  googleModel?: GoogleModelId
+  autoAnalyzeDocuments?: boolean
   localMode?: AiLocalMode
   localEndpoint?: string
   localModel?: string
   monthlyCapMicroUsd?: number
 }
+
+export interface AiInsightsResult {
+  summary: string
+  highlights: string[]
+  warnings: string[]
+  suggestions: string[]
+}
+
+export type AiInsightsOutcome =
+  | {
+      ok: true
+      insights: AiInsightsResult
+      logEntry: AiSendLogEntry
+    }
+  | {
+      ok: false
+      reason:
+        | 'disabled'
+        | 'consent-required'
+        | 'cap-exceeded'
+        | 'missing-key'
+        | 'network-error'
+        | 'refusal'
+        | 'invalid-output'
+        | 'empty'
+    }
 
 export interface AiSendPreview {
   token: string

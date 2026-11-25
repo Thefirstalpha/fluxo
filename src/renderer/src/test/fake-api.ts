@@ -753,8 +753,14 @@ export function createFakeApi() {
       aiUpdateConfig: vi.fn((patch): ReturnType<FluxoApi['documents']['aiUpdateConfig']> =>
         Promise.resolve({ ...buildDefaultAiConfig(), ...patch }),
       ),
-      aiSetApiKey: vi.fn((): ReturnType<FluxoApi['documents']['aiSetApiKey']> =>
-        Promise.resolve({ ok: true, config: { ...buildDefaultAiConfig(), hasAnthropicKey: true } }),
+      aiSetApiKey: vi.fn((_key, provider): ReturnType<FluxoApi['documents']['aiSetApiKey']> =>
+        Promise.resolve({
+          ok: true,
+          config: {
+            ...buildDefaultAiConfig(),
+            ...(provider === 'google' ? { hasGoogleKey: true } : { hasAnthropicKey: true }),
+          },
+        }),
       ),
       aiClearApiKey: vi.fn((): ReturnType<FluxoApi['documents']['aiClearApiKey']> =>
         Promise.resolve(buildDefaultAiConfig()),
@@ -786,6 +792,12 @@ export function createFakeApi() {
         Promise.resolve({ ok: false, reason: 'disabled' }),
       ),
       aiExecuteCategorize: vi.fn((): ReturnType<FluxoApi['documents']['aiExecuteCategorize']> =>
+        Promise.resolve({ ok: false, reason: 'disabled' }),
+      ),
+      aiPreviewInsights: vi.fn((): ReturnType<FluxoApi['documents']['aiPreviewInsights']> =>
+        Promise.resolve({ ok: false, reason: 'disabled' }),
+      ),
+      aiExecuteInsights: vi.fn((): ReturnType<FluxoApi['documents']['aiExecuteInsights']> =>
         Promise.resolve({ ok: false, reason: 'disabled' }),
       ),
     },

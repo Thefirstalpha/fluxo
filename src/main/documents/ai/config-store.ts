@@ -11,6 +11,7 @@ import {
   AI_LOCAL_MODES,
   AI_PROVIDERS,
   ANTHROPIC_MODELS,
+  GOOGLE_MODELS,
   type AiConfigPatch,
   type AiConfigPublic,
 } from '@shared/documents/model'
@@ -21,6 +22,8 @@ const defaults = buildDefaultAiConfig()
 const storedConfigSchema = z.object({
   provider: z.enum(AI_PROVIDERS).catch(defaults.provider),
   anthropicModel: z.enum(ANTHROPIC_MODELS).catch(defaults.anthropicModel),
+  googleModel: z.enum(GOOGLE_MODELS).catch(defaults.googleModel),
+  autoAnalyzeDocuments: z.boolean().catch(defaults.autoAnalyzeDocuments),
   localMode: z.enum(AI_LOCAL_MODES).catch(defaults.localMode),
   localEndpoint: z.string().refine(isLoopbackEndpoint).catch(DEFAULT_LOCAL_OLLAMA_ENDPOINT),
   localModel: z.string().min(1).max(120).catch(DEFAULT_LOCAL_OLLAMA_MODEL),
@@ -64,12 +67,14 @@ export class AiConfigStore {
 
   toPublic(extras: {
     hasAnthropicKey: boolean
+    hasGoogleKey: boolean
     spentThisMonthMicroUsd: number
     ocrLanguages: AiConfigPublic['ocrLanguages']
   }): AiConfigPublic {
     return {
       ...this.current,
       hasAnthropicKey: extras.hasAnthropicKey,
+      hasGoogleKey: extras.hasGoogleKey,
       spentThisMonthMicroUsd: extras.spentThisMonthMicroUsd,
       ocrLanguages: extras.ocrLanguages,
     }

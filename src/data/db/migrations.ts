@@ -8,6 +8,7 @@ import { SCHEMA_V6 } from './schema-v6'
 import { SCHEMA_V7 } from './schema-v7'
 import { SCHEMA_V8 } from './schema-v8'
 import { SCHEMA_V9 } from './schema-v9'
+import { SCHEMA_V10 } from './schema-v10'
 
 export interface Migration {
   /** Version atteinte après la migration (1, 2, 3… sans trou). */
@@ -58,6 +59,12 @@ export const MIGRATIONS: readonly Migration[] = [
     version: 9,
     name: 'patrimoine, crédits, budgets et prévisions',
     up: SCHEMA_V9,
+  },
+  {
+    version: 10,
+    name: 'IA Google Gemini et synthèses transverses',
+    up: SCHEMA_V10,
+    rebuildForeignKeys: true,
   },
 ]
 

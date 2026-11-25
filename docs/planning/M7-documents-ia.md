@@ -39,7 +39,8 @@ Architecture détaillée : [analyse de documents & IA](../architecture/ia.md).
 
 ### Lot 3 — Extraction par IA
 
-- [x] Interface `AiProvider` ; fournisseurs : **aucun** (défaut), **local** (petit modèle spécialisé embarqué téléchargé à la demande ; ou, en option avancée, un serveur d'inférence local déjà installé type Ollama), **Claude** (clé personnelle) ; extensible par la communauté. `Besoin`
+- [x] Interface `AiProvider` ; fournisseurs : **aucun** (défaut), **local** (petit modèle spécialisé embarqué téléchargé à la demande ; ou, en option avancée, un serveur d'inférence local déjà installé type Ollama), **Google AI (Gemini)** (clé personnelle), **Claude** (clé personnelle) ; extensible par la communauté. `Besoin`
+- [x] Option d’**analyse documentaire automatique par IA** à l’import (désactivée par défaut, texte anonymisé, journalisée et plafonnée). `Proposition`
 - [x] Sortie **structurée et validée** par schéma (le même que la saisie manuelle) ; toute réponse invalide est rejetée. `Socle`
 - [x] **Anonymisation** avant tout envoi cloud (NIR, IBAN, noms, adresses) ; **aperçu** de ce qui part ; journal local des envois. `Socle`
 - [x] **Estimation du coût** avant envoi et plafond mensuel. `Proposition`

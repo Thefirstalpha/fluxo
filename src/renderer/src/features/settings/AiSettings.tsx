@@ -5,6 +5,7 @@ import {
   AI_LOCAL_MODES,
   AI_PROVIDERS,
   ANTHROPIC_MODELS,
+  GOOGLE_MODELS,
   OCR_LANGUAGES,
   type AiConfigPublic,
   type AiSendLogEntry,
@@ -14,6 +15,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { SelectField, TextField, INPUT_CLASS } from '../../components/ui/Field'
+import { Switch } from '../../components/ui/Switch'
 import { useT } from '../../i18n'
 import { getApi } from '../../lib/api'
 import { cx } from '../../lib/cx'
@@ -76,12 +78,12 @@ export function AiSettings() {
     }
   }
 
-  const handleSaveKey = async () => {
+  const handleSaveKey = async (provider: 'anthropic' | 'google') => {
     if (!apiKeyDraft.trim()) return
     setError(null)
     setNotice(null)
     try {
-      const res = await getApi().documents.aiSetApiKey(apiKeyDraft.trim())
+      const res = await getApi().documents.aiSetApiKey(apiKeyDraft.trim(), provider)
       setConfig(res.config)
       setApiKeyDraft('')
       if (!res.ok) setError(t.documents.errors['missing-key'])
@@ -125,6 +127,15 @@ export function AiSettings() {
             />
           ) : null}
 
+          {config.provider === 'google' ? (
+            <SelectField
+              label={sa.googleModelLabel}
+              value={config.googleModel}
+              options={GOOGLE_MODELS.map((m) => ({ value: m, label: m }))}
+              onChange={(googleModel) => void patchConfig({ googleModel })}
+            />
+          ) : null}
+
           {config.provider === 'anthropic' ? (
             <SelectField
               label={sa.anthropicModelLabel}
@@ -134,6 +145,17 @@ export function AiSettings() {
             />
           ) : null}
         </div>
+
+        {config.provider !== 'none' ? (
+          <div className="rounded-lg border border-border bg-surface-2 px-3">
+            <Switch
+              checked={config.autoAnalyzeDocuments}
+              label={sa.autoAnalyzeLabel}
+              description={sa.autoAnalyzeHint}
+              onChange={(autoAnalyzeDocuments) => void patchConfig({ autoAnalyzeDocuments })}
+            />
+          </div>
+        ) : null}
 
         {config.provider === 'local' && config.localMode === 'ollama' ? (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -160,41 +182,54 @@ export function AiSettings() {
           </div>
         ) : null}
 
-        {config.provider === 'anthropic' ? (
+        {config.provider === 'anthropic' || config.provider === 'google' ? (
           <div className="space-y-3 rounded-lg border border-border bg-surface-2 p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <label htmlFor={keyInputId} className="text-sm font-medium text-fg">
-                {sa.apiKeyLabel}
-              </label>
-              <Badge tone={config.hasAnthropicKey ? 'accent' : 'neutral'}>
-                {config.hasAnthropicKey ? sa.apiKeyStored : sa.apiKeyMissing}
-              </Badge>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                id={keyInputId}
-                type="password"
-                autoComplete="off"
-                placeholder={sa.apiKeyPlaceholder}
-                value={apiKeyDraft}
-                onChange={(e) => setApiKeyDraft(e.target.value)}
-                className={cx(INPUT_CLASS, 'flex-1 border-border-strong')}
-              />
-              <Button variant="primary" onClick={() => void handleSaveKey()}>
-                <KeyRound size={14} aria-hidden />
-                {sa.saveKey}
-              </Button>
-              {config.hasAnthropicKey ? (
-                <Button
-                  onClick={() => {
-                    void getApi().documents.aiClearApiKey().then(setConfig)
-                  }}
-                >
-                  <Trash2 size={14} aria-hidden />
-                  {sa.clearKey}
-                </Button>
-              ) : null}
-            </div>
+            {(() => {
+              const cloudProvider = config.provider === 'google' ? 'google' : 'anthropic'
+              const hasKey =
+                cloudProvider === 'google' ? config.hasGoogleKey : config.hasAnthropicKey
+              return (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label htmlFor={keyInputId} className="text-sm font-medium text-fg">
+                      {cloudProvider === 'google' ? sa.googleApiKeyLabel : sa.apiKeyLabel}
+                    </label>
+                    <Badge tone={hasKey ? 'accent' : 'neutral'}>
+                      {hasKey ? sa.apiKeyStored : sa.apiKeyMissing}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      id={keyInputId}
+                      type="password"
+                      autoComplete="off"
+                      placeholder={
+                        cloudProvider === 'google'
+                          ? sa.googleApiKeyPlaceholder
+                          : sa.apiKeyPlaceholder
+                      }
+                      value={apiKeyDraft}
+                      onChange={(e) => setApiKeyDraft(e.target.value)}
+                      className={cx(INPUT_CLASS, 'flex-1 border-border-strong')}
+                    />
+                    <Button variant="primary" onClick={() => void handleSaveKey(cloudProvider)}>
+                      <KeyRound size={14} aria-hidden />
+                      {sa.saveKey}
+                    </Button>
+                    {hasKey ? (
+                      <Button
+                        onClick={() => {
+                          void getApi().documents.aiClearApiKey(cloudProvider).then(setConfig)
+                        }}
+                      >
+                        <Trash2 size={14} aria-hidden />
+                        {sa.clearKey}
+                      </Button>
+                    ) : null}
+                  </div>
+                </>
+              )
+            })()}
 
             <div className="flex flex-wrap items-end gap-3">
               <div style={{ width: '160px' }}>

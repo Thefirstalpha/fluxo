@@ -1,9 +1,11 @@
 import {
   ANTHROPIC_MODELS,
+  GOOGLE_MODELS,
   type AiConfigPublic,
   type AiProviderId,
   type AiPurpose,
   type AnthropicModelId,
+  type GoogleModelId,
 } from './model'
 
 /** Tarifs indicatifs en micro-USD par million de jetons (entiers uniquement). */
@@ -12,6 +14,14 @@ export const ANTHROPIC_PRICING_MICRO_USD_PER_MTOK: Readonly<
 > = {
   'claude-sonnet-4-5': { input: 3_000_000, output: 15_000_000 },
   'claude-haiku-4-5': { input: 800_000, output: 4_000_000 },
+}
+
+export const GOOGLE_PRICING_MICRO_USD_PER_MTOK: Readonly<
+  Record<GoogleModelId, { input: number; output: number }>
+> = {
+  'gemini-2.5-flash': { input: 150_000, output: 600_000 },
+  'gemini-2.5-pro': { input: 1_250_000, output: 5_000_000 },
+  'gemini-2.5-flash-lite': { input: 75_000, output: 300_000 },
 }
 
 export const DEFAULT_MONTHLY_CAP_MICRO_USD = 5_000_000 // $5,00 / mois par défaut
@@ -43,12 +53,21 @@ export function estimateCostMicroUsd(
   inputTokens: number,
   outputTokens: number,
 ): number {
-  if (provider !== 'anthropic') return 0
-  const rates =
-    model in ANTHROPIC_PRICING_MICRO_USD_PER_MTOK
-      ? ANTHROPIC_PRICING_MICRO_USD_PER_MTOK[model as AnthropicModelId]
-      : ANTHROPIC_PRICING_MICRO_USD_PER_MTOK['claude-sonnet-4-5']
-  return Math.ceil((inputTokens * rates.input + outputTokens * rates.output) / 1_000_000)
+  if (provider === 'anthropic') {
+    const rates =
+      model in ANTHROPIC_PRICING_MICRO_USD_PER_MTOK
+        ? ANTHROPIC_PRICING_MICRO_USD_PER_MTOK[model as AnthropicModelId]
+        : ANTHROPIC_PRICING_MICRO_USD_PER_MTOK['claude-sonnet-4-5']
+    return Math.ceil((inputTokens * rates.input + outputTokens * rates.output) / 1_000_000)
+  }
+  if (provider === 'google') {
+    const rates =
+      model in GOOGLE_PRICING_MICRO_USD_PER_MTOK
+        ? GOOGLE_PRICING_MICRO_USD_PER_MTOK[model as GoogleModelId]
+        : GOOGLE_PRICING_MICRO_USD_PER_MTOK['gemini-2.5-flash']
+    return Math.ceil((inputTokens * rates.input + outputTokens * rates.output) / 1_000_000)
+  }
+  return 0
 }
 
 export function formatMicroUsd(microUsd: number): string {
@@ -61,6 +80,9 @@ export function buildDefaultAiConfig(): AiConfigPublic {
     provider: 'none',
     anthropicModel: ANTHROPIC_MODELS[1],
     hasAnthropicKey: false,
+    googleModel: GOOGLE_MODELS[0],
+    hasGoogleKey: false,
+    autoAnalyzeDocuments: false,
     localMode: 'embedded',
     localEndpoint: DEFAULT_LOCAL_OLLAMA_ENDPOINT,
     localModel: DEFAULT_LOCAL_OLLAMA_MODEL,
@@ -95,7 +117,7 @@ export function buildAiPrompt(
   if (purpose === 'payslip') {
     return {
       system:
-        'Tu es un assistant comptable français strict. Extrais les totaux exacts en CENTIMES ENTIERS (ex. 2500.00 EUR -> 250000) du bulletin de paie anonymisé ci-dessous. N’invente jamais un montant absent.',
+        'Tu es un assistant comptable français strict. Extrais les totaux exacts en CENTIMES ENTIERS (ex. 2500.00 EUR -> 250000), l’employeur, l’intitulé de poste, les dates de début/fin de contrat (AAAA-MM-JJ) et s’il s’agit d’un solde de tout compte (isFinalSettlement) depuis le bulletin anonymisé ci-dessous. N’invente jamais un montant absent.',
       user: anonymizedPayload,
     }
   }
@@ -103,6 +125,13 @@ export function buildAiPrompt(
     return {
       system:
         'Tu es un assistant bancaire strict. Extrais les dates ISO (AAAA-MM-JJ), les montants en CENTIMES ENTIERS (négatif pour débit, positif pour crédit) et les libellés propres du relevé bancaire anonymisé ci-dessous.',
+      user: anonymizedPayload,
+    }
+  }
+  if (purpose === 'insights') {
+    return {
+      system:
+        'Tu es un analyste de finances personnelles clair et factuel. À partir des agrégats anonymisés ci-dessous (en français), rédige une synthèse concise (`summary`), 2 à 4 points clés (`highlights`), les points de vigilance (`warnings`) et des pistes concrètes d’optimisation (`suggestions`), sans donner de conseil boursier ou fiscal.',
       user: anonymizedPayload,
     }
   }

@@ -5,6 +5,7 @@ import {
   AI_PROVIDERS,
   ANTHROPIC_MODELS,
   DOCUMENT_KINDS,
+  GOOGLE_MODELS,
   OCR_LANGUAGES,
   type AiConfigPatch,
   type DocumentCommitPayslipInput,
@@ -205,6 +206,8 @@ export function isLoopbackEndpoint(raw: string): boolean {
 export const aiConfigPatchSchema = z.strictObject({
   provider: z.enum(AI_PROVIDERS).optional(),
   anthropicModel: z.enum(ANTHROPIC_MODELS).optional(),
+  googleModel: z.enum(GOOGLE_MODELS).optional(),
+  autoAnalyzeDocuments: z.boolean().optional(),
   localMode: z.enum(AI_LOCAL_MODES).optional(),
   localEndpoint: z
     .string()
@@ -291,6 +294,22 @@ export const ocrLanguageSchema = z.strictObject({
 
 export const anthropicApiKeySchema = z.strictObject({
   apiKey: z.string().trim().min(12).max(256),
+  provider: z.enum(['anthropic', 'google']).optional(),
+})
+
+export const aiProviderTargetSchema = z.strictObject({
+  provider: z.enum(['anthropic', 'google']).optional(),
+})
+
+export const aiPreviewInsightsSchema = z.strictObject({
+  scope: z.enum(['analytics', 'planning']),
+})
+
+export const aiInsightsStructuredOutputSchema = z.strictObject({
+  summary: z.string().max(1200),
+  highlights: z.array(z.string().max(400)).max(6),
+  warnings: z.array(z.string().max(400)).max(6),
+  suggestions: z.array(z.string().max(400)).max(6),
 })
 
 /** Schéma JSON structuré demandé à Claude / Ollama pour compléter un bulletin de paie. */

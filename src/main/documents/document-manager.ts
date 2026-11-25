@@ -7,6 +7,7 @@ import type {
   AiCategorizeApplyOutcome,
   AiConfigPatch,
   AiConfigPublic,
+  AiInsightsOutcome,
   AiSendLogEntry,
   AiSendPreview,
   DocumentBatchPayslipCommitOutcome,
@@ -29,6 +30,7 @@ import type {
 } from '@shared/documents/model'
 import {
   aiCategorizationStructuredOutputSchema,
+  aiInsightsStructuredOutputSchema,
   aiPayslipStructuredOutputSchema,
   aiStatementStructuredOutputSchema,
 } from '@shared/documents/schemas'
@@ -246,6 +248,28 @@ export class DocumentManager {
             hasOriginalBytes: true,
             previewImageDataUrl: null,
           }
+
+    // Si l'utilisateur a activé l'analyse IA automatique dans les paramètres, enrichit le brouillon
+    // immédiatement via le texte anonymisé (en respectant plafond mensuel et journal d'audit).
+    const aiCfg = this.aiConfigStore.get()
+    if (aiCfg.autoAnalyzeDocuments && aiCfg.provider !== 'none' && !ocrMissingLanguage) {
+      const previewRes = await this.aiPreviewAssist(docId)
+      if (previewRes.ok && !previewRes.preview.exceedsCap) {
+        const execRes = await this.aiExecuteAssist({
+          documentId: docId,
+          previewToken: previewRes.preview.token,
+          consentConfirmed: true,
+        })
+        if (execRes.ok) {
+          return {
+            ok: true,
+            document: execRes.document,
+            duplicateOf: null,
+            ocrMissingLanguage: null,
+          }
+        }
+      }
+    }
 
     return {
       ok: true,
@@ -668,7 +692,8 @@ export class DocumentManager {
     const spentRes = await this.service.call('aiMonthlySpend').catch(() => null)
     const spent = spentRes && spentRes.ok ? spentRes.value : 0
     return this.aiConfigStore.toPublic({
-      hasAnthropicKey: this.aiSecrets.hasKey(),
+      hasAnthropicKey: this.aiSecrets.hasKey('anthropic'),
+      hasGoogleKey: this.aiSecrets.hasKey('google'),
       spentThisMonthMicroUsd: spent,
       ocrLanguages: this.models.status(),
     })
@@ -679,13 +704,16 @@ export class DocumentManager {
     return this.aiConfig()
   }
 
-  async aiSetApiKey(apiKey: string): Promise<{ ok: boolean; config: AiConfigPublic }> {
-    const ok = this.aiSecrets.setKey(apiKey)
+  async aiSetApiKey(
+    apiKey: string,
+    provider: 'anthropic' | 'google' = 'anthropic',
+  ): Promise<{ ok: boolean; config: AiConfigPublic }> {
+    const ok = this.aiSecrets.setKey(apiKey, provider)
     return { ok, config: await this.aiConfig() }
   }
 
-  async aiClearApiKey(): Promise<AiConfigPublic> {
-    this.aiSecrets.clearKey()
+  async aiClearApiKey(provider: 'anthropic' | 'google' = 'anthropic'): Promise<AiConfigPublic> {
+    this.aiSecrets.clearKey(provider)
     return this.aiConfig()
   }
 
@@ -739,8 +767,9 @@ export class DocumentManager {
     const detailRes = await this.service.call('documentGet', { id: params.documentId })
     if (!detailRes.ok || !detailRes.value) return { ok: false, reason: 'not-found' }
     const doc = detailRes.value
+    const provider = this.aiConfigStore.get().provider
     const method: DocumentExtractionMethod =
-      this.aiConfigStore.get().provider === 'anthropic' ? 'ai-claude' : 'ai-local'
+      provider === 'anthropic' ? 'ai-claude' : provider === 'google' ? 'ai-google' : 'ai-local'
 
     if (doc.kind === 'statement') {
       const execRes = await this.gateway.executeConsented({
@@ -1080,6 +1109,107 @@ export class DocumentManager {
     return {
       ok: true,
       appliedCount: applyRes.value.appliedCount,
+      logEntry: logRes.value,
+    }
+  }
+
+  async aiPreviewInsights(
+    scope: 'analytics' | 'planning',
+  ): Promise<
+    | { ok: true; preview: AiSendPreview }
+    | { ok: false; reason: 'disabled' | 'missing-key' | 'empty' }
+  > {
+    let payload: unknown
+    if (scope === 'analytics') {
+      const ovRes = await this.vault.ledger('analyticsOverview', { currency: 'EUR' })
+      if (!ovRes.ok) return { ok: false, reason: 'empty' }
+      const ov = ovRes.value
+      payload = {
+        scope: 'analytics',
+        kpis: ov.kpis,
+        topCategories: ov.categoryBreakdown.slice(0, 8).map((c) => ({
+          name: c.name,
+          amountCents: c.amount,
+          share: c.share,
+        })),
+        recentMonths: ov.monthlySeries.slice(-3).map((m) => ({
+          month: m.month,
+          incomeCents: m.income,
+          expensesCents: m.expenses,
+          savingsCents: m.savings,
+        })),
+        anomalyCount: ov.anomalies.length,
+      }
+    } else {
+      const [nwRes, budRes, fcRes] = await Promise.all([
+        this.vault.ledger('netWorthOverview', {}),
+        this.vault.ledger('budgetsList', {}),
+        this.vault.ledger('forecastOverview', {}),
+      ])
+      if (!nwRes.ok || !budRes.ok || !fcRes.ok) return { ok: false, reason: 'empty' }
+      payload = {
+        scope: 'planning',
+        netWorth: {
+          assetsCents: nwRes.value.totalAssetsCents,
+          liabilitiesCents: nwRes.value.totalLiabilitiesCents,
+          netWorthCents: nwRes.value.netWorthCents,
+          loanCount: nwRes.value.loans.length,
+        },
+        budgets: budRes.value.map((b) => ({
+          category: b.categoryName,
+          spentCents: b.spentCents,
+          limitCents: b.effectiveLimitCents,
+          alertLevel: b.alertLevel,
+        })),
+        forecast: {
+          currentCheckingCents: fcRes.value.currentCheckingBalanceCents,
+          projectedEndCents: fcRes.value.projectedEndBalanceCents,
+          overdraftRisk: fcRes.value.overdraftRisk,
+        },
+      }
+    }
+
+    const payloadJson = JSON.stringify(payload, null, 2)
+    return this.gateway.createPreview({
+      purpose: 'insights',
+      documentId: null,
+      rawText: payloadJson,
+      preAnonymized: { text: payloadJson, redactions: [] },
+    })
+  }
+
+  async aiExecuteInsights(params: {
+    previewToken: string
+    consentConfirmed: true
+  }): Promise<AiInsightsOutcome> {
+    const execRes = await this.gateway.executeConsented({
+      previewToken: params.previewToken,
+      consentConfirmed: params.consentConfirmed,
+      schema: aiInsightsStructuredOutputSchema,
+      embeddedFallback: (payloadText) => ({
+        summary: 'Synthèse locale générée à partir des agrégats anonymisés du coffre.',
+        highlights: [`Données analysées (${payloadText.length} caractères anonymisés).`],
+        warnings: [],
+        suggestions: [
+          'Activez Google AI, Anthropic ou Ollama dans Paramètres pour une analyse rédactionnelle approfondie.',
+        ],
+      }),
+    })
+
+    if (!execRes.ok) {
+      if (execRes.audit) await this.service.call('aiSendLogRecord', execRes.audit)
+      return { ok: false, reason: execRes.reason }
+    }
+
+    const logRes = await this.service.call('aiSendLogRecord', {
+      ...execRes.audit,
+      status: 'sent',
+    })
+    if (!logRes.ok) return { ok: false, reason: 'network-error' }
+
+    return {
+      ok: true,
+      insights: execRes.data,
       logEntry: logRes.value,
     }
   }

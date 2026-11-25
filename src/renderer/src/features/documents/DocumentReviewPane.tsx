@@ -276,10 +276,18 @@ export function DocumentReviewPane({
               />
             </div>
             {!readOnly ? (
-              <Button disabled={busy} onClick={() => onRerunExtraction(detail.kind)}>
-                <RefreshCw size={14} aria-hidden />
-                {rv.rerunLocal}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button disabled={busy} onClick={() => onRerunExtraction(detail.kind)}>
+                  <RefreshCw size={14} aria-hidden />
+                  {rv.rerunLocal}
+                </Button>
+                {aiConfig && aiConfig.provider !== 'none' && !draft?.needsAiAssist ? (
+                  <Button disabled={busy} onClick={onAskAiAssist}>
+                    <Sparkles size={14} aria-hidden />
+                    {rv.askAiAssist}
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
           </div>
 

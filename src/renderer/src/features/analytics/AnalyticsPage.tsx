@@ -9,6 +9,7 @@ import { useLedgerQuery } from '../../lib/ledger'
 import { buildAnalyticsQueryFilter, useAnalyticsStore } from '../../stores/analytics'
 import { useRegisterStore } from '../../stores/register'
 import { useSettingsStore } from '../../stores/settings'
+import { AiInsightsPanel } from '../documents/AiInsightsPanel'
 import { AnalyticsChartsTab } from './AnalyticsChartsTab'
 import { AnalyticsFilterBar } from './AnalyticsFilterBar'
 import { MonthlySynthesisTab } from './MonthlySynthesisTab'
@@ -147,6 +148,7 @@ export default function AnalyticsPage() {
               onError={setError}
             />
           )}
+          <AiInsightsPanel scope="analytics" />
         </div>
       )}
     </div>

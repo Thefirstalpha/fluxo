@@ -11,6 +11,8 @@ import {
   aiExecuteCategorizeSchema,
   aiPreviewAssistSchema,
   aiPreviewCategorizeSchema,
+  aiPreviewInsightsSchema,
+  aiProviderTargetSchema,
   anthropicApiKeySchema,
   documentCommitPayslipBatchSchema,
   documentCommitPayslipSchema,
@@ -221,9 +223,11 @@ export function registerIpcHandlers({
     documents.aiUpdateConfig(patch),
   )
   handle(IPC_CHANNELS.documentsAiSetKey, anthropicApiKeySchema, (input) =>
-    documents.aiSetApiKey(input.apiKey),
+    documents.aiSetApiKey(input.apiKey, input.provider),
   )
-  handle(IPC_CHANNELS.documentsAiClearKey, noInput, () => documents.aiClearApiKey())
+  handle(IPC_CHANNELS.documentsAiClearKey, aiProviderTargetSchema.optional(), (input) =>
+    documents.aiClearApiKey(input?.provider),
+  )
   handle(IPC_CHANNELS.documentsAiSendLogs, noInput, () => documents.aiSendLogList())
   handle(IPC_CHANNELS.documentsOcrDownload, ocrLanguageSchema, (input) =>
     documents.downloadOcrLanguage(input.language),
@@ -242,5 +246,11 @@ export function registerIpcHandlers({
   )
   handle(IPC_CHANNELS.documentsAiExecuteCategorize, aiExecuteCategorizeSchema, (input) =>
     documents.aiExecuteCategorize(input),
+  )
+  handle(IPC_CHANNELS.documentsAiPreviewInsights, aiPreviewInsightsSchema, (input) =>
+    documents.aiPreviewInsights(input.scope),
+  )
+  handle(IPC_CHANNELS.documentsAiExecuteInsights, aiExecuteCategorizeSchema, (input) =>
+    documents.aiExecuteInsights(input),
   )
 }

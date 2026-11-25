@@ -4,6 +4,7 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { SegmentedControl } from '../../components/ui/SegmentedControl'
 import { useT } from '../../i18n'
 import { useLedgerQuery } from '../../lib/ledger'
+import { AiInsightsPanel } from '../documents/AiInsightsPanel'
 import { BudgetsGoalsTab } from './BudgetsGoalsTab'
 import { ForecastSimTab } from './ForecastSimTab'
 import { LoansTab } from './LoansTab'
@@ -45,6 +46,7 @@ export default function BudgetsPage() {
       {tab === 'loans' ? <LoansTab /> : null}
       {tab === 'netWorth' ? <NetWorthTab accounts={accounts} /> : null}
       {tab === 'forecast' ? <ForecastSimTab accounts={accounts} /> : null}
+      <AiInsightsPanel scope="planning" />
     </div>
   )
 }

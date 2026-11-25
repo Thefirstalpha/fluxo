@@ -4,6 +4,7 @@ import type {
   AiCategorizeApplyOutcome,
   AiConfigPatch,
   AiConfigPublic,
+  AiInsightsOutcome,
   AiSendLogEntry,
   AiSendPreview,
   DocumentBatchPayslipCommitOutcome,
@@ -121,6 +122,8 @@ export const IPC_CHANNELS = {
   documentsAiExecuteAssist: 'fluxo:documents:ai-execute-assist',
   documentsAiPreviewCategorize: 'fluxo:documents:ai-preview-categorize',
   documentsAiExecuteCategorize: 'fluxo:documents:ai-execute-categorize',
+  documentsAiPreviewInsights: 'fluxo:documents:ai-preview-insights',
+  documentsAiExecuteInsights: 'fluxo:documents:ai-execute-insights',
 } as const
 
 /** Origine d'une erreur du renderer remontée au journal local. */
@@ -265,8 +268,11 @@ export interface FluxoApi {
     delete(documentId: string): Promise<boolean>
     aiConfig(): Promise<AiConfigPublic>
     aiUpdateConfig(patch: AiConfigPatch): Promise<AiConfigPublic>
-    aiSetApiKey(apiKey: string): Promise<{ ok: boolean; config: AiConfigPublic }>
-    aiClearApiKey(): Promise<AiConfigPublic>
+    aiSetApiKey(
+      apiKey: string,
+      provider?: 'anthropic' | 'google',
+    ): Promise<{ ok: boolean; config: AiConfigPublic }>
+    aiClearApiKey(provider?: 'anthropic' | 'google'): Promise<AiConfigPublic>
     aiSendLogList(): Promise<AiSendLogEntry[]>
     downloadOcrLanguage(language: OcrLanguage): Promise<OcrDownloadOutcome>
     removeOcrLanguage(language: OcrLanguage): Promise<OcrLanguageStatus>
@@ -291,5 +297,15 @@ export interface FluxoApi {
       previewToken: string
       consentConfirmed: true
     }): Promise<AiCategorizeApplyOutcome>
+    aiPreviewInsights(
+      scope: 'analytics' | 'planning',
+    ): Promise<
+      | { ok: true; preview: AiSendPreview }
+      | { ok: false; reason: 'disabled' | 'missing-key' | 'empty' }
+    >
+    aiExecuteInsights(input: {
+      previewToken: string
+      consentConfirmed: true
+    }): Promise<AiInsightsOutcome>
   }
 }
